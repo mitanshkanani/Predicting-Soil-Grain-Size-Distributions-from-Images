@@ -1,0 +1,55 @@
+done F827
+done G190
+done H030
+done H037
+done H038
+done H126
+done H181
+done H183
+done H366
+done H367
+done H368
+done H371
+done H372
+done H374
+done H405
+done H493
+done H516
+done H549
+done H615
+done H616
+done H617
+done H637
+done H666
+done H668
+
+=== SAME soils, ~SAME scale (4.60 vs 4.55 px/mm), two cameras ===
+                e1        e2        e4        e8       e16       sat
+cam                                                                 
+Motorola    18.923    14.936    11.279     7.909     5.154     0.123
+Samsung     26.488    23.665    20.224    15.335     9.767     0.202
+
+  Samsung/Motorola ratio:
+e1       1.400
+e2       1.584
+e4       1.793
+e8       1.939
+e16      1.895
+sat      1.633
+
+=== paired: soils shot by BOTH cameras ===
+  n paired soils = 21
+  e1   rel.diff =    63.3%  sd= 35.5%  same sign in 21/21
+  e2   rel.diff =    90.3%  sd= 46.5%  same sign in 21/21
+  e4   rel.diff =   114.8%  sd= 50.1%  same sign in 21/21
+  e8   rel.diff =   124.2%  sd= 40.9%  same sign in 21/21
+  e16  rel.diff =   109.0%  sd= 27.1%  same sign in 21/21
+  sat  rel.diff =    73.9%  sd= 35.1%  same sign in 21/21
+
+=== camera offset vs between-soil spread ===
+  e1  : between-soil SD=   6.027  camera offset=   7.564  offset/SD= 1.26
+  e2  : between-soil SD=   5.052  camera offset=   8.728  offset/SD= 1.73
+  e4  : between-soil SD=   3.801  camera offset=   8.945  offset/SD= 2.35
+  e8  : between-soil SD=   2.550  camera offset=   7.427  offset/SD= 2.91
+  e16 : between-soil SD=   1.458  camera offset=   4.613  offset/SD= 3.16
+  sat : between-soil SD=   0.042  camera offset=   0.078  offset/SD= 1.85

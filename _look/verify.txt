@@ -1,0 +1,39 @@
+
+=== verify ====================================================
+grating / units check ...
+  2 mm -> 9.105 px at 4.5525 px/mm; round-trip 2.0 mm  PASS
+paired-camera texture gap (raw vs canonical) ...
+feature  raw_gap_pct  canonical_gap_pct  raw_same_sign  reference_pct
+     e1       -32.50             -31.87             20           63.3
+     e2       -17.28             -17.52             20           90.3
+     e4        -1.12              -1.12             14          114.8
+     e8        22.09              22.12             18          124.2
+    e16        92.00              92.24             21          109.0
+    sat        74.35              74.30             21           73.9
+signal survival + deliberate-failure control ...
+  Spearman(e1, logD50): raw=-0.175 canonical=-0.154 standardised_control=-0.453
+  Spearman(e8, logD50): raw=0.734 canonical=0.735 standardised_control=0.728
+aliasing stop-band ...
+  6 images, median attenuation 36.37 dB (require >= 20 dB)
+resampler vs box averaging (reported, not asserted) ...
+  12 images, min 24.09 dB, median 29.3 dB
+  No threshold is asserted here on purpose. Lanczos deliberately retains
+  more high-frequency detail than box averaging, so the two disagreeing is
+  the expected behaviour, and any pass mark would be a number tuned until
+  it went green. Aliasing and ringing are the failures that actually matter
+  and they are covered by the stop-band and clipping-introduced checks.
+foldability ...
+  24 soil groups over 4 folds: {0: 5, 1: 6, 2: 10, 3: 3}
+max |actual_ppm - target|/target across all 162: 0.0566%
+wrote data\processed_meta\golden_checks.json
+
+VERIFY FAILED:
+  - preprocessing WIDENED the e1 camera gap: -32.5% -> -31.9%
+  - preprocessing WIDENED the e2 camera gap: -17.3% -> -17.5%
+  - preprocessing WIDENED the e4 camera gap: -1.1% -> -1.1%
+  - e1 correlation with log D50 fell to -0.154 (< 0.70)
+--- verify FAILED in 353.8s
+
+!!! pipeline failures:
+    verify: exit 1
+EXIT=1

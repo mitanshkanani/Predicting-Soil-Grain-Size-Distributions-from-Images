@@ -1,0 +1,47 @@
+image rows: 127  distinct soils: 24  images per soil: 3-8
+soil rows: 24
+
+================ e1: Spearman with logD50 ================
+feature def    level        aggregation                 rho
+new            image        none (127 rows)          -0.154
+new            soil         mean over images         -0.236
+new            soil         / camera mean            -0.187
+new            image        / camera mean            -0.354
+old            image        none (127 rows)           0.675
+old            soil         mean over images          0.744
+old            soil         / camera mean             0.723
+old            image        / camera mean             0.754
+
+================ e8: same grid ================
+new            image        none                      0.735
+new            soil         mean over images          0.764
+new            soil         / camera mean             0.750
+old            image        none                      0.306
+old            soil         mean over images          0.553
+old            soil         / camera mean             0.330
+
+===== variance decomposition: camera vs soil, per definition =====
+ -- new definition --
+    e1   camera  53.9%   soil  22.9%
+    e4   camera   1.6%   soil  95.7%
+    e8   camera   1.2%   soil  94.3%
+    e16  camera  22.7%   soil  67.1%
+    sat  camera  70.9%   soil  46.8%
+ -- old definition --
+    e1   camera  29.2%   soil  63.1%
+    e4   camera  61.5%   soil  35.0%
+    e8   camera  76.1%   soil  24.1%
+    e16  camera  84.9%   soil  15.9%
+    sat  camera  70.6%   soil  47.1%
+
+===== gap arithmetic, stated explicitly =====
+  new: mean signed gap  -31.87%   mean ABS gap  32.37%   n Samsung>Motorola 1/23
+  old: mean signed gap  +63.70%   mean ABS gap  63.70%   n Samsung>Motorola 21/23
+
+  sign/magnitude check on the reported e1 pair -32.50 -> -31.87:
+Traceback (most recent call last):
+  File "<stdin>", line 85, in <module>
+  File "C:\Python314\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode character '\u2212' in position 5: character maps to <undefined>

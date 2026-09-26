@@ -1,0 +1,25 @@
+
+=== soilmask ==================================================
+  40/162
+  80/162
+  120/162
+  160/162
+
+mask_status: {'ok': 98, 'capped': 60, 'fallback_fullframe': 4}
+
+crop_area_fraction by camera -- the measured rim profiles predict Samsung and
+iPhone crop meaningfully while Motorola and H374 barely move. If the reverse
+happens, the mask is broken:
+                         crop_area_fraction  soil_fraction  frame_soil_fraction
+camera                                                                         
+Motorola Edge                        0.8513         0.9954               0.9212
+Motorola Edge 60 Fusion              0.8004         0.9833               0.9294
+Samsung A52                          0.7223         0.9545               0.7812
+iPhone 14                            0.8681         0.8328               0.7692
+iPhone 16                            0.8737         0.9998               0.9417
+
+min soil_fraction inside a crop: 0.3780
+images kept at full frame: 4
+--- soilmask ok in 175.8s
+
+pipeline complete

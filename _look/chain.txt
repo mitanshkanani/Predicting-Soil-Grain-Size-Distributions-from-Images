@@ -1,0 +1,42 @@
+
+=== resample ==================================================
+  40/162
+  80/162
+  120/162
+  160/162
+  162/162
+images written: 162
+icc conversions applied: 38 (expected 38)
+rotated to canonical frame: 57
+max clipping present in output: 0.017795
+max clipping INTRODUCED by resample: 0.00049100 (tolerance 1e-3)
+mean source clipping by camera (a property of the photo, not this pipeline):
+camera
+Motorola Edge             0.00305
+Motorola Edge 60 Fusion   0.00451
+Samsung A52               0.01635
+iPhone 14                 0.00646
+iPhone 16                 0.00067
+mean |luma change| from colour+geometry: 0.056 /255
+canonical canvas total: 233.3 Mpx
+--- resample ok in 86.1s
+
+=== manifests =================================================
+manifest_images.csv rows: 162 cols: 101
+manifest_samples.csv rows: 34
+train sites: NA (borehole codes) | test sites: ['Airbus', 'Audorfring', 'Kleinkummerfeld', 'Münster', 'Testfeld Lidl WHV']
+soil_family (advisory) distinct: 8
+camera_paired samples: 21 unpaired: ['Airbus BS10-4bis7', 'Airbus BS12-5bis8', 'Airbus BS6-3', 'Audorfring', 'H366', 'H374', 'H637', 'Kleinkummerfeld 18-3', 'Kleinkummerfeld 2-2', 'Kleinkummerfeld 2-3', 'Kleinkummerfeld 9-4', 'Münster_BS6_9,0-10m', 'Testfeld Lidl WHV']
+resample_direction: {'down': 107, 'identity': 55}
+mask_status: {'ok': 98, 'capped': 60, 'fallback_fullframe': 4}
+
+validation: all checks passed
+--- manifests ok in 0.4s
+
+=== audit =====================================================
+checks passed: 36/36
+all assertions passed
+--- audit ok in 1.3s
+
+pipeline complete
+EXIT=0

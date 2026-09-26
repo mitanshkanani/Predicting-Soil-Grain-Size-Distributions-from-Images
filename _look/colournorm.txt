@@ -1,0 +1,56 @@
+
+### normalisation = none
+  mean |train->test shift| over 11 features = 1.19 SD   worst = 2.30 SD
+    e1        shift= -0.99 SD   spearman(feature,logD50)= 0.738
+    e2        shift= -1.11 SD   spearman(feature,logD50)= 0.750
+    e4        shift= -1.26 SD   spearman(feature,logD50)= 0.729
+    e8        shift= -1.39 SD   spearman(feature,logD50)= 0.730
+    e16       shift= -1.40 SD   spearman(feature,logD50)= 0.463
+    e32       shift= -1.30 SD   spearman(feature,logD50)= 0.090
+    contrast  shift= -0.82 SD   spearman(feature,logD50)= 0.668
+    R         shift= -1.08 SD   spearman(feature,logD50)=-0.400
+    G         shift=  0.08 SD   spearman(feature,logD50)=-0.092
+    B         shift=  1.38 SD   spearman(feature,logD50)=-0.037
+    sat       shift= -2.30 SD   spearman(feature,logD50)=-0.399
+
+### normalisation = gw
+  mean |train->test shift| over 11 features = 0.98 SD   worst = 1.89 SD
+    e1        shift= -1.00 SD   spearman(feature,logD50)= 0.738
+    e2        shift= -1.12 SD   spearman(feature,logD50)= 0.756
+    e4        shift= -1.26 SD   spearman(feature,logD50)= 0.729
+    e8        shift= -1.39 SD   spearman(feature,logD50)= 0.730
+    e16       shift= -1.40 SD   spearman(feature,logD50)= 0.475
+    e32       shift= -1.30 SD   spearman(feature,logD50)= 0.091
+    contrast  shift= -0.84 SD   spearman(feature,logD50)= 0.677
+    R         shift=  0.25 SD   spearman(feature,logD50)=-0.349
+    G         shift=  0.24 SD   spearman(feature,logD50)=-0.317
+    B         shift=  0.13 SD   spearman(feature,logD50)=-0.207
+    sat       shift= -1.89 SD   spearman(feature,logD50)= 0.253
+
+### normalisation = gw+std
+  mean |train->test shift| over 11 features = 1.25 SD   worst = 2.04 SD
+    e1        shift= -1.52 SD   spearman(feature,logD50)= 0.716
+    e2        shift= -1.67 SD   spearman(feature,logD50)= 0.734
+    e4        shift= -1.90 SD   spearman(feature,logD50)= 0.668
+    e8        shift= -2.04 SD   spearman(feature,logD50)= 0.379
+    e16       shift= -1.81 SD   spearman(feature,logD50)= 0.013
+    e32       shift= -1.24 SD   spearman(feature,logD50)=-0.439
+    contrast  shift= -1.61 SD   spearman(feature,logD50)= 0.437
+    R         shift= -0.22 SD   spearman(feature,logD50)=-0.492
+    G         shift= -0.17 SD   spearman(feature,logD50)=-0.444
+    B         shift=  0.29 SD   spearman(feature,logD50)= 0.110
+    sat       shift= -1.30 SD   spearman(feature,logD50)=-0.502
+
+### normalisation = gw+std+sat
+  mean |train->test shift| over 11 features = 0.98 SD   worst = 1.57 SD
+    e1        shift= -1.03 SD   spearman(feature,logD50)= 0.750
+    e2        shift= -1.15 SD   spearman(feature,logD50)= 0.784
+    e4        shift= -1.32 SD   spearman(feature,logD50)= 0.750
+    e8        shift= -1.51 SD   spearman(feature,logD50)= 0.751
+    e16       shift= -1.57 SD   spearman(feature,logD50)= 0.600
+    e32       shift= -1.50 SD   spearman(feature,logD50)= 0.010
+    contrast  shift= -0.88 SD   spearman(feature,logD50)= 0.690
+    R         shift= -0.39 SD   spearman(feature,logD50)= 0.176
+    G         shift= -0.06 SD   spearman(feature,logD50)= 0.410
+    B         shift=  0.30 SD   spearman(feature,logD50)= 0.549
+    sat       shift= -1.11 SD   spearman(feature,logD50)=-0.698

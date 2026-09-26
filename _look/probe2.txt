@@ -1,0 +1,16 @@
+=== per-image FOV spread within a sample (scale consistency check) ===
+ train: samples=24
+ test: samples=11
+
+=== TEST SAMPLES ===
+Traceback (most recent call last):
+  File "<stdin>", line 57, in <module>
+  File "C:\Users\mitansh\AppData\Roaming\Python\Python314\site-packages\pandas\core\frame.py", line 4119, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\mitansh\AppData\Roaming\Python\Python314\site-packages\pandas\core\indexes\base.py", line 6212, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\mitansh\AppData\Roaming\Python\Python314\site-packages\pandas\core\indexes\base.py", line 6264, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['delivered_px', 'fov_mm'] not in index"

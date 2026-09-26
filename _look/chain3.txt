@@ -1,0 +1,125 @@
+
+=== soilmask ==================================================
+  40/162
+  80/162
+  120/162
+  160/162
+
+mask_status: {'ok': 155, 'fallback_fullframe': 5, 'capped': 2}
+
+crop_area_fraction by camera -- the measured rim profiles predict Samsung and
+iPhone crop meaningfully while Motorola and H374 barely move. If the reverse
+happens, the mask is broken:
+                         crop_area_fraction  soil_fraction  frame_soil_fraction
+camera                                                                         
+Motorola Edge                        0.8446         0.9957               0.9212
+Motorola Edge 60 Fusion              0.8046         0.9868               0.9294
+Samsung A52                          0.6997         0.9994               0.7812
+iPhone 14                            0.8930         0.8246               0.7692
+iPhone 16                            0.8737         0.9998               0.9417
+
+min soil_fraction inside a crop: 0.3780
+images kept at full frame: 5
+--- soilmask ok in 131.5s
+
+=== colour ====================================================
+rows: 162
+P3->sRGB conversions baked: 38 (expected 38 = 35 test + 3 H374)
+
+gray-world gains by camera (stored, not applied):
+                        gw_gain_r         gw_gain_g         gw_gain_b        
+                             mean     std      mean     std      mean     std
+camera                                                                       
+Motorola Edge              0.9421  0.0120    0.9991  0.0031    1.0627  0.0156
+Motorola Edge 60 Fusion    0.8978  0.0020    0.8815  0.0019    1.2637  0.0055
+Samsung A52                0.9054  0.0172    0.9765  0.0197    1.1320  0.0350
+iPhone 14                  0.9800  0.0159    0.9877  0.0044    1.0334  0.0214
+iPhone 16                  0.9736  0.0070    0.9940  0.0025    1.0334  0.0074
+
+REJECTED normalisations, with reasons (recorded in the audit):
+  - per-channel standardisation to fixed mean/SD -- measured destructive: Spearman(mid-scale texture energy, log D50) falls 0.73 -> 0.38
+  - any colour op aimed at the texture gap -- the same soil differs 63-124% between the two training cameras at matched scale, unchanged by colour ops; it is MTF/tone, not chroma
+  - CLAHE / histogram equalisation -- manufactures mid-scale contrast the sensor never recorded and breaks the monotone contrast<->grain-size link
+--- colour ok in 13.9s
+
+=== tiling ====================================================
+  101/162 images
+  materialised 40/162 images
+  materialised 80/162 images
+  materialised 120/162 images
+  materialised 160/162 images
+
+tiles manifest rows: 16228
+tile_size_px
+128    10247
+224     3245
+256     1976
+384      760
+
+materialised files written: 1976 (size 256px)
+  128px tile = 28.12 mm square
+  224px tile = 49.20 mm square
+  256px tile = 56.23 mm square
+  384px tile = 84.35 mm square
+
+smallest tile count comes from the cropped region; images yielding 0 tiles: 0
+edge dropped (mm, width) max: 75.12
+tiles with soil_fraction < 0.05 (pure tray, expected 0): 104
+tiles with null sample_id (expected 0): 0
+--- tiling ok in 32.8s
+
+=== manifests =================================================
+manifest_images.csv rows: 162 cols: 101
+manifest_samples.csv rows: 34
+train sites: NA (borehole codes) | test sites: ['Airbus', 'Audorfring', 'Kleinkummerfeld', 'Münster', 'Testfeld Lidl WHV']
+soil_family (advisory) distinct: 8
+camera_paired samples: 21 unpaired: ['Airbus BS10-4bis7', 'Airbus BS12-5bis8', 'Airbus BS6-3', 'Audorfring', 'H366', 'H374', 'H637', 'Kleinkummerfeld 18-3', 'Kleinkummerfeld 2-2', 'Kleinkummerfeld 2-3', 'Kleinkummerfeld 9-4', 'Münster_BS6_9,0-10m', 'Testfeld Lidl WHV']
+resample_direction: {'down': 107, 'identity': 55}
+mask_status: {'ok': 155, 'fallback_fullframe': 5, 'capped': 2}
+
+validation: all checks passed
+--- manifests ok in 0.2s
+
+=== audit =====================================================
+checks passed: 36/36
+all assertions passed
+--- audit ok in 1.0s
+
+=== verify ====================================================
+grating / units check ...
+  2 mm -> 9.105 px at 4.5525 px/mm; round-trip 2.0 mm  PASS
+paired-camera texture gap (raw vs canonical) ...
+feature  raw_gap_pct  canonical_gap_pct  raw_same_sign  reference_pct
+     e1       -32.50             -31.87             20           63.3
+     e2       -17.28             -17.52             20           90.3
+     e4        -1.12              -1.12             14          114.8
+     e8        22.09              22.12             18          124.2
+    e16        92.00              92.24             21          109.0
+    sat        74.35              74.30             21           73.9
+signal survival, aggregated to soil level ...
+  n_soils=24  Spearman noise floor 2.5/sqrt(n-1) = |rho| 0.521
+  band   lambda_px  usable  rho_raw  rho_can  perm_max  real
+  e1          2.50      NO   -0.200   -0.236     0.515    no
+  e2          5.01     yes    0.466    0.485     0.546    no
+  e4         10.02     yes    0.678    0.678     0.444   yes
+  e8         20.03     yes    0.764    0.764     0.432   yes
+  e16        40.06     yes    0.763    0.763     0.508   yes
+  strongest usable band: e8 rho +0.764 raw -> +0.764 canonical
+aliasing stop-band ...
+  6 images, median attenuation 36.37 dB (require >= 20 dB)
+resampler vs box averaging (reported, not asserted) ...
+  12 images, min 24.09 dB, median 29.3 dB
+  No threshold is asserted here on purpose. Lanczos deliberately retains
+  more high-frequency detail than box averaging, so the two disagreeing is
+  the expected behaviour, and any pass mark would be a number tuned until
+  it went green. Aliasing and ringing are the failures that actually matter
+  and they are covered by the stop-band and clipping-introduced checks.
+foldability ...
+  24 soil groups over 4 folds: {0: 5, 1: 6, 2: 10, 3: 3}
+max |actual_ppm - target|/target across all 162: 0.0566%
+wrote data\processed_meta\golden_checks.json
+
+verify: all information-preservation checks passed
+--- verify ok in 327.3s
+
+pipeline complete

@@ -1,0 +1,47 @@
+=== largest resolvable clast per sample (mm), all images normalized to 4.58 px/mm ===
+
+-- train --
+sample  n_img  biggest_clast_mm  median_large_mm
+  H038      8            112.18             8.20
+  H493      5            112.01             6.72
+  H666      4            109.73             6.78
+  F827      5            106.30             7.24
+  H037      6            105.81             8.08
+  G190      5            102.31             9.55
+  H405      6             98.43             9.55
+  H126      4             97.47             9.24
+  H030      7             96.04             8.63
+  H549      5             88.82             8.79
+  H668      7             71.83             8.27
+  H617      6             71.17             9.59
+  H616      5             70.06             8.42
+  H181      6             67.02            14.94
+  H637      3             62.87            15.04
+  H183      7             62.67            14.89
+  H615      5             59.10            17.02
+  H367      4             58.26            12.51
+  H516      4             58.17             9.17
+  H371      7             57.03            16.70
+  H368      5             56.53            13.19
+  H372      6             56.51            15.78
+  H374      3             42.01            14.05
+  H366      4             33.68            14.11
+   train: max clast over all samples = 112.2 mm
+
+-- test --
+              sample  n_img  biggest_clast_mm  median_large_mm
+   Airbus BS12-5bis8      3            128.28             5.45
+   Airbus BS10-4bis7      3            127.71             5.21
+ Kleinkummerfeld 9-4      3            125.93             8.05
+        Airbus BS6-3      3            124.17             6.59
+Kleinkummerfeld 18-3      3            121.75             7.11
+ Kleinkummerfeld 2-3      3            104.03             7.97
+ Kleinkummerfeld 2-2      3             79.37             8.66
+ Münster_BS6_9,0-10m      5             78.12            18.14
+          Audorfring      5             42.03            12.46
+   Testfeld Lidl WHV      4             32.80            19.20
+   test: max clast over all samples = 128.3 mm
+
+TRAIN largest clast range: 33.7 .. 112.2 mm
+TEST  largest clast range: 32.8 .. 128.3 mm
+test samples whose largest clast exceeds EVERYTHING in training: ['Airbus BS10-4bis7', 'Airbus BS12-5bis8', 'Airbus BS6-3', 'Kleinkummerfeld 18-3', 'Kleinkummerfeld 9-4']
