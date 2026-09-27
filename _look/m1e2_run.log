@@ -38,8 +38,10 @@ internal reference EMDs (lower is better):
 external ground truth on the public leaderboard (3 fixed soils of 10):
    172.699   Model1_E1 (16 features, ridge alpha chosen by LOGO-CV)
    102.372   mean-curve metric probe (ignores the images)
+    71.273   Model1_E2 (14 features, alpha chosen by CAM+RES)
 
-  -> the fitted model is +68.7% WORSE than ignoring the images.
+  -> E1 was +68.7% WORSE than ignoring the images.
+  -> E2 is  -30.4% relative to ignoring the images.
  >>> cell 8
 E1 artifacts from Model 1\Model 1 Experiment 1
   features_soil (34, 22), cv_families (24, 5), Submission_Model1_E1 (10, 12)
@@ -330,12 +332,12 @@ Munster row (E1 predicted flat-100, pure clay):  E2 now predicts 0.6, 1.7, 3.8, 
   Kleinkummerfeld 18-3       -> nearest training soil H617  at EMD  27.79
   Testfeld Lidl WHV          -> nearest training soil H637  at EMD  16.43
  >>> cell 41
-wrote Model 1\Model 1 Experiment 2\Experiment2.txt (144 lines)
+wrote Model 1\Model 1 Experiment 2\Experiment2.txt (166 lines)
 
 ==============================================================================
 EXPERIMENT RECORD -- Model1 / E2
 ==============================================================================
-generated_at   : 2026-09-27T13:05:15+00:00
+generated_at   : 2026-09-27T13:36:18+00:00
 name           : Model 1 / Experiment 2 - validation-instrument calibration
 context        : local on Windows-11-10.0.26200-SP0
 

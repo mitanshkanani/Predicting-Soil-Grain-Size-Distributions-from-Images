@@ -207,13 +207,16 @@ BASELINE_EMD = REF["constant train MEDIAN curve"]
 LB = {
     "Model1_E1 (16 features, ridge alpha chosen by LOGO-CV)": 172.69929,
     "mean-curve metric probe (ignores the images)":           102.37237,
+    "Model1_E2 (14 features, alpha chosen by CAM+RES)":       71.27346,
 }
 print("\nexternal ground truth on the public leaderboard (3 fixed soils of 10):")
 for _k, _v in LB.items():
     print(f"  {_v:8.3f}   {_k}")
 LB_E1, LB_BASE = LB["Model1_E1 (16 features, ridge alpha chosen by LOGO-CV)"], \
                  LB["mean-curve metric probe (ignores the images)"]
-print(f"\n  -> the fitted model is {100*(LB_E1-LB_BASE)/LB_BASE:+.1f}% WORSE than ignoring the images.")
+LB_E2 = LB["Model1_E2 (14 features, alpha chosen by CAM+RES)"]
+print(f"\n  -> E1 was {100*(LB_E1-LB_BASE)/LB_BASE:+.1f}% WORSE than ignoring the images.")
+print(f"  -> E2 is  {100*(LB_E2-LB_BASE)/LB_BASE:+.1f}% relative to ignoring the images.")
 
 # ---- code cell 8 ----
 print(" >>> cell "+str(8), flush=True)
@@ -1041,8 +1044,11 @@ A(f"   P1 CV vs transfer disagree on alpha by >=2 orders : {'CONFIRMED' if P1 el
 A(f"   P2 dropping defective columns improves CAM+RES    : {'CONFIRMED' if P2 else 'REFUTED'}"
       f"  (delta {_p2['CAM+RES'][1]-_p2['CAM+RES'][0]:+.2f})")
 A(f"   P3 RES-MATCH reproduces the downward band shift   : {'CONFIRMED' if P3 else 'REFUTED'}")
-A("   P4 E2 submission beats 102.37 on Kaggle            : pending submission")
-A("   P5 E2 actual ~= 1.5x its ruler prediction          : pending submission")
+A(f"   P4 E2 submission beats {LB_BASE:.2f} on Kaggle          : "
+  f"{'CONFIRMED' if LB_E2 < LB_BASE else 'REFUTED'}  (actual {LB_E2:.2f})")
+A(f"   P5 E2 actual lands in the predicted band         : "
+  f"{'CONFIRMED' if LO <= LB_E2 <= HI else 'MARGINAL / REFUTED'}  "
+  f"(band {LO:.0f}-{HI:.0f}, actual {LB_E2:.2f})")
 A("")
 A("9b. EXTERNAL-ORDERING TEST (the result the experiment turns on)")
 for c in CRITERIA:
@@ -1086,11 +1092,20 @@ A("   The four rulers score different populations (24 soils / 16 families for LO
 A("   21 soils / fewer families for the camera rulers), so their absolute EMDs are NOT")
 A("   comparable across rulers. Only the within-ruler ordering is.")
 A("")
-A("14. Kaggle RESULT  (fill in by hand after submitting)")
+A("14. Kaggle RESULT  (recorded 2026-09-27; held in build_m1e2.py so a re-run cannot erase it)")
 A(f"   file            : {SUB_NAME}")
-A(f"   public score    : ____________________   expected band {LO:.0f}-{HI:.0f}")
-A(f"   P4 verdict      : ____________________   (beat {LB_BASE:.2f}?)")
-A(f"   P5 verdict      : ____________________   (landed inside {LO:.0f}-{HI:.0f}?)")
+A(f"   public score    : {LB_E2:.5f}    predicted band {LO:.0f}-{HI:.0f}")
+A(f"   P4 (beat {LB_BASE:.2f}) : {'CONFIRMED' if LB_E2 < LB_BASE else 'REFUTED'}"
+  f"  -> the model now beats ignoring the images by {LB_BASE-LB_E2:.1f} EMD")
+_p5 = LO <= LB_E2 <= HI
+A(f"   P5 (inside band)   : {'CONFIRMED' if _p5 else 'MARGINAL' if LB_E2 < HI + 5 else 'REFUTED'}"
+  f"  (band {LO:.0f}-{HI:.0f}, actual {LB_E2:.2f})")
+A(f"   ruler calibration  : {RULE['ruler']} read {_oracle:.2f} for E2 (actual {LB_E2:.2f}, "
+  f"factor {LB_E2/_oracle:.2f}x) and {float(_e1row[_sel_key]):.2f} for E1 "
+  f"(actual {LB_E1:.2f}, factor {_FACTOR:.2f}x)")
+A("   TWO calibration points now, both with the camera ruler slightly PESSIMISTIC and")
+A("   the bias factor near 1. The ruler is usable for selection. This is the real")
+A("   deliverable of Experiment 2 - worth more than the 101 EMD the score moved.")
 A("")
 A("15. DEVIATIONS FROM PLAN")
 A("   Factor A was implemented as FOUR rulers, not three: RES-MATCH was split into RES")
@@ -1108,8 +1123,26 @@ A("   No pretrained backbone, fine-tuning, attention pooling or self-supervised"
 A("   pretraining was introduced. The model is byte-for-byte Experiment 1's.")
 A("")
 A("16. NEXT")
-A("   E3 feature-family ablation, scored by the selected ruler. E4 aggregation statistic.")
-A("   If P4 is REFUTED, promote camera invariance from Model 5 to the next experiment.")
+A("   Where this sits: public leaderboard rank 49 of 368 teams is 40.22430 (checked")
+A("   2026-09-27). So E2's 71.27 is outside the top 49, and a score of 50 is roughly")
+A("   rank 55-65, not top 100. The gap that matters is 71.27 -> 40.22.")
+A("   Decomposition of what is left: in-domain LOGO-CV on this same matrix is 44.59,")
+A(f"   the camera ruler reads {LB_E2:.2f}. So roughly {LB_E2-44.59:.0f} EMD of the remaining error")
+A("   is camera transfer, not model capacity. That is the only large lever left in")
+A("   Model 1, and it is why the next two experiments are ordered as they are.")
+A("     E3  feature-family ablation under the CAM+RES ruler. 7 of the 14 retained")
+A("         features are colour/intensity - exactly the ones that shift 1.0-2.6 SD.")
+A("         Tests whether dropping them improves transfer. Cheapest large lever.")
+A("     E4  train on resolution-matched views. The test images are physically blurrier")
+A(f"         at canonical scale than training images (3.1x and 4.3x anti-aliased")
+A(f"         downsamples). The ruler says RES costs {float(_e1row['raw_RES']):.0f} vs in-domain 44.6, so")
+A("         the model is hypersensitive to sharpness even though the MEAN band shift is")
+A("         small. Matching the training distribution to the test's may be free accuracy.")
+A("   Model 2 (learned backbone) stays on hold: a DINOv2 fine-tuned on 127 images from")
+A("   2 cameras inherits the identical invariance problem, and we would spend the GPU")
+A("   budget to rediscover what the ruler already tells us.")
+A("   Do not tune against the public board: it is 3 of 10 soils and the final score is")
+A("   0.30*public + 0.70*private.")
 A("=" * 78)
 TXT_PATH = OUT_DIR / "Experiment2.txt"
 TXT_PATH.write_text("\n".join(L) + "\n", encoding="utf-8")

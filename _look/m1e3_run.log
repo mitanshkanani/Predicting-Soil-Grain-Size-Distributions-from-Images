@@ -1,0 +1,339 @@
+ >>> cell 1
+Model1/E3  seed=20260928  context=local
+outputs -> Model 1\Model 1 Experiment 3
+ >>> cell 2
+  python       3.14.6
+  platform     Windows-11-10.0.26200-SP0
+  numpy        2.5.2
+  pandas       2.3.3
+  scipy        1.18.0
+  sklearn      1.9.0
+  matplotlib   3.11.1
+  Pillow       12.3.0
+ >>> cell 3
+INPUT_ROOT  C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images  (local)
+ >>> cell 4
+config_hash 010f44c36c74 | pipeline 1.0.0 | 4.552516 px/mm
+ >>> cell 5
+images (162, 103) | tiles@256 (1976, 21) | labels (24, 11)
+ >>> cell 6
+trivial baseline: ours 100.3132 | page formula 102.0200 | host publishes 100.31
+METRIC CONFIRMED (as in E2): the trapezoid matches the host's own number.
+ >>> cell 7
+  internal  trivial 9.09%/bin (no images)     100.31
+  internal  constant train MEAN curve          85.39
+  internal  constant train MEDIAN curve        82.62
+
+external ground truth (public LB, 3 fixed soils of 10):
+    172.699   Model1_E1  16 feats, alpha by LOGO-CV
+    102.372   mean-curve probe (ignores images)
+     71.273   Model1_E2  14 feats, alpha by CAM+RES
+     61.236   Model1_E3  12 feats, no frequency
+
+  E1 was +68.7% worse than ignoring the images;
+  E2 is -30.4%, E3 is -40.2%.
+  Trajectory: 172.7 -> 71.3 -> 61.2
+ >>> cell 8
+E2 artifacts from Model 1\Model 1 Experiment 2
+  features_soil (34, 20) | cv_families (24, 5) | submission (10, 12)
+ >>> cell 9
+==============================================================================
+WHAT HAS BEEN ESTABLISHED
+==============================================================================
+  E1  16 features, alpha 0.03 chosen by LOGO-CV   Kaggle  172.70   LOST to
+      a submission that ignores the images (102.37)
+  E2  14 features (2 degenerate columns dropped), alpha 30 chosen by CAM+RES
+      Kaggle   71.27   beat the no-image submission by 31.1 EMD
+------------------------------------------------------------------------------
+  ruler calibration so far:  CAM+RES 205.34 -> actual 172.70  (factor 0.84)
+                             CAM+RES  75.73 -> actual 71.27  (factor 0.94)
+  in-domain LOGO-CV on E2's matrix: 42.66   -> ~29 EMD of the
+  remaining error is camera/sharpness transfer, not model capacity.
+==============================================================================
+  E2's stated lever was WRONG. Colour was predicted to be the camera carrier;
+  reconnaissance shows the colour main effect is indistinguishable from zero and
+  the ABSOLUTE FREQUENCY features cost ~20 EMD. E3 tests that properly.
+ >>> cell 10
+texture core (5): e4, e8, e16, lum_sd, grad_mean
+frequency    (2): spec_centroid_cpm, dom_wavelength_mm   <- absolute spatial frequency
+colour       (7): R, G, B, sat, lum_p10, lum_p50, lum_p90
+
+2x2 cells:
+  A core                  5 features   freq=0 colour=0
+  B core+freq             7 features   freq=1 colour=0
+  C core+colour          12 features   freq=0 colour=1
+  D core+freq+colour     14 features   freq=1 colour=1
+
+Cell D is identical to Experiment 2's configuration, so E3 re-measures E2's
+result as a consistency check rather than assuming it.
+ >>> cell 11
+ >>> cell 12
+extracting base tile features for 1976 tiles ...
+  base features from Model 1\Model 1 Experiment 3\.cache: (1976, 17)
+ >>> cell 13
+  Motorola  -> iPhone 14    extra anti-alias sigma 0.8346 px = 0.1833 mm
+  Motorola  -> iPhone 16    extra anti-alias sigma 1.2033 px = 0.2643 mm
+  Samsung   -> iPhone 14    extra anti-alias sigma 0.8356 px = 0.1835 mm
+  Samsung   -> iPhone 16    extra anti-alias sigma 1.2039 px = 0.2645 mm
+extracting RES-MATCH (iPhone 14) for 1541 training tiles ...
+  res14 features from Model 1\Model 1 Experiment 3\.cache
+extracting RES-MATCH (iPhone 16) for 1541 training tiles ...
+  res16 features from Model 1\Model 1 Experiment 3\.cache
+ >>> cell 14
+image x camera x view rows: (381, 18)
+view   camera  
+real   Motorola    72
+       Samsung     55
+res14  Motorola    72
+       Samsung     55
+res16  Motorola    72
+       Samsung     55
+ >>> cell 15
+max absolute drift vs Experiment 2 across 14 features: 2.842e-14
+REPRODUCED: E3's soil matrix equals E2's. Every difference reported below is
+attributable to the feature set, and to nothing else.
+ >>> cell 16
+16 families over 24 soils (6 multi-member, 10 singletons), copied unchanged from E1/E2.
+ >>> cell 17
+CAM+RES conditions (4): Mot>Sam:res14, Mot>Sam:res16, Sam>Mot:res14, Sam>Mot:res16
+CAM conditions     (2): Mot>Sam:real, Sam>Mot:real
+
+PASS: 21 dual-camera soils. No evaluated soil, and no soil from its own
+family, appears in its own fit under ANY condition.
+NOTE: the conditions share the same 21 soils, so they are NOT independent. The
+bootstrap in section G resamples SOILS for exactly this reason.
+ >>> cell 18
+ >>> cell 19
+loaded nested results from cache (1eb2d7e4a9f9)
+
+nested cache key 1eb2d7e4a9f9
+  A core                 n=21  CAM+RES  56.98   CAM  49.27   LOGO  44.20
+  B core+freq            n=21  CAM+RES  82.92   CAM  63.87   LOGO  64.59
+  C core+colour          n=21  CAM+RES  51.87   CAM  52.26   LOGO  45.65
+  D core+freq+colour     n=21  CAM+RES  79.45   CAM  62.43   LOGO  63.25
+ >>> cell 20
+              cell  n_feat   alpha  LOGO-CV   CAM  Mot>Sam:res14  Mot>Sam:res16  Sam>Mot:res14  Sam>Mot:res16  CAM+RES
+            A core       5    0.03    43.97 49.24          56.96          60.01          47.64          55.53    55.04
+            A core       5    0.10    43.24 49.51          59.14          62.58          51.95          64.74    59.60
+            A core       5    0.30    42.69 50.20          61.77          65.69          56.22          71.51    63.80
+            A core       5    1.00    42.47 50.23          63.18          67.40          56.84          71.50    64.73
+            A core       5    3.00    42.51 49.63          60.84          64.61          54.91          66.68    61.76
+            A core       5   10.00    43.78 48.92          56.30          58.22          52.79          59.27    56.65
+            A core       5   30.00    50.05 52.98          57.15          57.90          54.72          57.26    56.76
+            A core       5  100.00    65.96 68.51          70.54          70.82          69.56          70.59    70.38
+            A core       5  300.00    79.89 81.87          82.63          82.77          82.31          82.71    82.61
+            A core       5 1000.00    88.34 89.48          89.73          89.78          89.64          89.77    89.73
+       B core+freq       7    0.03    48.64 46.20         137.45         198.77          68.16         120.42   131.20
+       B core+freq       7    0.10    46.24 47.32          94.58         172.29          70.91          81.25   104.76
+       B core+freq       7    0.30    44.87 49.96          78.45         146.27          72.00          82.70    94.86
+       B core+freq       7    1.00    44.23 51.00          79.04         120.91          71.83          82.72    88.63
+       B core+freq       7    3.00    44.05 51.13          80.04         113.61          70.74          81.89    86.57
+       B core+freq       7   10.00    45.09 51.38          78.16         109.89          69.89          79.82    84.44
+       B core+freq       7   30.00    51.32 54.24          76.24         102.77          71.37          78.96    82.34
+       B core+freq       7  100.00    67.07 66.36          78.56          90.85          74.42          79.98    80.95
+       B core+freq       7  300.00    80.43 81.03          85.46          88.48          81.78          82.94    84.66
+       B core+freq       7 1000.00    88.54 89.26          90.48          91.36          89.34          89.46    90.16
+     C core+colour      12    0.03    53.80 88.62          83.90          87.21          51.56          62.99    71.42
+     C core+colour      12    0.10    48.35 76.23          73.36          75.80          52.08          62.00    65.81
+     C core+colour      12    0.30    43.92 63.66          64.21          64.94          52.26          61.06    60.62
+     C core+colour      12    1.00    41.28 57.63          62.47          62.07          50.92          56.69    58.04
+     C core+colour      12    3.00    41.15 54.64          59.37          58.90          49.58          52.77    55.16
+     C core+colour      12   10.00    45.65 52.26          54.12          53.81          48.73          50.82    51.87
+     C core+colour      12   30.00    51.70 55.40          57.26          57.36          52.14          53.17    54.98
+     C core+colour      12  100.00    64.87 66.56          67.80          68.07          64.32          64.70    66.22
+     C core+colour      12  300.00    78.19 79.42          79.51          79.63          78.44          78.53    79.03
+     C core+colour      12 1000.00    87.41 88.25          88.17          88.21          87.90          87.91    88.05
+D core+freq+colour      14    0.03    55.44 85.23         155.15         199.51          69.73         152.07   144.11
+D core+freq+colour      14    0.10    50.17 74.24         130.05         175.12          70.76          75.60   112.89
+D core+freq+colour      14    0.30    45.52 62.30         103.23         151.76          75.41          77.34   101.93
+D core+freq+colour      14    1.00    42.66 53.82          91.04         123.79          73.42          78.19    91.61
+D core+freq+colour      14    3.00    42.71 50.31          86.08         114.16          68.59          75.14    85.99
+D core+freq+colour      14   10.00    46.93 49.23          79.80         111.41          65.85          70.56    81.91
+D core+freq+colour      14   30.00    52.62 52.85          75.73         105.18          65.82          69.78    79.13
+D core+freq+colour      14  100.00    65.80 64.02          77.53          89.97          69.08          72.01    77.15
+D core+freq+colour      14  300.00    78.68 78.40          82.65          86.58          77.63          78.27    81.28
+D core+freq+colour      14 1000.00    87.60 87.98          89.06          90.02          87.59          87.51    88.54
+ >>> cell 21
+best-alpha (ORACLE) reading per cell -- descriptive only, see section G:
+
+                    n_feat  freq  colour  oracle_alpha  LOGO-CV    CAM  CAM+RES
+cell                                                                           
+A core                   5     0       0          0.03    43.97  49.24    55.04
+B core+freq              7     1       0        100.00    67.07  66.36    80.95
+C core+colour           12     0       1         10.00    45.65  52.26    51.87
+D core+freq+colour      14     1       1        100.00    65.80  64.02    77.15
+
+CAM+RES by cell:
+  A core                  55.04
+  B core+freq             80.95
+  C core+colour           51.87
+  D core+freq+colour      77.15
+
+Reading down that column, the two cells WITHOUT frequency are the low ones.
+The inference on whether that is real is in section G.
+ >>> cell 22
+paired on 21 soils present in every cell, under every condition
+SIMPLE EFFECTS on the nested CAM+RES procedure score:
+
+  frequency | no colour                +25.94  CI [  +13.42,  +39.80]  wins  3/21  SIGNIFICANT (first is worse)
+  frequency | +colour                  +27.58  CI [  +16.87,  +38.89]  wins  3/21  SIGNIFICANT (first is worse)
+  colour | no frequency                 -5.11  CI [  -16.95,   +6.24]  wins  9/21  not distinguishable from zero
+  colour | +frequency                   -3.46  CI [  -12.18,   +4.68]  wins 11/21  not distinguishable from zero
+ >>> cell 23
+MAIN EFFECTS (soil-bootstrap on the average of the two simple effects):
+
+  MAIN EFFECT frequency     +26.76  CI [  +14.81,  +39.07]  SIGNIFICANT (first is worse)
+  MAIN EFFECT colour         -4.29  CI [  -14.64,   +5.27]  not distinguishable from zero
+
+  INTERACTION (freq effect at no-colour minus freq effect at +colour)    -1.64  CI [   -6.63,   +3.17]  not distinguishable from zero
+  ~0 means the two factors are additive, so the 2x2 was the right design.
+  P3 (no colour x frequency interaction): CONFIRMED
+ >>> cell 24
+frequency effect, condition by condition (positive = with-frequency is WORSE):
+
+  Mot>Sam:res14      n=21  mean  +21.01  CI [   +1.13,  +41.52]  significant
+  Mot>Sam:res16      n=21  mean  +38.53  CI [   +2.18,  +79.13]  significant
+  Sam>Mot:res14      n=21  mean  +23.37  CI [  +11.02,  +35.89]  significant
+  Sam>Mot:res16      n=21  mean  +20.85  CI [   +7.94,  +33.90]  significant
+
+P1 (frequency main effect significant in >= 3 of 4 conditions): 4/4 -> CONFIRMED
+P2 (colour main effect not distinguishable from zero): CONFIRMED   (CI [-14.64,+5.27])
+ >>> cell 25
+                   camera_shift_z  sharpness_shift_z  family
+spec_centroid_cpm           2.355              4.956    freq
+dom_wavelength_mm           2.389              3.668    freq
+grad_mean                   2.081              2.920    core
+lum_p90                     1.470              1.597  colour
+lum_sd                      0.944              1.101    core
+lum_p50                     1.553              0.746  colour
+lum_p10                     1.287              0.546  colour
+B                           1.164              0.420  colour
+G                           1.745              0.364  colour
+R                           2.000              0.341  colour
+e4                          0.435              0.146    core
+e16                         0.142              0.038    core
+sat                         1.567              0.036  colour
+e8                          0.181              0.027    core
+
+per-family means:
+        camera_shift_z  sharpness_shift_z
+family                                   
+colour           1.541              0.579
+core             0.756              0.846
+freq             2.372              4.312
+
+Frequency shifts 4.31 z under blur vs 0.85 for the core: the absolute-frequency
+features are reading the SAMPLING HISTORY, not the soil. That is the mechanism.
+Colour shifts 1.54 z under camera change, the largest of the three,
+yet section G says removing it changes the score by ~0. A feature can move a lot and
+still not be load-bearing once the model is regularised.
+ >>> cell 26
+   family  n  logo_cv_1  camres_best  camres_alpha  rho_vs_logD50  perm_control  beats_control
+     core  5     42.465       55.037          0.03          0.657         0.575           True
+frequency  2     97.721       94.035       1000.00          0.115         0.583          False
+   colour  7     50.070       82.133        100.00         -0.283         0.651          False
+
+Frequency alone scores LOGO-CV 97.7 against a no-image floor of 82.6 --
+it is WORSE than ignoring the images, and it does not beat its own shuffled-label
+control. So the honest statement is: the frequency features are near-useless AND
+highly fragile. E2's reconnaissance found dom_wavelength the single worst feature
+(rho 0.111 against a control of 0.595); this says the whole family is like that.
+ >>> cell 27
+nested procedure scores:
+
+  A core                 CAM+RES  56.98   CAM  49.27   max  56.98
+  B core+freq            CAM+RES  82.92   CAM  63.87   max  82.92
+  C core+colour          CAM+RES  51.87   CAM  52.26   max  52.26
+  D core+freq+colour     CAM+RES  79.45   CAM  62.43   max  79.45
+
+primary (best nested CAM+RES) : C core+colour
+minimax (best worst-case)     : C core+colour
+SELECTED CELL: C core+colour  (12 features) -- primary and minimax agree
+
+winner vs cell D (E2's configuration): -27 EMD CI [-39.47,-16.90]  wins 18/21
+label: A FINDING
+ >>> cell 28
+selected cell C core+colour: oracle alpha 10
+  oracle CAM+RES  51.87 | nested procedure CAM+RES  51.87
+  the submission uses the ORACLE alpha (it has to pick one); the nested number is
+  the honest estimate of what the whole procedure achieves.
+
+measured ruler bias: E1 172.70/205.34 = 0.84  |  E2 71.27/75.73 = 0.94
+expected public score for E3: 44 to 49
+  P4 (beat E2's 71.27)   : predicted YES
+  P5 (land in 44-49)   : to be checked after submitting
+ >>> cell 29
+predictions (10, 11)
+  columns pinned at 0/100: E1 59.1%  E2 10.0%  E3 13.6%  (real labels 27%)
+  mean EMD vs the train mean curve: 52.74
+ >>> cell 30
+  PASS  row count == 10
+  PASS  ids exactly match sample_submission order
+  PASS  columns exactly match
+  PASS  no missing values
+  PASS  values within [0,100]
+  PASS  cumulative / non-decreasing
+  PASS  200mm column == 100
+  PASS  no extra columns
+
+all 8 submission checks passed
+ >>> cell 31
+wrote Model 1\Model 1 Experiment 3\Submission_Model1_E3.csv  (2092 bytes)
+
+               sample_id   0.002  0.0063    0.02   0.063     0.2    0.63       2     6.3      20      63     200
+        HPC_Airbus BS6-3    3.51    7.05   16.92   38.76   67.08   83.51   88.24   94.21   98.06   99.91  100.00
+          HPC_Audorfring    0.96    2.17    5.26   14.94   36.72   56.13   67.95   85.54   96.51  100.00  100.00
+HPC_Muenster_BS6_9_0-10m    0.00    0.47    0.90    2.23    7.21   16.90   32.47   60.31   87.63   99.09  100.00
+   HPC_Airbus BS10-4bis7    3.57    7.16   17.19   39.61   69.28   86.59   91.12   96.38   98.86  100.00  100.00
+   HPC_Airbus BS12-5bis8    3.59    7.25   17.37   39.20   65.87   80.67   85.18   91.41   96.91   99.77  100.00
+ HPC_Kleinkummerfeld 2-2    2.98    5.91   14.07   33.08   62.12   82.42   90.17   99.31  100.00  100.00  100.00
+ HPC_Kleinkummerfeld 2-3    3.23    6.45   15.34   35.09   62.42   80.35   87.29   95.98   99.35  100.00  100.00
+ HPC_Kleinkummerfeld 9-4    3.54    7.10   16.99   38.63   66.27   82.39   87.39   93.81   97.98   99.91  100.00
+HPC_Kleinkummerfeld 18-3    3.23    6.49   15.58   36.32   65.25   83.24   88.88   95.80   98.92  100.00  100.00
+   HPC_Testfeld Lidl WHV    0.37    1.20    2.96    8.84   22.55   36.28   48.80   70.39   90.76   99.35  100.00
+ >>> cell 32
+the strip plot is the honest picture: 18 of 21 soils improve.
+A mean gain built on a minority of soils, or on a few extreme ones, is not robust.
+ >>> cell 33
+sample                      E2->E3 shift   note
+Airbus BS6-3                        7.67   
+Audorfring                         10.17   
+Münster_BS6_9,0-10m                15.84   E1 predicted this flat-100 (pure clay) for a rounded cobble gravel
+Airbus BS10-4bis7                   9.39   
+Airbus BS12-5bis8                   5.64   
+Kleinkummerfeld 2-2                15.60   
+Kleinkummerfeld 2-3                12.16   
+Kleinkummerfeld 9-4                 8.49   
+Kleinkummerfeld 18-3               10.44   
+Testfeld Lidl WHV                  11.12   
+
+Munster now: 0.0, 0.5, 0.9, 2.2, 7.2, 16.9, 32.5, 60.3, 87.6, 99.1, 100.0
+ >>> cell 34
+wrote Model 1\Model 1 Experiment 3\Experiment3.txt (197 lines)
+
+7. PAIRED EFFECTS  (negative = the first cell is BETTER)
+   frequency | no colour                +25.94  CI [  +13.42,  +39.80]  SIGNIFICANT (first is worse)
+   frequency | +colour                  +27.58  CI [  +16.87,  +38.89]  SIGNIFICANT (first is worse)
+   colour | no frequency                 -5.11  CI [  -16.95,   +6.24]  not distinguishable from zero
+   colour | +frequency                   -3.46  CI [  -12.18,   +4.68]  not distinguishable from zero
+   MAIN frequency                       +26.76  CI [  +14.81,  +39.07]  SIGNIFICANT (first is worse)
+   MAIN colour                           -4.29  CI [  -14.64,   +5.27]  not distinguishable from zero
+   interaction                           -1.64  CI [   -6.63,   +3.17]  not distinguishable from zero
+ >>> cell 35
+============================================================================
+Model1/E3  --  SUMMARY
+============================================================================
+  design                 : 2x2 {colour} x {frequency} on a 5-feature texture core
+  selected cell          : C core+colour (12 features)
+  nested CAM+RES         :  51.87   (E2's cell D: 79.45)
+  frequency main effect  : +26.76 CI [+14.81,+39.07]
+  colour main effect     : -4.29 CI [-14.64,+5.27]
+  alpha (oracle)         : 10
+  saturation             : 13.6%  (E2 10.0%, E1 59.1%, real 27%)
+  predicted external     : 44-49   E2 actual was 71.27
+  status of the gain     : FINDING
+============================================================================
+  submission : Submission_Model1_E3.csv
+  record     : Experiment3.txt
+  artifacts  : paired_effects.csv, factorial_grid.csv, mechanism_table.csv,
+               family_controls.csv, selection_rule.json, features_soil.csv

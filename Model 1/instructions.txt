@@ -66,23 +66,50 @@ it is a new MODEL.
 
 EXPERIMENTS THAT BELONG UNDER MODEL 1
 --------------------------------------------------------------------------------
-  E1  classical texture + colour + frequency features -> ridge -> 4 curve parameters
-  E2  VALIDATION-INSTRUMENT CALIBRATION (not a model experiment). Compares three
-      selection criteria -- LOGO-CV, held-out-camera transfer, and a resolution-matched
-      synthetic camera -- on Experiment 1's unchanged model. Deliverable is the
-      selection rule used by every experiment from E3 onward. See
-      `Model 1 Experiment 2/instructions.txt`.
-  E3  same model, feature-family ablation (which of texture / colour / frequency /
-      gradient actually carries the signal), scored by E2's validated criterion
-  E4  same model, different aggregation statistic (median vs mean vs trimmed, and
+RUN SO FAR
+--------------------------------------------------------------------------------
+  E1  16 classical features, ridge, alpha chosen by LOGO-CV.
+      Internal CV 35.98.  Kaggle 172.70 -- WORSE than ignoring the images.
+      Founding result: the cross-camera transfer diagnostic, and the discovery that
+      the LOGO-CV ruler ranks configurations backwards.
+
+  E2  INSTRUMENT CALIBRATION, not a model experiment. Compared LOGO-CV against three
+      camera-based rulers on E1's unchanged model. LOGO-CV was the only ruler that got
+      the one externally-checkable comparison wrong; every camera ruler saw the failure.
+      Selected CAM+RES. Dropped two structurally degenerate columns.
+      Kaggle 71.27, predicted band 64-71. Ruler bias measured at 0.84x and 0.94x.
+
+  E3  FEATURE-FAMILY FACTORIAL, the first ordinary experiment. 2x2 over {colour} x
+      {frequency} on a fixed 5-feature texture core, judged by CAM+RES with paired
+      soil-level bootstrap statistics across four evaluation conditions.
+      RESULT: the FREQUENCY main effect is +26.76 EMD, CI [+14.81, +39.07], significant
+      in 4 of 4 conditions. The COLOUR main effect is -4.29, CI [-14.64, +5.27], not
+      distinguishable from zero. Interaction -1.64, CI [-6.63, +3.17]: the factors are
+      additive, so the 2x2 was the right design.
+      This REFUTES E2's stated lever. Colour was predicted to be the camera carrier;
+      it moves most under camera change (1.54 z) yet is not load-bearing once the model
+      is regularised. The absolute-frequency features shift 4.31 z under blur and are
+      the actual fragility -- they read the resampling history, not the soil.
+      Selected cell C (core + colour, 12 features), alpha 10. Paired advantage over E2's
+      configuration -27.6 EMD, CI [-39.5, -16.9], wins 18/21 soils: a FINDING, not a bet.
+      Predicted Kaggle 44-49.
+
+PLANNED
+--------------------------------------------------------------------------------
+  E4  train on resolution-matched views -- the complementary fix to REMOVING
+      sharpness-sensitive features, kept separate so the two contributions stay
+      attributable to each other.
+  E5  blur-robust frequency surrogates: band RATIOS (e4/e8) instead of absolute spectral
+      position. Restores the physical interpretability lost in E3.
+  E6  same model, different aggregation statistic (median vs mean vs trimmed, and
       tile-level vs whole-image input)
-  E5  same model, different classical regressor (robust regression, gradient boosting)
-  E6  same model, camera-invariance treatment (with vs without gray-world gains,
+  E7  same model, different classical regressor (robust regression, gradient boosting)
+  E8  same model, camera-invariance treatment (with vs without gray-world gains,
       per-camera gain correction estimated label-free)
 
-The E2 slot was previously listed as the aggregation experiment; it moves to E4. The
-renumbering is recorded here so E1's `Experiment1.txt` section 18, which proposes the
-old ordering, is not read as a live plan.
+The E2 slot was previously listed as the aggregation experiment and E3 as the ablation;
+both moved. The renumbering is recorded here so E1's `Experiment1.txt` section 18 and
+E2's section 16, which propose the old ordering, are not read as live plans.
 
 Each experiment changes a LIMITED, recorded set of variables. Do not change
 backbone, loss, aggregation, output representation and optimiser simultaneously.
@@ -105,24 +132,30 @@ FIXED ACROSS ALL MODEL 1 EXPERIMENTS
               while the formula printed on the competition page (a left-endpoint sum)
               gives 102.02 and does NOT reproduce the host's own reference number. The
               page notation is loose; the trapezoid is what the grader computes.
-  Validation  PROVISIONAL PENDING E2. Leave-One-Family-Out over curve-distance families
-              (average linkage on pairwise label-curve EMD, cut at 14) -> 16 groups: 6
-              multi-member families + 10 singletons. Families are derived
-              deterministically from the label file by the notebook itself; the
-              preprocessing manifest's soil_family column is ID-prefix derived, is NOT
-              this grouping, and is
-              not used for validation.
-              E1 measured that LOGO-CV alone ranks ridge alpha in the OPPOSITE order to
-              the Kaggle score (CV improves monotonically as alpha falls; held-out-camera
-              transfer degrades). From E2 onward a configuration is not considered
-              selected until scored by E2's validated criterion. LOGO-CV is reported,
-              never used to choose.
+  Validation  ESTABLISHED BY E2, TESTED BY E3: the primary selection ruler is CAM+RES --
+      fit on one training camera's view of a soil, predict the other camera's view of
+      that same soil after an added anti-alias blur matched to the test cameras'
+      downsample factor, with the held-out soil's LABEL excluded from the fit. Evaluated
+      in both camera directions and against both test resolution targets (4 conditions),
+      and compared with PAIRED per-soil statistics under a bootstrap that resamples
+      SOILS, not observations.
+      Leave-One-Family-Out over curve-distance families (average linkage on pairwise
+      label-curve EMD, cut at 14) -> 16 groups is retained for REPORTING only and is
+      never used to choose: E1 proved it ranks ridge alpha backwards, and E2 showed it is
+      the only one of four rulers that gets the one externally-checkable comparison wrong.
+      Families are derived deterministically from the label file by the notebook itself;
+      the preprocessing manifest's soil_family column is ID-prefix derived, is NOT this
+      grouping, and is not used for validation.
+      Known bias: CAM+RES read 205.34 where E1 actually scored 172.70 (0.84x) and 75.73
+      where E2 actually scored 71.27 (0.94x). It errs slightly pessimistic. E3's blind
+      predictions P4-P6 test whether that calibration transfers from a regularisation
+      change to a feature-family change.
   Leakage     No random image-level split. The soil sample is the unit of
               supervision. Feature standardisation, the PCA curve basis and any
               feature selection are fitted on the training folds only.
-              Under CAM-HOLDOUT one extra rule applies and the notebook asserts it: the
-              held-out soil's LABEL must not appear in the fit, even though the same
-              soil exists under the other camera.
+              Under the CAM+RES ruler one extra rule applies and the notebook asserts it
+              for every evaluation condition: the held-out soil's LABEL must not appear
+              in the fit, even though the same soil exists under the other camera.
   Circularity No criterion may select on the same measurements it is judged by. Alpha
               is chosen inside each outer fold using only inner folds, so the reported
               number is the score of the PROCEDURE, not of the best alpha.
@@ -141,6 +174,7 @@ SUBMISSION NAMING
 --------------------------------------------------------------------------------
   Submission_Model1_E1.csv
   Submission_Model1_E2.csv
+  Submission_Model1_E3.csv
   Submission_Model1_E2.csv
   ...
 

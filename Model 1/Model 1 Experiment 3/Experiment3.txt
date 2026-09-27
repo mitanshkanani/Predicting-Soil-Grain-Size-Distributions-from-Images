@@ -1,0 +1,197 @@
+==============================================================================
+EXPERIMENT RECORD -- Model1 / E3
+==============================================================================
+generated_at   : 2026-09-27T15:19:01+00:00
+name           : Model 1 / Experiment 3 - feature-family factorial (colour x frequency)
+context        : local on Windows-11-10.0.26200-SP0
+
+0. TYPE OF EXPERIMENT
+   An ordinary Model 1 experiment. ONE variable changes: the feature set. The ruler,
+   output representation, estimator, aggregation, CV families, split and metric are
+   frozen at their Experiment 2 values.
+
+1. OBJECTIVE
+   Determine which feature families survive unseen capture devices, and whether
+   removing the ones that do not improves the external score. Secondary: the first
+   out-of-sample test of the CAM+RES ruler on a change of feature FAMILIES rather
+   than of regularisation strength.
+
+2. DESIGN
+   texture core (5): e4, e8, e16, lum_sd, grad_mean
+   frequency    (2): spec_centroid_cpm, dom_wavelength_mm
+   colour       (7): R, G, B, sat, lum_p10, lum_p50, lum_p90
+   2x2 factorial; neighbouring cells differ by exactly one family.
+     A core                  5 features  freq=0 colour=0
+     B core+freq             7 features  freq=1 colour=0
+     C core+colour          12 features  freq=0 colour=1
+     D core+freq+colour     14 features  freq=1 colour=1
+   Cell D is E2's exact configuration, so E3 re-measures E2 as a consistency check.
+
+3. HELD IDENTICAL TO E2
+   rank-3 PCA curve basis, closed-form ridge, clip/cummax/force-100,
+   two-stage tile->image->soil MEDIAN aggregation, 16 CV families, 24/10 split.
+   Reproducibility assertion: max feature drift vs E2 = 2.84e-14 (< 1e-6 required)
+
+4. METRIC
+   trapezoid EMD reproduces the host's published trivial baseline 100.3132 vs 100.31; the page's printed left-endpoint formula gives 102.02 and does not.
+
+5. EVALUATION CONDITIONS
+   CAM+RES  Mot>Sam:res14
+   CAM+RES  Mot>Sam:res16
+   CAM+RES  Sam>Mot:res14
+   CAM+RES  Sam>Mot:res16
+   CAM      Mot>Sam:real   (minimax check only)
+   CAM      Sam>Mot:real   (minimax check only)
+   paired on 21 dual-camera soils; conditions share soils so the bootstrap
+   resamples SOILS, not observations.
+
+6. NESTED PROCEDURE SCORES (the honest estimates)
+   A core                 CAM+RES  56.98   CAM  49.27   LOGO  44.20   alphas [0.03, 30.0]
+   B core+freq            CAM+RES  82.92   CAM  63.87   LOGO  64.59   alphas [30.0, 100.0]
+   C core+colour          CAM+RES  51.87   CAM  52.26   LOGO  45.65   alphas [10.0]
+   D core+freq+colour     CAM+RES  79.45   CAM  62.43   LOGO  63.25   alphas [30.0, 100.0]
+
+7. PAIRED EFFECTS  (negative = the first cell is BETTER)
+   frequency | no colour                +25.94  CI [  +13.42,  +39.80]  SIGNIFICANT (first is worse)
+   frequency | +colour                  +27.58  CI [  +16.87,  +38.89]  SIGNIFICANT (first is worse)
+   colour | no frequency                 -5.11  CI [  -16.95,   +6.24]  not distinguishable from zero
+   colour | +frequency                   -3.46  CI [  -12.18,   +4.68]  not distinguishable from zero
+   MAIN frequency                       +26.76  CI [  +14.81,  +39.07]  SIGNIFICANT (first is worse)
+   MAIN colour                           -4.29  CI [  -14.64,   +5.27]  not distinguishable from zero
+   interaction                           -1.64  CI [   -6.63,   +3.17]  not distinguishable from zero
+
+8. MECHANISM
+   core     camera shift 0.76 z   sharpness shift 0.85 z
+   freq     camera shift 2.37 z   sharpness shift 4.31 z
+   colour   camera shift 1.54 z   sharpness shift 0.58 z
+   Frequency is the family that reads the sampling history rather than the soil.
+   Colour moves most under camera change yet removing it changes the score by ~0:
+   a feature can move a lot and not be load-bearing once the model is regularised.
+
+9. FAMILY CONTROLS
+   core       n=5 LOGO-CV  42.47  best CAM+RES  55.04  rho +0.657 vs control 0.575 beats=Y
+   frequency  n=2 LOGO-CV  97.72  best CAM+RES  94.03  rho +0.115 vs control 0.583 beats=n
+   colour     n=7 LOGO-CV  50.07  best CAM+RES  82.13  rho -0.283 vs control 0.651 beats=n
+   no-image floor for comparison: 82.62
+
+10. SELECTION
+   primary (best nested CAM+RES) : C core+colour
+   minimax (best worst-case)     : C core+colour
+   agreed: True   primary and minimax agree
+   SELECTED                      : C core+colour (12 features)
+   winner vs cell D: -27.58 EMD CI [-39.47,-16.90]  -> A FINDING
+
+11. FINAL FIT
+   alpha (ORACLE over the full training set): 10
+   oracle CAM+RES 51.87 | nested procedure 51.87
+   The submission uses the oracle alpha; the nested number is the honest estimate.
+
+12. PREDICTION VERDICTS
+   P1 freq effect significant in >=3/4 conditions : CONFIRMED (4/4)   [confirmation, not blind]
+   P2 colour effect indistinguishable from zero   : CONFIRMED   [confirmation, not blind]
+   P3 no colour x frequency interaction           : CONFIRMED   [confirmation, not blind]
+   P4 E3 scores below E2's 71.27                  : CONFIRMED (actual 61.24)   [BLIND]
+   P5 lands in the band 44-49                   : REFUTED (actual 61.24, +12.4 above the band)   [BLIND]
+   P6 implied factor within 0.7-1.1               : REFUTED (actual factor 1.18)   [BLIND]
+
+12b. WHAT THE BLIND PREDICTIONS DECIDED ABOUT THE RULER
+   calibration across the three externally-measured configurations:
+     E1  CAM+RES 205.34 -> actual  172.70   factor 0.84
+     E2  CAM+RES  75.73 -> actual   71.27   factor 0.94
+     E3  CAM+RES   51.87 -> actual   61.24   factor 1.18
+   The factor has moved monotonically OUTWARD (0.84 -> 0.94 -> 1.18) and crossed the
+   P6 window. So the ruler's absolute calibration is NOT stable and P5/P6 are void.
+   The RANKING, however, held for the third consecutive time: the ruler put E1 worst,
+   E2 middle, E3 best, and so did Kaggle. P4 is the confirmation of that.
+   Marginal check: the ruler said E2->E3 was worth 23.9 EMD; it was worth 10.0. Its
+   optimism GROWS as configurations improve -- the signature of a proxy that models
+   the nuisances it was built from and goes blind once those are removed.
+   RULING, binding from E4 onward: CAM+RES is an ORDINAL instrument. It may rank
+   candidates. It must not forecast a score, and it must not choose between two
+   candidates whose readings differ by less than ~15 EMD.
+
+13. EXPECTATION
+   predicted band 44-49 from CAM+RES oracle 51.87 / nested 51.87, x measured factors 0.84-0.94
+   (oracle and nested agree to 2 dp for this cell: the nested procedure happened to
+    pick the same alpha in every fold, so there is no optimism gap here.)
+   CAVEAT: the factors come from E1 and E2, both of which changed REGULARISATION.
+   E3 changes which FAMILIES exist. P4-P6 exist precisely because that transfer is
+   untested. If P4 fails while P1-P3 hold, the ruler ranks but cannot predict, and it
+   must be demoted from a selection device to a diagnostic.
+
+14. SATURATION AND OUTPUT
+   columns pinned at 0/100: E1 59.1%  E2 10.0%  E3 13.6%  (real 27%)
+   mean EMD of predictions vs the train mean curve: 52.74
+
+15. Kaggle RESULT
+   file            : Submission_Model1_E3.csv
+   public score    : 61.23560    predicted band 44-49  -> band MISSED
+   P4 (beat 71.27)   : CONFIRMED   gain of 10.04 EMD
+   P5 (inside band)    : REFUTED   +12.4 EMD above
+   P6 (factor 0.7-1.1) : REFUTED   factor 1.18
+   private score   : ____________________   (blank until the competition closes)
+
+16. LIMITS
+   21 dual-camera soils. Four conditions raise the observation count but not
+   the number of independent soils, so the power ceiling is the 21.
+   This design cannot resolve differences much below ~15 EMD; the colour null is an
+   absence of evidence, not evidence of absence.
+   The synthetic resolution camera is a Gaussian approximation of a Lanczos prefilter.
+   Public leaderboard is 3 fixed soils of 10; final score is 0.30*public + 0.70*private.
+
+17. KNOWN COST OF THIS EXPERIMENT
+   Removing the frequency family removes dom_wavelength_mm, the only feature whose
+   units are millimetres of actual soil texture and the only one a soil scientist can
+   read directly. The model becomes less interpretable even if it scores better.
+   Restoring that with blur-robust band RATIOS (e4/e8) rather than absolute spectral
+   position is E5's job.
+
+18. DEVIATIONS FROM PLAN AND MID-RUN CORRECTIONS
+   (a) Reconnaissance (scratch/cal_exp3.py) ran BEFORE the plan was written and already
+       answers P1-P3, so those are labelled confirmations rather than blind tests.
+       Only P4-P6 are genuinely blind. Nothing was re-labelled after the fact.
+   (b) Factor A was implemented as SIX conditions (2 camera directions x 3 views), not
+       the four the plan listed: the two extra 'real' conditions are the CAM ruler used
+       by the minimax check. Strictly more informative; no model component changed.
+   (c) BUG FOUND AND FIXED, first run. The E5 reproduction assertion FAILED at a drift
+       of 2.18e+01. Cause: E3 was aggregating tile -> soil x camera -> soil (pooling
+       cameras before soils) while E1/E2 aggregate tile -> image -> soil (pooling all
+       images). The assertion caught a silent incompatibility that would have made
+       every number in this experiment meaningless. Fixed; drift is now 2.8e-14.
+   (d) BUG FOUND AND FIXED, before any conclusion was drawn. The first implementation
+       of the interaction test computed (frequency main effect) minus (colour main
+       effect), which is large by construction whenever one factor matters and the
+       other does not -- it is not an interaction. It reported P3 as REFUTED. The
+       correct 2x2 interaction, (B-A) - (D-C), gives -1.64 CI [-6.63,+3.17] and P3
+       CONFIRMED. The wrong version was never submitted anywhere; it was caught in
+       the run log. Recorded here because a corrected statistic must stay visible.
+   (e) A PLAN PREDICTION THAT DID NOT COME TRUE. model_plan_exp3.md section 5 said 'I
+       expect rule 3 to fire', i.e. that primary and minimax would disagree. They
+       agreed on cell C. The disagreement seen in reconnaissance (CAM preferring the
+       5-feature core) was an artefact of comparing each cell at its OWN oracle alpha;
+       under a common nested procedure it disappears. Lesson: oracle-alpha comparisons
+       across feature sets manufacture differences that are not there.
+   No pretrained backbone, fine-tuning, attention pooling, new features, or change to
+   aggregation, output representation or estimator was introduced.
+
+19. NEXT — REVISED AFTER THE SCORE, NOT AFTER THE INTERNAL RESULT
+   The scheduled E4 (train on resolution-matched views) is CANCELLED WITH EVIDENCE.
+   Once the frequency features are gone the model is already blur-insensitive: across
+   all nine train-blur x test-blur combinations the 12-feature set spans only 9.2 EMD,
+   and matched training buys at most 2.3 on the deployment column. E3's feature
+   selection absorbed the sharpness problem, so there is nothing left for E4 to fix.
+   The scheduled aggregation experiment is ALSO cancelled: adding mean, sd, p10 and
+   p90 summaries to the tile aggregation took LOGO-CV from 41.15 to 42.22. Quintupling
+   the feature space made it slightly worse.
+   A THIRD finding, and the most transferable one: training on a blurred view and
+   scoring with a ruler whose target is that same blurred view is CIRCULAR. Under that
+   comparison the frequency features E3 removed look HELPFUL (-3.08 EMD), a 34-EMD
+   artefact. Under held-out blur they still cost +35 to +58. Rule established:
+   a treatment that alters the training distribution must be evaluated on a held-out
+   level of the nuisance it targets.
+   E4 becomes: does the colour block earn its place? CAM prefers no colour (49.27 vs
+   52.26); CAM+RES prefers colour (51.87 vs 56.98). The gap is 5 EMD, inside the ~15
+   EMD the ordinal ruling in 12b says we may not resolve. That is precisely the
+   decision the ruler is now forbidden to make, so it goes to the leaderboard.
+   See model_plan_exp4.md.
+==============================================================================

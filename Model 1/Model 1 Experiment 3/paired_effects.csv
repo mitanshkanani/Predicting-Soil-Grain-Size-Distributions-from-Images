@@ -1,0 +1,8 @@
+effect,estimate,ci_lo,ci_hi,wins_first_better,n,significant,verdict
+frequency | no colour,25.93990087876929,13.421396167370457,39.7950872957291,3,21,True,SIGNIFICANT (first is worse)
+frequency | +colour,27.58112525866232,16.867633190581188,38.89326681394384,3,21,True,SIGNIFICANT (first is worse)
+colour | no frequency,-5.10622409499055,-16.950828754482487,6.235242013359131,9,21,False,not distinguishable from zero
+colour | +frequency,-3.464999715097522,-12.180647174340294,4.679269556875108,11,21,False,not distinguishable from zero
+MAIN frequency,26.760513068715802,14.808855734025196,39.074710765408874,4,21,True,SIGNIFICANT (first is worse)
+MAIN colour,-4.2856119050440356,-14.63616239197981,5.265935989114714,10,21,False,not distinguishable from zero
+interaction,-1.6412243798930284,-6.631661522493483,3.171273697355015,0,21,False,not distinguishable from zero

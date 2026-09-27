@@ -1,7 +1,7 @@
 ==============================================================================
 EXPERIMENT RECORD -- Model1 / E2
 ==============================================================================
-generated_at   : 2026-09-27T13:07:47+00:00
+generated_at   : 2026-09-27T13:36:18+00:00
 name           : Model 1 / Experiment 2 - validation-instrument calibration
 context        : local on Windows-11-10.0.26200-SP0
 
@@ -72,8 +72,8 @@ context        : local on Windows-11-10.0.26200-SP0
    P1 CV vs transfer disagree on alpha by >=2 orders : CONFIRMED
    P2 dropping defective columns improves CAM+RES    : CONFIRMED  (delta -6.75)
    P3 RES-MATCH reproduces the downward band shift   : REFUTED
-   P4 E2 submission beats 102.37 on Kaggle            : pending submission
-   P5 E2 actual ~= 1.5x its ruler prediction          : pending submission
+   P4 E2 submission beats 102.37 on Kaggle          : CONFIRMED  (actual 71.27)
+   P5 E2 actual lands in the predicted band         : MARGINAL / REFUTED  (band 64-71, actual 71.27)
 
 9b. EXTERNAL-ORDERING TEST (the result the experiment turns on)
    LOGO-CV  reads E1 config   36.48 vs no-image   82.62  ->  NOT CREDIBLE (ranks the loser first)
@@ -117,11 +117,15 @@ context        : local on Windows-11-10.0.26200-SP0
    21 soils / fewer families for the camera rulers), so their absolute EMDs are NOT
    comparable across rulers. Only the within-ruler ordering is.
 
-14. Kaggle RESULT  (fill in by hand after submitting)
+14. Kaggle RESULT  (recorded 2026-09-27; held in build_m1e2.py so a re-run cannot erase it)
    file            : Submission_Model1_E2.csv
-   public score    : ____________________   expected band 64-71
-   P4 verdict      : ____________________   (beat 102.37?)
-   P5 verdict      : ____________________   (landed inside 64-71?)
+   public score    : 71.27346    predicted band 64-71
+   P4 (beat 102.37) : CONFIRMED  -> the model now beats ignoring the images by 31.1 EMD
+   P5 (inside band)   : MARGINAL  (band 64-71, actual 71.27)
+   ruler calibration  : CAM+RES read 75.73 for E2 (actual 71.27, factor 0.94x) and 205.34 for E1 (actual 172.70, factor 0.84x)
+   TWO calibration points now, both with the camera ruler slightly PESSIMISTIC and
+   the bias factor near 1. The ruler is usable for selection. This is the real
+   deliverable of Experiment 2 - worth more than the 101 EMD the score moved.
 
 15. DEVIATIONS FROM PLAN
    Factor A was implemented as FOUR rulers, not three: RES-MATCH was split into RES
@@ -139,6 +143,24 @@ context        : local on Windows-11-10.0.26200-SP0
    pretraining was introduced. The model is byte-for-byte Experiment 1's.
 
 16. NEXT
-   E3 feature-family ablation, scored by the selected ruler. E4 aggregation statistic.
-   If P4 is REFUTED, promote camera invariance from Model 5 to the next experiment.
+   Where this sits: public leaderboard rank 49 of 368 teams is 40.22430 (checked
+   2026-09-27). So E2's 71.27 is outside the top 49, and a score of 50 is roughly
+   rank 55-65, not top 100. The gap that matters is 71.27 -> 40.22.
+   Decomposition of what is left: in-domain LOGO-CV on this same matrix is 44.59,
+   the camera ruler reads 71.27. So roughly 27 EMD of the remaining error
+   is camera transfer, not model capacity. That is the only large lever left in
+   Model 1, and it is why the next two experiments are ordered as they are.
+     E3  feature-family ablation under the CAM+RES ruler. 7 of the 14 retained
+         features are colour/intensity - exactly the ones that shift 1.0-2.6 SD.
+         Tests whether dropping them improves transfer. Cheapest large lever.
+     E4  train on resolution-matched views. The test images are physically blurrier
+         at canonical scale than training images (3.1x and 4.3x anti-aliased
+         downsamples). The ruler says RES costs 183 vs in-domain 44.6, so
+         the model is hypersensitive to sharpness even though the MEAN band shift is
+         small. Matching the training distribution to the test's may be free accuracy.
+   Model 2 (learned backbone) stays on hold: a DINOv2 fine-tuned on 127 images from
+   2 cameras inherits the identical invariance problem, and we would spend the GPU
+   budget to rediscover what the ruler already tells us.
+   Do not tune against the public board: it is 3 of 10 soils and the final score is
+   0.30*public + 0.70*private.
 ==============================================================================

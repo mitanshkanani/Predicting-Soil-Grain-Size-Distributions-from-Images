@@ -1,0 +1,28 @@
+{
+ "cell": "C core+colour",
+ "features": [
+  "e4",
+  "e8",
+  "e16",
+  "lum_sd",
+  "grad_mean",
+  "R",
+  "G",
+  "B",
+  "sat",
+  "lum_p10",
+  "lum_p50",
+  "lum_p90"
+ ],
+ "primary": "C core+colour",
+ "minimax": "C core+colour",
+ "agreed": true,
+ "note": "primary and minimax agree",
+ "bet": false,
+ "nested_camres": 51.87172546080288,
+ "vs_D_estimate": -27.58112525866232,
+ "vs_D_ci": [
+  -39.4680757223953,
+  -16.903706110031045
+ ]
+}

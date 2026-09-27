@@ -1,0 +1,130 @@
+MODEL 1 — EXPERIMENT 3 — FEATURE-FAMILY FACTORIAL (colour x frequency)
+================================================================================
+
+WHAT THIS EXPERIMENT REPRESENTS
+--------------------------------------------------------------------------------
+E3 is the first ordinary Model 1 experiment: ONE variable changes — the feature set —
+and it is judged by the selection ruler that Experiment 2 validated.
+
+It is also the first genuinely out-of-sample test of that ruler. E2 calibrated CAM+RES on
+a configuration change that altered regularisation strength and removed two degenerate
+columns. E3 changes which feature FAMILIES exist. That is a different axis, and the ruler
+may not transfer to it. Whether it does is the experiment's real question.
+
+WHAT IS FIXED
+--------------------------------------------------------------------------------
+Everything except the feature set:
+  ruler            CAM+RES, established by E2 (see Experiment2.txt section 10)
+  output           rank-3 PCA curve basis + clip/cummax/force-100 monotone projection
+  estimator        closed-form ridge, alpha swept 0.03 .. 1000, never hand-picked
+  aggregation      tile -> image median -> soil median (two-stage), soil_fraction >= 0.5
+  validation       the 16 curve-distance families, copied from E1/E2 unchanged
+  split            24 train / 10 test soils
+  metric           trapezoid EMD on log10 d, reconciled against the host's 100.31
+
+THE DESIGN — a 2 x 2 factorial on a fixed texture core
+--------------------------------------------------------------------------------
+  texture core (5)  e4, e8, e16, lum_sd, grad_mean
+  colour      (7)  R, G, B, sat, lum_p10, lum_p50, lum_p90
+  frequency   (2)  spec_centroid_cpm, dom_wavelength_mm
+
+  cell A  core                        5 features
+  cell B  core + frequency            7
+  cell C  core + colour              12
+  cell D  core + colour + frequency  14   <- identical to Experiment 2's configuration
+
+Neighbouring cells differ by exactly one family, so every simple effect is a
+single-variable comparison and the two main effects are orthogonal by construction.
+
+WHY THIS DESIGN AND NOT A BIG SWEEP
+--------------------------------------------------------------------------------
+A 64-combination family lattice would produce 64 numbers whose CIs are +-20 EMD wide,
+and the minimum of 64 noisy numbers is noise. Four pre-specified cells with paired
+statistics is a design; a sweep is a fishing trip.
+
+STATISTICAL PROTOCOL — the part that must not be shortcut
+--------------------------------------------------------------------------------
+1. PAIRED DIFFERENCES ARE THE PRIMARY STATISTIC. Every comparison is reported as the mean
+   per-soil difference with a bootstrap CI and a sign count ("wins 7/21"). Unpaired means
+   are secondary and labelled as such.
+2. FOUR EVALUATION CONDITIONS, not one: {Motorola->Samsung, Samsung->Motorola} x
+   {resolution target iPhone 14, iPhone 16}. This raises the observation count from 21 to
+   84.
+3. THE BOOTSTRAP RESAMPLES SOILS, NOT OBSERVATIONS. The four conditions share soils, so
+   resampling observations would treat correlated measurements as independent and produce
+   falsely tight CIs. This is the single most important implementation detail in the
+   notebook and it is asserted.
+4. A NULL IS REPORTED AS A NULL. Where a CI spans zero the record says "not
+   distinguishable from zero", never "no effect". Absence of evidence is not evidence of
+   absence, and this design cannot resolve effects much below ~15 EMD.
+5. MULTIPLICITY. 4 cells x 4 conditions = 16 simple-effect tests. All are reported, but
+   the conclusion rests on the two MAIN EFFECTS, each averaged over its two levels.
+6. CIRCULARITY. Alpha is chosen inside each outer fold; the headline number is the score
+   of the nested PROCEDURE, never of the best alpha.
+7. LEAKAGE. Scaler and curve basis refit per training fold. Under any camera ruler the
+   held-out soil's label never enters the fit even though that soil exists under the
+   other camera. Asserted in-cell.
+
+SELECTION RULE — stated before the run
+--------------------------------------------------------------------------------
+  1. primary pick = cell with the best nested CAM+RES procedure score
+  2. robustness check = minimax pick, the cell minimising its worst score across CAM and
+     CAM+RES. If primary and minimax disagree AND the paired CI between them excludes
+     zero, submit the cell with FEWER features.
+  3. if the winner's advantage over cell D (E2's configuration) has a CI spanning zero,
+     the submission is labelled "a bet, not a finding" in Experiment3.txt.
+
+PRE-REGISTERED PREDICTIONS
+--------------------------------------------------------------------------------
+Written before the run, from reconnaissance in scratch/cal_exp3.py. That reconnaissance
+already answered P1-P3, so THEY ARE CONFIRMATIONS, NOT BLIND TESTS, and passing them is
+worth little. Only P4-P6 are genuinely blind. This is stated here so the record cannot be
+read back as foresight.
+
+  P1  the frequency main effect under CAM+RES is positive (with-frequency worse) with a
+      soil-bootstrap CI excluding zero in >= 3 of 4 conditions        [confirmation]
+  P2  the colour main effect under CAM+RES has a CI spanning zero     [confirmation]
+  P3  no colour x frequency interaction (main effects ~additive)      [confirmation]
+  P4  the E3 submission scores below E2's 71.27                       [BLIND]
+  P5  the actual score lands in 45-52                                 [BLIND]
+  P6  the implied calibration factor stays within 0.7-1.1             [BLIND]
+
+P4-P6 are the experiment. P1-P3 are its plumbing.
+
+KNOWN COST OF THIS EXPERIMENT
+--------------------------------------------------------------------------------
+Removing the frequency features removes `dom_wavelength_mm`, the only feature whose units
+are millimetres of actual soil texture and therefore the only one a soil scientist can
+read directly. The model becomes less interpretable even if it scores better. Restoring
+that interpretability with blur-robust band RATIOS (e4/e8 rather than absolute spectral
+position) is E5's job, and the record says so rather than celebrating the simplification.
+
+WHAT WOULD CHANGE THE INTERPRETATION
+--------------------------------------------------------------------------------
+  - If P4 is REFUTED while P1-P3 hold, the ruler ranks feature-family changes but cannot
+    predict them. It must then be demoted from a selection device to a diagnostic, and
+    Model 2 must not be scoped against it.
+  - If the primary and minimax picks disagree, colour is doing something the CAM+RES
+    average hides, and E4 must test colour under a sharper blur model.
+  - If the frequency effect is significant under RES but not under CAM, the mechanism is
+    confirmed as a sharpness artefact rather than a soil-signal artefact, which is the
+    outcome reconnaissance predicts.
+
+LIMITS
+--------------------------------------------------------------------------------
+  - 21 dual-camera soils. The four conditions raise the observation count but not the
+    number of independent soils; the ceiling on this design's power is the 21.
+  - The synthetic resolution camera is a Gaussian approximation of a Lanczos prefilter.
+    If the real iPhone pipeline differs more sharply than that, colour's apparent
+    harmlessness is an artefact of the model, not a property of the features.
+  - Public leaderboard is 3 fixed soils of 10 and the final score is 0.30*public +
+    0.70*private. One submission is a weak measurement, not a verdict.
+
+RULES
+--------------------------------------------------------------------------------
+Never overwrite a previous experiment's results. E1's and E2's folders are read-only
+inputs to this experiment. A failed experiment is still research information.
+
+SUBMISSION NAMING
+  Submission_Model1_E3.csv   generated by the notebook, never renamed from a generic
+  file, IDs taken from manifest_samples.csv (submission_id, submission_row_order).
