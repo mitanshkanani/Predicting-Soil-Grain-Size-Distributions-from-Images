@@ -1,0 +1,103 @@
+MODEL 1 — EXPERIMENT 2 — VALIDATION-INSTRUMENT CALIBRATION
+================================================================================
+
+WHAT THIS EXPERIMENT REPRESENTS
+--------------------------------------------------------------------------------
+Experiment 2 does not test a model. It tests the RULER.
+
+Its single question is: which internal selection criterion predicts the external
+Kaggle score? Its deliverable is a selection rule, not an architecture.
+
+Everything about the model is held identical to Experiment 1 — the same rank-3 PCA
+curve basis, the same closed-form ridge, the same clip/cummax/force-100 monotone
+projection, the same tile->image->soil median aggregation, the same 16 curve-distance
+CV families, the same 24/10 split, the same EMD implementation. The only things that
+change are (a) how configurations are scored and (b) whether two defective columns are
+in the feature matrix.
+
+WHY IT EXISTS
+--------------------------------------------------------------------------------
+Experiment 1's protocol selected ridge alpha = 0.03 on the strength of an internal
+LOGO-CV score of 35.98. On Kaggle that configuration scored 172.70, against 102.37 for
+a submission that ignores the images entirely.
+
+The internal criterion did not merely overstate the result. Reconnaissance for this
+plan showed it ranks alpha in the OPPOSITE order to reality: CV improves monotonically
+as alpha falls, while held-out-camera transfer degrades. Any experiment scored by that
+criterion records noise, and a deep network fine-tuned against it would waste the GPU
+budget. The instrument has to be repaired before it is used again.
+
+This is also a declared, documented DEVIATION from the FIXED-protocol rule in
+`Model 1/instructions.txt`. See that file's amendment note. The rule was written before
+the rule was measured, and the measurement failed.
+
+WHAT IS BEING COMPARED
+--------------------------------------------------------------------------------
+Factor A — selection criterion:
+  LOGO-CV     Leave-one-family-out over the 16 curve-distance families. E1's rule.
+  CAM-HOLDOUT Fit on one training camera's view of a soil, predict the other
+              training camera's view of that same soil, with the soil's LABEL held
+              out of the fit. 21 soils are photographed by both Motorola Edge and
+              Samsung A52. Both directions, averaged.
+  RES-MATCH   As CAM-HOLDOUT, but the target is a SYNTHETIC camera built from the
+              training tiles by applying the extra anti-alias low-pass that the test
+              images received and the training images did not. This is the only
+              candidate whose shift magnitude can match the real train->test gap.
+
+Factor B — feature set:
+  16          Experiment 1's matrix exactly.
+  14          E1's matrix minus soil_fraction and crop_area_fraction.
+              soil_fraction is constant to four decimals across all 24 training soils
+              (std 0.00027) yet ranges to 0.829 on test, i.e. -63.9 SD. A zero-variance
+              training column cannot be learned, so its coefficient is a noise
+              amplifier that fires only out of domain. This is a DEFECT CORRECTION, not
+              a research variable, and it is reported separately for that reason.
+
+Swept, never hand-picked: alpha in {0.03, 0.1, 0.3, 1, 3, 10, 30, 100, 300, 1000}.
+
+CIRCULARITY CONTROL — the most important rule in this folder
+--------------------------------------------------------------------------------
+Selecting alpha on a criterion and then reporting that same criterion as the result is
+circular. Every number in the final comparison table must come from a NESTED protocol:
+for each outer held-out family, alpha is chosen using only the inner folds, and the
+outer family is scored once with the chosen alpha. We report the score of the
+PROCEDURE, never the score of the best alpha. A comparison of criteria is a comparison
+of procedures.
+
+PRE-REGISTERED PREDICTIONS
+--------------------------------------------------------------------------------
+Written before the run. The run may not edit this list.
+
+  P1  LOGO-CV and CAM-HOLDOUT disagree on the best alpha by >= 2 orders of magnitude.
+  P2  Dropping the two defective columns improves CAM-HOLDOUT transfer.
+  P3  RES-MATCH reproduces a downward shift in EVERY texture band, matching the
+      train->test pattern (e4 -0.66, e8 -0.58, e16 -0.38 SD).
+  P4  The E2 submission scores BELOW 102.37, i.e. beats ignoring the images.
+  P5  E2's actual score is ~1.5x its CAM-HOLDOUT prediction, matching E1's factor.
+
+WHAT WOULD JUSTIFY A DIFFERENT VERDICT
+--------------------------------------------------------------------------------
+If all three criteria rank alpha differently from the external evidence, the honest
+conclusion is that no internal criterion is adequate for this problem and Model 1 must
+be selected on camera-robustness priors (heavy regularisation, no colour features)
+rather than on any measured score. That is an acceptable outcome for E2 and must be
+written into Experiment2.txt as the result, not hidden.
+
+LIMITS OF THIS EXPERIMENT
+--------------------------------------------------------------------------------
+  * n = 21 soils and 2 camera pairs. A 6-EMD difference is not evidence. Report fold
+    spread and refuse to rank configurations whose intervals overlap.
+  * Motorola<->Samsung differ by 0.81 mean |z| on the same soil; training->test differs
+    by 2.63 SD on blue alone. CAM-HOLDOUT is a LOWER BOUND on the real gap. Measured
+    bias on E1's configuration: predicted 116.8, actual 172.70, factor 1.48x.
+  * The public leaderboard is a fixed 3 of 10 test soils. One submission is a weak
+    measurement. E2 gets one, and we will not read more into it than it carries.
+
+RULES
+--------------------------------------------------------------------------------
+Never overwrite a previous experiment's results. E1's folder is not modified beyond
+section 16 of its record. A failed experiment is still research information.
+
+SUBMISSION NAMING
+  Submission_Model1_E2.csv   generated by the notebook, never renamed from a generic
+  file, IDs taken from manifest_samples.csv.

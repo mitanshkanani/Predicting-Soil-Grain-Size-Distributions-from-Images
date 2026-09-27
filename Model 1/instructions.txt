@@ -8,9 +8,25 @@ preprocessed photographs using ONLY classical, hand-designed image features and 
 simple interpretable regressor.
 
 It is a baseline ladder, not a backbone. Every experiment inside Model 1 keeps the
-validation protocol, the output/curve representation, the loss/metric and the
-sample-level aggregation FIXED. The only thing that varies between experiments is
-the capacity or kind of the FEATURE SET fed to the head.
+output/curve representation, the loss/metric and the sample-level aggregation FIXED.
+The only thing that varies between ordinary experiments is the capacity or kind of the
+FEATURE SET fed to the head.
+
+AMENDMENT 2026-09-27 — the validation protocol was FIXED by declaration only, and E2 is
+the experiment that MEASURES it. The original third sentence read:
+
+  "Every experiment inside Model 1 keeps the validation protocol, the output/curve
+   representation, the loss/metric and the sample-level aggregation FIXED."
+
+That sentence is now split. Representation, metric and aggregation remain FIXED. The
+validation protocol was FIXED *as of E2*, because E2 is the calibration experiment that
+established it. Reason: E1's declared-constant protocol selected ridge alpha = 0.03 on
+an internal LOGO-CV score of 35.98, and that configuration scored 172.70 on Kaggle
+against 102.37 for a submission that ignores the images. Reconnaissance showed CV ranks
+alpha in the opposite order to reality — CV improves monotonically as alpha falls while
+held-out-camera transfer degrades. A constant-but-inverted ruler invalidates every
+experiment scored by it, so the rule was amended rather than obeyed. Evidence:
+`Model 1/Model 1 Experiment 1/Experiment1.txt` section 16 and `model_plan_exp2.md`.
 
 WHY WE ARE TESTING IT
 --------------------------------------------------------------------------------
@@ -51,13 +67,22 @@ it is a new MODEL.
 EXPERIMENTS THAT BELONG UNDER MODEL 1
 --------------------------------------------------------------------------------
   E1  classical texture + colour + frequency features -> ridge -> 4 curve parameters
-  E2  same model, different aggregation statistic (median vs mean vs trimmed, and
-      tile-level vs whole-image input)
+  E2  VALIDATION-INSTRUMENT CALIBRATION (not a model experiment). Compares three
+      selection criteria -- LOGO-CV, held-out-camera transfer, and a resolution-matched
+      synthetic camera -- on Experiment 1's unchanged model. Deliverable is the
+      selection rule used by every experiment from E3 onward. See
+      `Model 1 Experiment 2/instructions.txt`.
   E3  same model, feature-family ablation (which of texture / colour / frequency /
-      gradient actually carries the signal)
-  E4  same model, different classical regressor (robust regression, gradient boosting)
-  E5  same model, camera-invariance treatment (with vs without gray-world gains,
+      gradient actually carries the signal), scored by E2's validated criterion
+  E4  same model, different aggregation statistic (median vs mean vs trimmed, and
+      tile-level vs whole-image input)
+  E5  same model, different classical regressor (robust regression, gradient boosting)
+  E6  same model, camera-invariance treatment (with vs without gray-world gains,
       per-camera gain correction estimated label-free)
+
+The E2 slot was previously listed as the aggregation experiment; it moves to E4. The
+renumbering is recorded here so E1's `Experiment1.txt` section 18, which proposes the
+old ordering, is not read as a live plan.
 
 Each experiment changes a LIMITED, recorded set of variables. Do not change
 backbone, loss, aggregation, output representation and optimiser simultaneously.
@@ -76,25 +101,46 @@ FIXED ACROSS ALL MODEL 1 EXPERIMENTS
 --------------------------------------------------------------------------------
   Metric      log-weighted EMD, np.trapezoid(|F - Fhat|, log10(d)), mean over
               samples, official 0-500 scale. Verified against the published trivial
-              baseline (100.31).
-  Validation  Leave-One-Family-Out over curve-distance families (average linkage on
-              pairwise label-curve EMD, cut at 14) -> 16 groups: 6 multi-member
-              families + 10 singletons. Families are derived deterministically from
-              the label file by the notebook itself; the preprocessing manifest's
-              soil_family column is ID-prefix derived, is NOT this grouping, and is
+              baseline: our trapezoid gives 100.3132 against the host's stated 100.31,
+              while the formula printed on the competition page (a left-endpoint sum)
+              gives 102.02 and does NOT reproduce the host's own reference number. The
+              page notation is loose; the trapezoid is what the grader computes.
+  Validation  PROVISIONAL PENDING E2. Leave-One-Family-Out over curve-distance families
+              (average linkage on pairwise label-curve EMD, cut at 14) -> 16 groups: 6
+              multi-member families + 10 singletons. Families are derived
+              deterministically from the label file by the notebook itself; the
+              preprocessing manifest's soil_family column is ID-prefix derived, is NOT
+              this grouping, and is
               not used for validation.
+              E1 measured that LOGO-CV alone ranks ridge alpha in the OPPOSITE order to
+              the Kaggle score (CV improves monotonically as alpha falls; held-out-camera
+              transfer degrades). From E2 onward a configuration is not considered
+              selected until scored by E2's validated criterion. LOGO-CV is reported,
+              never used to choose.
   Leakage     No random image-level split. The soil sample is the unit of
               supervision. Feature standardisation, the PCA curve basis and any
               feature selection are fitted on the training folds only.
+              Under CAM-HOLDOUT one extra rule applies and the notebook asserts it: the
+              held-out soil's LABEL must not appear in the fit, even though the same
+              soil exists under the other camera.
+  Circularity No criterion may select on the same measurements it is judged by. Alpha
+              is chosen inside each outer fold using only inner folds, so the reported
+              number is the score of the PROCEDURE, not of the best alpha.
   Inputs      No camera, ppm, EXIF, ICC, site or sample-id features. Those identify
               the capture device or the sample and would inflate validation while
               being worthless on the private split.
+              Additionally, from E2 onward any column with near-zero variance across
+              the 24 training soils is excluded: such a column is unlearnable in-domain
+              yet free to move out-of-domain, so its fitted coefficient is a noise
+              amplifier. Measured case: soil_fraction, training std 0.00027, test
+              excursion -63.9 SD.
   Data        Verified processed outputs only. The notebook never re-runs
               preprocessing and never reads raw data/Training or data/Test.
 
 SUBMISSION NAMING
 --------------------------------------------------------------------------------
   Submission_Model1_E1.csv
+  Submission_Model1_E2.csv
   Submission_Model1_E2.csv
   ...
 

@@ -1,0 +1,386 @@
+ >>> cell 1
+Model1/E2  seed=20260927  context=local
+outputs -> Model 1\Model 1 Experiment 2
+ >>> cell 2
+  python       3.14.6
+  platform     Windows-11-10.0.26200-SP0
+  numpy        2.5.2
+  pandas       2.3.3
+  scipy        1.18.0
+  sklearn      1.9.0
+  matplotlib   3.11.1
+  Pillow       12.3.0
+ >>> cell 3
+INPUT_ROOT  C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images  (local)
+preprocess package imported from C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\preprocess\verify.py
+ >>> cell 4
+config_hash 010f44c36c74 | pipeline 1.0.0 | 4.552516 px/mm
+ >>> cell 5
+images (162, 103) | tiles@256 (1976, 21) | samples (34, 28)
+labels (24, 11) from manifest_samples.csv | 127 train / 35 test images
+ >>> cell 6
+trivial 9.09%-per-bin baseline, scored against the 24 training curves:
+  ours, trapezoid                 : 100.3132
+  page formula, left-endpoint sum : 102.0200
+  value the HOST publishes        : 100.3100
+
+CONFIRMED: our trapezoid matches the host's own reference number to 4 s.f. (100.3132 vs 100.31).
+The page's printed formula gives 102.02 and does NOT reproduce it. The page
+notation is a loose description of the integral; the grader integrates properly.
+
+max possible EMD (0 vs 100 everywhere): trapezoid 500.0 | page 500.0  -> both on the official 0-500 scale
+ >>> cell 7
+internal reference EMDs (lower is better):
+  trivial 9.09%/bin (no images)     100.31
+  constant train MEAN curve          85.39
+  constant train MEDIAN curve        82.62
+
+external ground truth on the public leaderboard (3 fixed soils of 10):
+   172.699   Model1_E1 (16 features, ridge alpha chosen by LOGO-CV)
+   102.372   mean-curve metric probe (ignores the images)
+
+  -> the fitted model is +68.7% WORSE than ignoring the images.
+ >>> cell 8
+E1 artifacts from Model 1\Model 1 Experiment 1
+  features_soil (34, 22), cv_families (24, 5), Submission_Model1_E1 (10, 12)
+E1 reported mean CV 35.98 | Kaggle 172.69929 | baseline Kaggle 102.37237
+ >>> cell 9
+==========================================================================
+WHY THIS EXPERIMENT EXISTS
+==========================================================================
+  what E1's LOGO-CV said the model was worth :   35.98 EMD
+  what the no-image baseline was worth       :  102.37 EMD  (internal)
+--------------------------------------------------------------------------
+  what E1 actually scored on Kaggle          :  172.70 EMD
+  what ignoring the images scored on Kaggle  :  102.37 EMD
+==========================================================================
+  the internal ruler was optimistic by +136.7 EMD, and it selected the
+  configuration that performed WORST of the two. A ruler that ranks backwards is
+  worse than no ruler: it converts a random choice into a confidently wrong one.
+ >>> cell 10
+                    train_sd  train_range  n_test_outside  excess_x_range  mean_shift_sd
+feature                                                                                 
+e4                    2.0450       6.6558               1          0.0032        -0.6604
+e8                    2.7522       7.4882               0          0.0000        -0.5816
+e16                   2.7941       7.3471               0          0.0000        -0.3826
+R                     9.1381      35.5262               0          0.0000         0.1926
+G                     8.5591      27.0357               3          0.3969         1.0942
+B                     7.1651      31.3209               8          0.7455         2.6310
+sat                   0.0655       0.2463               8          0.1765        -1.5015
+lum_p10              18.6047      63.3333               1          0.0895         0.9235
+lum_p50               6.3392      22.0000               3          0.6250         0.8234
+lum_p90               7.8966      31.3333               3          0.3431         1.3364
+lum_sd                7.8608      23.7150               0          0.0000        -0.2842
+grad_mean             4.7285      18.8954               0          0.0000         0.1342
+spec_centroid_cpm     0.0950       0.3099               0          0.0000        -0.6590
+dom_wavelength_mm     0.0252       0.0824               0          0.0000         0.6409
+soil_fraction         0.0003       0.0012               1        137.2056       -63.8701
+crop_area_fraction    0.0653       0.1619               8          0.8853         1.2548
+ >>> cell 11
+soil_fraction: training std 0.000267, training range 0.001240
+               test min  0.8286  -> -641.0 SD
+
+CONFIRMED DEFECT: a column with essentially zero training variance cannot be
+learned, yet it moves tens of SDs out of domain. Its fitted coefficient is a
+noise amplifier that fires only on the test set. Excluded in feature set 14.
+crop_area_fraction is the same failure in milder form (8/10 outside, 0.89 x range).
+ >>> cell 12
+family       n  cells outside  mean excess x range  max |shift| SD
+texture      3      1/30                      0.00            0.66
+colour       4     19/40                      0.33            2.63
+intensity    4      7/40                      0.26            1.34
+gradient     1      0/10                      0.00            0.13
+frequency    2      0/20                      0.00            0.66
+geometry     2      9/20                     69.05           63.87
+
+texture: 1 of 30 test cells fall outside the training envelope.
+Colour and geometry carry the entire out-of-domain condition.
+
+BUT the bands shift DOWNWARD together (e4 -0.66, e8 -0.58, e16 -0.38 SD), which is
+a systematic bias, not noise. Section E3 tests where that comes from.
+ >>> cell 13
+tile-level features: 14  (geometry is image-level, joined later)
+ >>> cell 14
+loaded own cache (1976 tiles)
+base tile features: (1976, 17)
+ >>> cell 15
+downsample factor native -> canonical, per camera:
+  Samsung A52                k = 1.000
+  Motorola Edge              k = 1.010
+  Motorola Edge 60 Fusion    k = 2.738
+  iPhone 14                  k = 3.062
+  iPhone 16                  k = 4.289
+
+extra anti-alias sigma to synthesise a test-camera sampling history, in canonical pixels:
+  Motorola  -> iPhone 14    sigma = 0.8346 px = 0.1833 mm
+  Samsung   -> iPhone 14    sigma = 0.8356 px = 0.1835 mm
+  Motorola  -> iPhone 16    sigma = 1.2033 px = 0.2643 mm
+  Samsung   -> iPhone 16    sigma = 1.2039 px = 0.2645 mm
+ >>> cell 16
+cached tile_features_res_256_010f44c36c74_iPhone14.csv
+cached tile_features_res_256_010f44c36c74_iPhone16.csv
+ >>> cell 17
+ >>> cell 18
+soil x camera x view rows: (486, 21)
+view   camera  
+real   Motorola    72
+       Samsung     55
+       iPhone      35
+res14  Motorola    72
+       Samsung     55
+       iPhone      35
+res16  Motorola    72
+       Samsung     55
+       iPhone      35
+ >>> cell 19
+max absolute drift vs Experiment 1 across 16 features: 5.684e-14
+REPRODUCED: E2's pooled soil matrix equals E1's. Any score difference below is
+attributable to the ruler and the two excluded columns, and to nothing else.
+ >>> cell 20
+16 families over 24 soils: 6 multi-member, 10 singletons
+copied from Experiment 1 unchanged - E2 does not re-derive the grouping.
+ >>> cell 21
+ >>> cell 22
+rulers: LOGO-CV, CAM, RES, CAM+RES
+  RES holds the device fixed and changes only the sampling history, so it
+  isolates the anti-alias effect from the colour-pipeline effect.
+ >>> cell 23
+soils photographed by BOTH training cameras: 21 of 24
+PASS: for every evaluated soil, no member of its own family - and therefore no
+copy of its label under either camera - enters the fit.
+families the camera ruler can actually score: 15 of 16 (21 soils). The other 1 families contribute no
+dual-camera soil, so CAM/RES/CAM+RES are measured on a smaller and easier subset
+than LOGO-CV. That is a real asymmetry between the rulers, not a detail.
+
+caveat recorded up front: the Motorola<->Samsung shift averages 0.81 mean |z| on
+the same soil, while train->test is 2.63 SD on blue alone. CAM is a LOWER BOUND.
+ >>> cell 24
+smoke test LOGO-CV/16: nested procedure mean EMD 38.35 (n=24), alphas chosen [0.03, 0.1]
+ >>> cell 25
+      feature_set   alpha  raw_LOGO-CV  raw_CAM  raw_RES  raw_CAM+RES
+       16 (as E1)    0.03        36.48   195.95   183.07       205.34
+       16 (as E1)    0.10        35.99   190.91   161.05       186.04
+       16 (as E1)    0.30        38.91   188.93   131.19       184.65
+       16 (as E1)    1.00        40.87   188.38   102.22       185.26
+       16 (as E1)    3.00        44.38   183.80    92.23       182.36
+       16 (as E1)   10.00        47.46   174.29    84.80       170.37
+       16 (as E1)   30.00        52.29   157.20    79.53       149.57
+       16 (as E1)  100.00        65.28   106.80    80.98        91.02
+       16 (as E1)  300.00        78.34    82.20    86.47        82.48
+       16 (as E1) 1000.00        87.44    88.29    91.32        88.98
+14 (defect-fixed)    0.03        55.44    59.68   179.04       155.15
+14 (defect-fixed)    0.10        50.17    54.54   150.30       130.05
+14 (defect-fixed)    0.30        45.52    50.93   118.03       103.23
+14 (defect-fixed)    1.00        42.66    50.08    97.06        91.04
+14 (defect-fixed)    3.00        42.71    47.36    93.44        86.08
+14 (defect-fixed)   10.00        46.93    45.82    87.59        79.80
+14 (defect-fixed)   30.00        52.62    50.99    83.32        75.73
+14 (defect-fixed)  100.00        65.80    63.45    83.55        77.53
+14 (defect-fixed)  300.00        78.68    78.05    87.58        82.65
+14 (defect-fixed) 1000.00        87.60    87.78    91.71        89.06
+ >>> cell 26
+feature set: 16 (exactly Experiment 1's)
+
+  alpha   LOGO-CV  cv rank   CAM+RES  tr rank   verdict
+   0.03     36.48        1    205.34        9   
+    0.1     35.99        0    186.04        8   CV prefers, transfer punishes
+    0.3     38.91        2    184.65        6   
+      1     40.87        3    185.26        7   
+      3     44.38        4    182.36        5   
+     10     47.46        5    170.37        4   
+     30     52.29        6    149.57        3   
+    100     65.28        7     91.02        2   
+    300     78.34        8     82.48        0   
+   1000     87.44        9     88.98        1   
+
+rank correlation between the two rulers over the alpha grid: -0.953
+CV's optimum: alpha = 0.1   |   CAM+RES's optimum: alpha = 300
+
+P1 (the two optima differ by >= 2 orders of magnitude; gap = 3.48 log10): CONFIRMED
+ >>> cell 27
+nested PROCEDURE scores (each row = a complete selection rule, not a tuned config):
+
+      feature_set   ruler  n  mean_EMD  median_EMD    sd    p90     alphas_used
+       16 (as E1) LOGO-CV 24     38.35       33.69 19.83  69.32        0.03,0.1
+       16 (as E1)     CAM 21     82.20       81.72 41.85 130.26           300.0
+       16 (as E1)     RES 23     82.12       81.62 32.08 122.01      30.0,100.0
+       16 (as E1) CAM+RES 21     82.48       80.68 29.14 111.55           300.0
+14 (defect-fixed) LOGO-CV 24     44.59       39.40 22.90  76.03         1.0,3.0
+14 (defect-fixed)     CAM 21     45.82       39.70 32.50  87.30            10.0
+14 (defect-fixed)     RES 23     89.17       85.75 35.66 132.96      30.0,100.0
+14 (defect-fixed) CAM+RES 21     84.31       79.84 51.22 169.69 10.0,30.0,100.0
+ >>> cell 28
+ruler      E1 config   no-image      ruler says   reality                 credible?
+LOGO-CV        36.48      82.62    model better model worse NO  <-- ranks the loser first
+CAM           195.95      93.60     model worse model worse                           YES
+RES           183.07      94.75     model worse model worse                           YES
+CAM+RES       205.34      93.60     model worse model worse                           YES
+
+external truth: E1 172.70 vs no-image 102.37 -> the model LOST.
+credible rulers : ['CAM', 'RES', 'CAM+RES']
+NOT credible    : ['LOGO-CV']
+
+This is the result the whole experiment turns on: LOGO-CV, the criterion
+Experiment 1 was selected with, is the ONLY ruler that gets the one checkable
+comparison wrong. Every camera-based ruler sees the failure.
+ >>> cell 29
+  LOGO-CV   best-with-16   35.99   best-with-14   42.66   delta   +6.67
+  CAM       best-with-16   82.20   best-with-14   45.82   delta  -36.38
+  RES       best-with-16   79.53   best-with-14   83.32   delta   +3.79
+  CAM+RES   best-with-16   82.48   best-with-14   75.73   delta   -6.75
+
+P2 (dropping the defective columns improves CAM+RES): CONFIRMED  delta -6.75 EMD
+ >>> cell 30
+mean shift in SD, train -> real test soils (observed):
+  e4 -0.66  e8 -0.58  e16 -0.38
+
+synthetic iPhone 14 applied to the SAME training soils (induced shift):
+  e4 -0.12  e8 +0.00  e16 +0.02
+
+synthetic iPhone 16 applied to the SAME training soils (induced shift):
+  e4 -0.27  e8 -0.02  e16 +0.02
+
+P3 (RES-MATCH shifts every texture band downward, matching the observed pattern): REFUTED
+If REFUTED the residual gap is the iPhone colour pipeline, not sampling, and the
+fix belongs in colour normalisation rather than in the resample stage.
+ >>> cell 31
+ >>> cell 32
+nested procedures, for reference (NOT a ranking across rulers):
+
+      feature_set   ruler  n  mean_EMD  median_EMD    sd    p90     alphas_used
+       16 (as E1) LOGO-CV 24     38.35       33.69 19.83  69.32        0.03,0.1
+       16 (as E1)     CAM 21     82.20       81.72 41.85 130.26           300.0
+       16 (as E1)     RES 23     82.12       81.62 32.08 122.01      30.0,100.0
+       16 (as E1) CAM+RES 21     82.48       80.68 29.14 111.55           300.0
+14 (defect-fixed) LOGO-CV 24     44.59       39.40 22.90  76.03         1.0,3.0
+14 (defect-fixed)     CAM 21     45.82       39.70 32.50  87.30            10.0
+14 (defect-fixed)     RES 23     89.17       85.75 35.66 132.96      30.0,100.0
+14 (defect-fixed) CAM+RES 21     84.31       79.84 51.22 169.69 10.0,30.0,100.0
+
+(1) rulers passing the external-ordering test : ['CAM', 'RES', 'CAM+RES']
+(2) deployment-fidelity preference order     : ['CAM+RES', 'CAM', 'RES', 'LOGO-CV']
+    SELECTED RULER                           : CAM+RES
+
+nested CAM+RES: 16 features 82.48, 14 features 84.31, folding sd 51.22 (n=21)
+the ruler CANNOT separate them (difference 1.84 << sd 51.22).
+feature set chosen on the structural rule instead: 14 (defect-fixed)
+
+wrote selection_rule.json
+ >>> cell 33
+alpha selected on all 24 training soils by CAM+RES: 30
+  NOTE: this is the ORACLE choice (best alpha over the whole training set), used
+  to produce the submission. The HONEST estimate of this procedure is the NESTED
+  score in PROC (84.31), which is worse precisely because it does
+  not get to peek. Do not quote the oracle number as a validation result.
+ >>> cell 34
+predictions (10, 11)
+  mean EMD of predictions vs the train mean curve :   43.93
+  fraction of predicted columns pinned at 0/100   :   10.0%   (E1 was 59.1%; real labels are 27%)
+ >>> cell 35
+E1's configuration, as read by CAM+RES: 205.34   actual Kaggle: 172.70   factor 0.84x
+
+selected configuration: oracle 75.73 | nested procedure 84.31 | no-image under this ruler 93.60
+
+ASSUMPTION being made: that the ruler's bias factor measured on E1 transfers to
+this configuration. One calibration point cannot establish that, so the expectation
+is given as a band, not a number.
+  expected public score for E2 : ~64 to ~71   (mid 67)
+  must beat the no-image probe :   102.37   <-- prediction P4
+  band entirely below it?      :   YES
+ >>> cell 36
+ >>> cell 37
+  PASS  row count == 10
+  PASS  ids exactly match sample_submission order
+  PASS  columns exactly match
+  PASS  no missing values
+  PASS  values within [0,100]
+  PASS  cumulative / non-decreasing
+  PASS  200mm column == 100
+  PASS  no extra columns
+
+all 8 submission checks passed
+ >>> cell 38
+wrote Model 1\Model 1 Experiment 2\Submission_Model1_E2.csv  (2141 bytes)
+
+               sample_id   0.002  0.0063    0.02   0.063     0.2    0.63       2     6.3      20      63     200
+        HPC_Airbus BS6-3    3.87    7.75   18.40   40.48   65.87   79.96   85.01   91.86   97.24   99.82  100.00
+          HPC_Audorfring    1.32    2.90    6.89   17.13   35.83   52.07   63.48   81.32   94.76   99.78  100.00
+HPC_Muenster_BS6_9_0-10m    0.65    1.74    3.82    7.70   13.58   22.79   37.53   63.55   88.69   99.18  100.00
+   HPC_Airbus BS10-4bis7    3.73    7.49   17.87   39.99   66.70   81.69   86.44   92.73   97.50   99.84  100.00
+   HPC_Airbus BS12-5bis8    3.94    7.91   18.77   40.98   65.35   78.26   83.01   89.85   96.38   99.71  100.00
+ HPC_Kleinkummerfeld 2-2    3.03    6.07   14.33   32.34   56.93   73.83   81.95   92.87   98.44  100.00  100.00
+ HPC_Kleinkummerfeld 2-3    3.29    6.60   15.61   34.68   58.63   73.90   81.04   90.98   97.45   99.93  100.00
+ HPC_Kleinkummerfeld 9-4    3.70    7.44   17.68   39.07   63.97   77.96   83.20   90.59   96.79   99.78  100.00
+HPC_Kleinkummerfeld 18-3    3.34    6.73   16.08   36.43   62.32   77.80   83.52   91.41   97.23   99.85  100.00
+   HPC_Testfeld Lidl WHV    1.11    2.61    6.16   14.48   27.61   39.53   51.12   71.25   90.87   99.32  100.00
+ >>> cell 39
+columns pinned at 0 or 100:  E1 59.1%   E2 10.0%   (real labels 27%)
+rows reaching 100 by the 0.63mm point:  E1 8/10   E2 0/10
+
+Munster row (E1 predicted flat-100, pure clay):  E2 now predicts 0.6, 1.7, 3.8, 7.7, 13.6, 22.8, 37.5, 63.5, 88.7, 99.2, 100.0
+ >>> cell 40
+  Airbus BS6-3               -> nearest training soil G190  at EMD  22.30
+  Audorfring                 -> nearest training soil H037  at EMD  19.48
+  Münster_BS6_9,0-10m        -> nearest training soil H371  at EMD  10.01
+  Airbus BS10-4bis7          -> nearest training soil G190  at EMD  20.41
+  Airbus BS12-5bis8          -> nearest training soil G190  at EMD  25.37
+  Kleinkummerfeld 2-2        -> nearest training soil H617  at EMD  30.88
+  Kleinkummerfeld 2-3        -> nearest training soil H617  at EMD  31.73
+  Kleinkummerfeld 9-4        -> nearest training soil G190  at EMD  27.30
+  Kleinkummerfeld 18-3       -> nearest training soil H617  at EMD  27.79
+  Testfeld Lidl WHV          -> nearest training soil H637  at EMD  16.43
+ >>> cell 41
+wrote Model 1\Model 1 Experiment 2\Experiment2.txt (144 lines)
+
+==============================================================================
+EXPERIMENT RECORD -- Model1 / E2
+==============================================================================
+generated_at   : 2026-09-27T13:05:15+00:00
+name           : Model 1 / Experiment 2 - validation-instrument calibration
+context        : local on Windows-11-10.0.26200-SP0
+
+0. TYPE OF EXPERIMENT
+   This is a MEASUREMENT-INSTRUMENT experiment, not a model experiment. It changes
+   no model component. It changes how configurations are scored, and removes two
+   structurally defective feature columns. It is a documented deviation from the
+   FIXED-protocol rule in Model 1/instructions.txt, which carries an amendment note.
+
+1. OBJECTIVE
+   Determine which internal selection criterion predicts the external Kaggle score.
+
+2. WHY
+   E1 chose alpha=0.03 on LOGO-CV 35.98 and scored 172.69929 on Kaggle, against
+   102.37237 for a submission that ignores the images. The ruler ranks backwards.
+
+3. METRIC RECONCILIATION
+   ours (trapezoid)      100.3132  vs host-published trivial baseline 100.31
+   page formula (left)   102.0200  -> does NOT reproduce the host's own number
+   CONCLUSION: trapezoid confirmed; no previously computed EMD needs redoing.
+
+4. HELD IDENTICAL TO E1
+   rank-3 PCA curve basis, closed-form ridge, clip/cummax/force-100
+   projection, tile->image->soil median, 16 CV families, 24/10 split, EMD code.
+   Reproducibility assertion: max feature drift vs E1 = 5.68e-14 (< 1e-6 required)
+
+5. FACTORS
+   A  selection ruler : LOGO-CV, CAM, RES, CAM+RES
+   B  feature set     : 16 (as E1), 14 (defect-fixed)
+   swept alpha       : [0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0]
+ >>> cell 42
+==========================================================================
+Model1/E2  --  INSTRUMENT CALIBRATION SUMMARY
+==========================================================================
+  model                  : unchanged from E1 (rank-3 PCA + ridge)
+  rulers compared        : LOGO-CV, CAM, RES, CAM+RES
+  feature sets compared  : 16 (as E1), 14 (defect-fixed)
+  selected ruler         : CAM+RES
+  selected features      : 14 (defect-fixed)
+  alpha (full fit)       : 30   (E1 chose 0.03)
+  nested procedure EMD   :   84.31
+  saturation on test     : 10.0%  (E1 59.1%)
+  expected public score  : ~67.3   must beat 102.37
+==========================================================================
+  submission : Submission_Model1_E2.csv
+  record     : Experiment2.txt
+  artifacts  : criterion_comparison.csv, alpha_sweep.csv,
+               feature_range_audit.csv, features_soil.csv, selection_rule.json

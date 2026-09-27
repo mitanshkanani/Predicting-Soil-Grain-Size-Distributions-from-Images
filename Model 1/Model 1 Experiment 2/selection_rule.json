@@ -1,0 +1,11 @@
+{
+ "ruler": "CAM+RES",
+ "feature_set": "14 (defect-fixed)",
+ "credible_rulers": [
+  "CAM",
+  "RES",
+  "CAM+RES"
+ ],
+ "nested_procedure_EMD": 84.31446352366352,
+ "basis": "external-ordering test then deployment fidelity; features by structural defect rule because the ruler cannot separate them"
+}

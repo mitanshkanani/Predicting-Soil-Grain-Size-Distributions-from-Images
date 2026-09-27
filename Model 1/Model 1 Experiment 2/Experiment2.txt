@@ -1,0 +1,144 @@
+==============================================================================
+EXPERIMENT RECORD -- Model1 / E2
+==============================================================================
+generated_at   : 2026-09-27T13:07:47+00:00
+name           : Model 1 / Experiment 2 - validation-instrument calibration
+context        : local on Windows-11-10.0.26200-SP0
+
+0. TYPE OF EXPERIMENT
+   This is a MEASUREMENT-INSTRUMENT experiment, not a model experiment. It changes
+   no model component. It changes how configurations are scored, and removes two
+   structurally defective feature columns. It is a documented deviation from the
+   FIXED-protocol rule in Model 1/instructions.txt, which carries an amendment note.
+
+1. OBJECTIVE
+   Determine which internal selection criterion predicts the external Kaggle score.
+
+2. WHY
+   E1 chose alpha=0.03 on LOGO-CV 35.98 and scored 172.69929 on Kaggle, against
+   102.37237 for a submission that ignores the images. The ruler ranks backwards.
+
+3. METRIC RECONCILIATION
+   ours (trapezoid)      100.3132  vs host-published trivial baseline 100.31
+   page formula (left)   102.0200  -> does NOT reproduce the host's own number
+   CONCLUSION: trapezoid confirmed; no previously computed EMD needs redoing.
+
+4. HELD IDENTICAL TO E1
+   rank-3 PCA curve basis, closed-form ridge, clip/cummax/force-100
+   projection, tile->image->soil median, 16 CV families, 24/10 split, EMD code.
+   Reproducibility assertion: max feature drift vs E1 = 5.68e-14 (< 1e-6 required)
+
+5. FACTORS
+   A  selection ruler : LOGO-CV, CAM, RES, CAM+RES
+   B  feature set     : 16 (as E1), 14 (defect-fixed)
+   swept alpha       : [0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0]
+
+6. FEATURE-SPACE AUDIT
+   e4                   train[   3.327,   9.983] outside 1/10  excess    0.00x  shift  -0.66 SD
+   e8                   train[   2.117,   9.606] outside 0/10  excess    0.00x  shift  -0.58 SD
+   e16                  train[   1.232,   8.579] outside 0/10  excess    0.00x  shift  -0.38 SD
+   R                    train[ 142.727, 178.253] outside 0/10  excess    0.00x  shift  +0.19 SD
+   G                    train[ 137.519, 164.555] outside 3/10  excess    0.40x  shift  +1.09 SD
+   B                    train[ 114.929, 146.250] outside 8/10  excess    0.75x  shift  +2.63 SD
+   sat                  train[   0.079,   0.326] outside 8/10  excess    0.18x  shift  -1.50 SD
+   lum_p10              train[  71.667, 135.000] outside 1/10  excess    0.09x  shift  +0.92 SD
+   lum_p50              train[ 140.000, 162.000] outside 3/10  excess    0.62x  shift  +0.82 SD
+   lum_p90              train[ 170.333, 201.667] outside 3/10  excess    0.34x  shift  +1.34 SD
+   lum_sd               train[  18.707,  42.422] outside 0/10  excess    0.00x  shift  -0.28 SD
+   grad_mean            train[  15.824,  34.719] outside 0/10  excess    0.00x  shift  +0.13 SD
+   spec_centroid_cpm    train[   1.785,   2.095] outside 0/10  excess    0.00x  shift  -0.66 SD
+   dom_wavelength_mm    train[   0.478,   0.560] outside 0/10  excess    0.00x  shift  +0.64 SD
+   soil_fraction        train[   0.999,   1.000] outside 1/10  excess  137.21x  shift -63.87 SD
+   crop_area_fraction   train[   0.695,   0.857] outside 8/10  excess    0.89x  shift  +1.25 SD
+   DEFECT: soil_fraction training std 0.000267, test excursion -63.9 SD.
+
+7. DERIVED SYNTHETIC CAMERA
+   Motorola  -> iPhone 14    extra anti-alias sigma 0.8346 px = 0.1833 mm
+   Samsung   -> iPhone 14    extra anti-alias sigma 0.8356 px = 0.1835 mm
+   Motorola  -> iPhone 16    extra anti-alias sigma 1.2033 px = 0.2643 mm
+   Samsung   -> iPhone 16    extra anti-alias sigma 1.2039 px = 0.2645 mm
+
+8. NESTED PROCEDURE SCORES
+   16 (as E1)         LOGO-CV  mean   38.35  median   33.69  sd  19.83  n=24  alphas 0.03,0.1
+   16 (as E1)         CAM      mean   82.20  median   81.72  sd  41.85  n=21  alphas 300.0
+   16 (as E1)         RES      mean   82.12  median   81.62  sd  32.08  n=23  alphas 30.0,100.0
+   16 (as E1)         CAM+RES  mean   82.48  median   80.68  sd  29.14  n=21  alphas 300.0
+   14 (defect-fixed)  LOGO-CV  mean   44.59  median   39.40  sd  22.90  n=24  alphas 1.0,3.0
+   14 (defect-fixed)  CAM      mean   45.82  median   39.70  sd  32.50  n=21  alphas 10.0
+   14 (defect-fixed)  RES      mean   89.17  median   85.75  sd  35.66  n=23  alphas 30.0,100.0
+   14 (defect-fixed)  CAM+RES  mean   84.31  median   79.84  sd  51.22  n=21  alphas 10.0,30.0,100.0
+
+9. PREDICTION VERDICTS (pre-registered in model_plan_exp2.md section 18)
+   P1 CV vs transfer disagree on alpha by >=2 orders : CONFIRMED
+   P2 dropping defective columns improves CAM+RES    : CONFIRMED  (delta -6.75)
+   P3 RES-MATCH reproduces the downward band shift   : REFUTED
+   P4 E2 submission beats 102.37 on Kaggle            : pending submission
+   P5 E2 actual ~= 1.5x its ruler prediction          : pending submission
+
+9b. EXTERNAL-ORDERING TEST (the result the experiment turns on)
+   LOGO-CV  reads E1 config   36.48 vs no-image   82.62  ->  NOT CREDIBLE (ranks the loser first)
+   CAM      reads E1 config  195.95 vs no-image   93.60  ->  CREDIBLE
+   RES      reads E1 config  183.07 vs no-image   94.75  ->  CREDIBLE
+   CAM+RES  reads E1 config  205.34 vs no-image   93.60  ->  CREDIBLE
+   reality: E1 172.70 vs no-image 102.37; the model LOST.
+   LOGO-CV - the ruler Experiment 1 was selected with - is the only one that gets
+   this wrong. Every camera-based ruler sees the failure.
+
+10. SELECTED RULE
+   ruler        : CAM+RES
+   basis        : external-ordering test then deployment fidelity; features by structural defect rule because the ruler cannot separate them
+   feature set  : 14 (defect-fixed)
+   alpha grid   : [0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0] (chosen inside each fold for the estimate)
+   full-fit alpha (ORACLE, used for the submission): 30   (E1's CV chose 0.03)
+   nested procedure EMD (the honest estimate)      : 84.31
+
+11. SATURATION
+   columns pinned at 0/100:  E1 59.1%  ->  E2 10.0%  (real labels 27%)
+
+12. EXPECTATION FOR THE KAGGLE SCORE
+   oracle 75.73 to nested 84.31, x E1's measured factor 0.84  ->  ~64 to ~71  (mid 67)
+   must beat 102.37 to satisfy P4; band below it: YES
+   CAVEAT: the factor is calibrated on ONE point and assumed to transfer across
+   configurations. That assumption is untested and is what P5 exists to check.
+
+13. LIMITS
+   dual-camera soils n=21; Motorola<->Samsung shift 0.81 |z| vs 2.63 SD to test.
+   CAM-family rulers are a LOWER BOUND on the real gap.
+     measured bias on E1's config: LOGO-CV  reads   36.48 against an actual 172.70  ->  factor 4.73x
+     measured bias on E1's config: CAM      reads  195.95 against an actual 172.70  ->  factor 0.88x
+     measured bias on E1's config: RES      reads  183.07 against an actual 172.70  ->  factor 0.94x
+     measured bias on E1's config: CAM+RES  reads  205.34 against an actual 172.70  ->  factor 0.84x
+   The camera rulers OVER-predicted the damage, i.e. they erred conservative. That is
+   the direction you want from a selection ruler, but it is one calibration point.
+   Public leaderboard is 3 fixed soils of 10; one submission is a weak measurement.
+   Selecting and reporting on the same ruler is circular; all section-8 numbers are
+   nested procedure scores, not best-alpha scores.
+   The four rulers score different populations (24 soils / 16 families for LOGO-CV vs
+   21 soils / fewer families for the camera rulers), so their absolute EMDs are NOT
+   comparable across rulers. Only the within-ruler ordering is.
+
+14. Kaggle RESULT  (fill in by hand after submitting)
+   file            : Submission_Model1_E2.csv
+   public score    : ____________________   expected band 64-71
+   P4 verdict      : ____________________   (beat 102.37?)
+   P5 verdict      : ____________________   (landed inside 64-71?)
+
+15. DEVIATIONS FROM PLAN
+   Factor A was implemented as FOUR rulers, not three: RES-MATCH was split into RES
+   (device held fixed, sampling changed) and CAM+RES (both), so the anti-alias effect
+   can be attributed separately from the colour-pipeline effect. Strictly more
+   informative than planned; no model component changed.
+   The plan's P5 assumed the ruler's bias factor was ~1.5x, taken from ad-hoc
+   reconnaissance that averaged both camera directions. Measured properly in-cell the
+   CAM+RES factor is 0.84x, so P5 is restated as 'land inside the
+   printed band' rather than as a multiplier. Restated before the submission, not after.
+   Ruler selection does NOT use the lowest nested score: the rulers evaluate different
+   populations, so cross-ruler EMDs are not comparable. Selection is by the external-
+   ordering test and then by deployment fidelity, stated in cell G1.
+   No pretrained backbone, fine-tuning, attention pooling or self-supervised
+   pretraining was introduced. The model is byte-for-byte Experiment 1's.
+
+16. NEXT
+   E3 feature-family ablation, scored by the selected ruler. E4 aggregation statistic.
+   If P4 is REFUTED, promote camera invariance from Model 5 to the next experiment.
+==============================================================================
