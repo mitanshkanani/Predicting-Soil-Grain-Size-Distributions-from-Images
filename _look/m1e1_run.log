@@ -1,0 +1,304 @@
+ >>> cell 1
+Model1/E1  seed=20260926  context=local
+outputs -> Model 1\Model 1 Experiment 1
+ >>> cell 2
+  python       3.14.6
+  platform     Windows-11-10.0.26200-SP0
+  numpy        2.5.2
+  pandas       2.3.3
+  scipy        1.18.0
+  sklearn      1.9.0
+  matplotlib   3.11.1
+  Pillow       12.3.0
+ >>> cell 3
+INPUT_ROOT  C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images  (local)
+preprocess package imported from C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\preprocess\verify.py
+ >>> cell 4
+config_hash 010f44c36c74 | pipeline 1.0.0 | target 4.552516 px/mm
+ >>> cell 6
+images (162, 103) | tiles@256px (1976, 21) | samples (34, 28)
+ >>> cell 7
+labels (24, 11) | D50 spans 0.0213 .. 6.126 mm (287x)
+ >>> cell 8
+reference EMD on the training set (lower is better):
+  official trivial baseline (9.09%/bin)         100.31
+  constant train MEAN curve (no images)          85.39
+  constant train MEDIAN curve (no images)        82.62
+
+metric self-check: measured 100.31 vs competition page 100.31
+ >>> cell 9
+tiles per image: min 4, median 12, max 15
+
+tiles per soil:
+split  test  train
+min    36.0   38.0
+50%    36.0   64.5
+max    75.0  105.0
+
+camera x split contingency -- THE CENTRAL CHALLENGE:
+split                    test  train
+camera                              
+Motorola Edge               0     69
+Motorola Edge 60 Fusion     0      3
+Samsung A52                 0     55
+iPhone 14                  14      0
+iPhone 16                  21      0
+
+  cameras only in TRAIN: ['Motorola Edge', 'Motorola Edge 60 Fusion', 'Samsung A52']
+  cameras only in TEST : ['iPhone 14', 'iPhone 16']
+  -> no test camera appears in training. Camera is perfectly confounded with the
+     split, so every internal estimate is optimistic relative to the private set.
+
+tiles below soil_fraction 0.5: 30 of 1976 (1.5%) -- excluded from aggregation, still in the manifest
+ >>> cell 10
+ >>> cell 11
+cut at curve-EMD 14.0: 16 groups from 24 soils
+  multi-member families: 6   singletons: 10
+  fold training size: [20, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23]
+
+sample_id cv_family   logD50   D50_mm  family_size
+     H366      FAM4    0.680    4.791            4
+     H367      FAM4    0.681    4.792            4
+     H371      FAM4    0.637    4.337            4
+     H372      FAM4    0.661    4.585            4
+     H038      FAM1    0.386    2.434            2
+     H637      FAM1    0.404    2.535            2
+     H493     FAM12   -1.227    0.059            2
+     H666     FAM12   -1.165    0.068            2
+     H181      FAM2    0.487    3.066            2
+     H183      FAM2    0.565    3.674            2
+     H368      FAM3    0.787    6.126            2
+     H615      FAM3    0.727    5.339            2
+     H549      FAM8   -1.523    0.030            2
+     H668      FAM8   -1.517    0.030            2
+     F827     FAM10   -1.671    0.021            1
+     H405     FAM11   -1.649    0.022            1
+     H030     FAM13   -0.985    0.103            1
+     H617     FAM14   -1.005    0.099            1
+     G190     FAM15   -1.207    0.062            1
+     H616     FAM16   -0.676    0.211            1
+     H374      FAM5    0.772    5.911            1
+     H516      FAM6    0.254    1.795            1
+     H037      FAM7   -0.089    0.814            1
+     H126      FAM9   -1.456    0.035            1
+
+Why singletons are correct: those soils genuinely have no near-twin, so there is
+nothing to leak. The grouping exists to break the dangerous pairs, e.g. H366~H371
+(curve distance 3.3) and H549~H668 (6.8), which plain leave-one-soil-out would leak.
+ >>> cell 13
+model feature count: 16   diagnostic-only: ['e1', 'e2']
+  texture    e4,e8,e16              DoG octave energies at 0.88/1.76/3.52 mm;
+                                   validated 94-96% soil variance, ~1.5% camera
+  colour     R,G,B,sat              channel means + saturation; mineralogy and
+                                   moisture co-vary with texture
+  intensity  lum_p10,p50,p90,sd     brightness distribution of the soil region
+  gradient   grad_mean              mean edge magnitude; finer grains pack more
+                                   edges per mm
+  frequency  spec_centroid_cpm,     dominant spatial wavelength, the most direct
+             dom_wavelength_mm      physical proxy for grain size available
+  geometry   soil_fraction,         capture/mask QUALITY, not soil properties.
+             crop_area_fraction     Kept, but flagged as a possible shortcut
+ >>> cell 14
+loaded 1976 cached tile features
+tile feature matrix: (1976, 23)
+ >>> cell 15
+tiles used 1946/1976  ->  162 image-rows  ->  34 soil rows (24 train / 10 test)
+
+soil-level feature medians, train vs test (a domain-shift readout):
+split                  test    train  shift_sd
+e4                    4.903    6.149     0.609
+e8                    3.170    4.163     0.361
+e16                   2.002    2.387     0.138
+R                   165.119  162.667    -0.268
+G                   163.460  151.255    -1.426
+B                   158.083  137.228    -2.911
+sat                   0.053    0.144     1.385
+lum_p10             129.042  100.292    -1.545
+lum_p50             160.750  155.125    -0.887
+lum_p90             195.500  186.583    -1.129
+lum_sd               27.537   32.787     0.668
+grad_mean            22.264   22.342     0.017
+spec_centroid_cpm     1.896    1.984     0.926
+dom_wavelength_mm     0.527    0.504    -0.927
+soil_fraction         1.000    1.000     0.000
+crop_area_fraction    0.874    0.840    -0.528
+
+features with |shift| > 1 SD are suspect: they may be encoding the camera,
+not the soil, and will move when the model meets the test devices.
+ >>> cell 16
+           feature  rho_logD50  perm_control  camera_var_pct  soil_var_pct  beats_control      used
+                e4       0.670         0.544          21.721        84.333           True     model
+                e8       0.743         0.541          32.677        90.012           True     model
+               e16       0.788         0.656          41.365        87.037           True     model
+                 R      -0.324         0.751          15.618        16.941          False     model
+                 G      -0.126         0.552          20.175        25.579          False     model
+                 B       0.097         0.484          96.432        48.666          False     model
+               sat      -0.305         0.599         203.977        75.649          False     model
+           lum_p10      -0.661         0.654          30.890        43.368           True     model
+           lum_p50       0.140         0.486           7.570        21.916          False     model
+           lum_p90       0.534         0.528          45.069        36.939           True     model
+            lum_sd       0.658         0.521          35.375        58.548           True     model
+         grad_mean      -0.331         0.696          19.365        28.273          False     model
+ spec_centroid_cpm       0.111         0.602          13.033         5.444          False     model
+ dom_wavelength_mm      -0.116         0.595          12.159         5.358          False     model
+     soil_fraction      -0.466         0.490          58.651        50.403          False     model
+crop_area_fraction       0.081         0.562          77.127        45.425          False     model
+                e1      -0.137         0.586          21.914        25.349          False diag-only
+                e2       0.455         0.603          17.493        52.457          False diag-only
+
+beats its shuffled-label control: 6/18
+model features that beat control: 6/16
+ >>> cell 17
+ >>> cell 19
+explained variance by PC: [0.914 0.062 0.014 0.007 0.002]
+PC1 vs log D50: spearman 0.971
+  rank-1: best possible mean EMD  20.51   (non-monotone rows 6/24)
+  rank-2: best possible mean EMD  10.98   (non-monotone rows 12/24)
+  rank-3: best possible mean EMD   7.35   (non-monotone rows 9/24)
+  rank-4: best possible mean EMD   4.35   (non-monotone rows 12/24)
+  rank-5: best possible mean EMD   2.65   (non-monotone rows 13/24)
+
+Experiment 1 targets rank-3, ceiling EMD 7.35.
+Scoring worse than this ceiling is a fitting failure; scoring near it means the
+features, not the output representation, are now the binding constraint.
+ >>> cell 20
+rank-3 reconstruction, no projection: 9/24 curves non-monotone
+  example F827  raw       [ 10.8  20.7  47.3  88.2 101.8  98.6 100.2 100.3  99.8 100.  100. ]
+                          projected [ 10.8  20.7  47.3  88.2 100.  100.  100.  100.  100.  100.  100. ]
+  projection restores validity everywhere; residual EMD of projecting the TRUE curves = 0.0000 (should be ~0)
+ >>> cell 22
+fold_family  n_val_soils     alpha  fold_mean_EMD  fold_max_EMD           val_soils
+       FAM1            2      0.03          29.49         41.59           H038 H637
+      FAM10            1      0.03           3.08          3.08                F827
+      FAM11            1      0.03          39.87         39.87                H405
+      FAM12            2      0.03          20.55         21.59           H493 H666
+      FAM13            1      0.03          29.14         29.14                H030
+      FAM14            1      0.03          39.62         39.62                H617
+      FAM15            1      0.03          19.54         19.54                G190
+      FAM16            1      0.03          64.59         64.59                H616
+       FAM2            2      0.03          17.90         19.42           H181 H183
+       FAM3            2      0.10          18.47         19.25           H368 H615
+       FAM4            4      0.03          57.84         63.54 H366 H367 H371 H372
+       FAM5            1      0.03          74.14         74.14                H374
+       FAM6            1      0.03          28.82         28.82                H516
+       FAM7            1      0.03          67.15         67.15                H037
+       FAM8            2      0.10          36.30         51.29           H549 H668
+       FAM9            1      0.03          29.11         29.11                H126
+ >>> cell 23
+  n soils                                      24.000
+  n folds (families)                           16.000
+  n features                                   16.000
+  mean CV EMD                                  35.976
+  median CV EMD                                29.315
+  std CV EMD                                   19.628
+  min / max fold                               3.08 / 74.14
+  pooled out-of-fold EMD                       36.326
+  baseline: constant median curve (no images)  82.618
+  improvement vs baseline                      46.643
+  ceiling: best possible rank-3                7.349
+  gap to ceiling                               28.627
+ >>> cell 24
+worst folds:
+fold_family  fold_mean_EMD val_soils
+       FAM5      74.139680      H374
+       FAM7      67.154484      H037
+      FAM16      64.589467      H616
+
+per-soil out-of-fold error, ranked:
+               EMD   D50_mm family
+sample_id                         
+F827          3.08     0.02  FAM10
+G190         19.54     0.06  FAM15
+H030         29.14     0.10  FAM13
+H037         67.15     0.81   FAM7
+H038         17.39     2.43   FAM1
+H126         29.11     0.03   FAM9
+H181         19.42     3.07   FAM2
+H183         16.37     3.67   FAM2
+ >>> cell 25
+paired soils available for the cross-camera test: 21
+                                                   comparison  mean_EMD
+      train on Motorola Edge, predict SAME camera (in-domain)     27.44
+train on Motorola Edge, predict Samsung A52 (camera transfer)    185.23
+                no-image constant median curve on these soils     86.71
+
+Interpretation: the gap between row 1 and row 2 is the cost of changing
+capture device with the soil held fixed. If it is large, the features are encoding
+camera appearance, and the iPhone-only test set will be scored optimistically by
+every within-training validation number we report.
+ >>> cell 27
+final model: ridge alpha=0.03, rank-3 basis, 16 features, fitted on all 24 soils
+
+predicted cumulative percentages:
+           sample_id   0.002  0.0063    0.02   0.063     0.2    0.63       2     6.3      20      63     200
+        Airbus BS6-3    1.26    2.91    9.05   34.84   91.25  100.00  100.00  100.00  100.00  100.00  100.00
+          Audorfring    0.00    0.00    0.00    2.00   50.66   85.30   87.52   91.00   95.93   99.60  100.00
+ Münster_BS6_9,0-10m  100.00  100.00  100.00  100.00  100.00  100.00  100.00  100.00  100.00  100.00  100.00
+   Airbus BS10-4bis7    0.20    1.01    5.34   31.45   95.60  100.00  100.00  100.00  100.00  100.00  100.00
+   Airbus BS12-5bis8    3.62    7.41   18.95   49.49   95.69  100.00  100.00  100.00  100.00  100.00  100.00
+ Kleinkummerfeld 2-2    0.00    0.00    0.00    0.00   57.54  100.00  100.00  100.00  100.00  100.00  100.00
+ Kleinkummerfeld 2-3    0.00    0.00    0.00    5.76   70.65  100.00  100.00  100.00  100.00  100.00  100.00
+ Kleinkummerfeld 9-4    1.50    3.37   10.14   36.83   93.02  100.00  100.00  100.00  100.00  100.00  100.00
+Kleinkummerfeld 18-3    0.03    0.62    4.23   28.50   91.00  100.00  100.00  100.00  100.00  100.00  100.00
+   Testfeld Lidl WHV    2.43    5.47   14.15   35.81   63.02   73.03   73.03   73.03   87.98   98.50  100.00
+ >>> cell 28
+ >>> cell 29
+  PASS  row count == 10
+  PASS  ids exactly match sample_submission order
+  PASS  columns exactly match
+  PASS  no missing values
+  PASS  values within [0,100]
+  PASS  cumulative / non-decreasing
+  PASS  200mm column == 100
+  PASS  no extra columns
+
+all submission checks passed
+ >>> cell 30
+wrote Model 1\Model 1 Experiment 1\Submission_Model1_E1.csv  (1473 bytes)
+               sample_id   0.002  0.0063    0.02   0.063     0.2    0.63       2     6.3      20      63     200
+        HPC_Airbus BS6-3    1.26    2.91    9.05   34.84   91.25  100.00  100.00  100.00  100.00  100.00  100.00
+          HPC_Audorfring    0.00    0.00    0.00    2.00   50.66   85.30   87.52   91.00   95.93   99.60  100.00
+HPC_Muenster_BS6_9_0-10m  100.00  100.00  100.00  100.00  100.00  100.00  100.00  100.00  100.00  100.00  100.00
+   HPC_Airbus BS10-4bis7    0.20    1.01    5.34   31.45   95.60  100.00  100.00  100.00  100.00  100.00  100.00
+   HPC_Airbus BS12-5bis8    3.62    7.41   18.95   49.49   95.69  100.00  100.00  100.00  100.00  100.00  100.00
+ HPC_Kleinkummerfeld 2-2    0.00    0.00    0.00    0.00   57.54  100.00  100.00  100.00  100.00  100.00  100.00
+ HPC_Kleinkummerfeld 2-3    0.00    0.00    0.00    5.76   70.65  100.00  100.00  100.00  100.00  100.00  100.00
+ HPC_Kleinkummerfeld 9-4    1.50    3.37   10.14   36.83   93.02  100.00  100.00  100.00  100.00  100.00  100.00
+HPC_Kleinkummerfeld 18-3    0.03    0.62    4.23   28.50   91.00  100.00  100.00  100.00  100.00  100.00  100.00
+   HPC_Testfeld Lidl WHV    2.43    5.47   14.15   35.81   63.02   73.03   73.03   73.03   87.98   98.50  100.00
+ >>> cell 31
+wrote Model 1\Model 1 Experiment 1\Experiment1.txt  (181 lines)
+
+17. DEVIATIONS FROM PLAN
+   None. No pretrained backbone, fine-tuning, attention pooling or self-supervised
+   pretraining was introduced. Any future deviation must be recorded here.
+
+18. NEXT EXPERIMENT HYPOTHESIS
+   The cross-camera collapse outranks any tuning question: the pipeline does not
+   transfer between capture devices. Candidate follow-ups, in priority order:
+     E2  aggregation statistic (mean vs median vs IQR-augmented) and tile vs whole-image
+     E3  feature-family ablation: which of texture / colour / frequency / geometry pays
+     E4  camera-invariance: gray-world applied vs not, and per-camera gain
+         normalisation of the texture bands, scored by the cross-camera test
+     E5  regressor: robust (Huber) and gradient boosting on the identical matrix
+   A new Model number is justified only by a change of kind, not of feature set.
+==============================================================================
+ >>> cell 32
+==========================================================================
+Model1 / E1  --  EXPERIMENT SUMMARY
+==========================================================================
+  Feature approach : 16 classical features, 13+ named families, no learned representation
+  Model            : Ridge (closed form), alpha=0.03
+  Output           : mean curve + 3 PCA coefficients, projected monotone
+  CV strategy      : leave-one-family-out, 16 curve-distance families
+  Mean EMD         :    35.98
+  Median EMD       :    29.31
+  Std EMD          :    19.63
+  Baseline EMD     :    82.62   (constant median curve, ignores images)
+  Difference       :   +46.64  (+56.5% vs baseline)
+  Representation ceiling (rank 3) : 7.35
+==========================================================================
+  submission : Submission_Model1_E1.csv
+  record     : Experiment1.txt
+  artifacts  : cv_families.csv, features_soil.csv, cv_results.csv,
+               feature_inspection.csv, tile_features.csv

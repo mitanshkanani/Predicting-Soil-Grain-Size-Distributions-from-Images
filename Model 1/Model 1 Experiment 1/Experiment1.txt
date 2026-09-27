@@ -1,0 +1,237 @@
+==============================================================================
+EXPERIMENT RECORD -- Model1 / E1
+==============================================================================
+generated_at        : 2026-09-26T17:54:29+00:00
+experiment_name     : Model 1 / Experiment 1 - classical image-signal baseline
+run_context         : local on Windows-11-10.0.26200-SP0
+
+1. OBJECTIVE
+   Measure how much grain-size information is recoverable from the preprocessed
+   images using ONLY classical hand-designed features and a ridge regressor.
+   No pretrained backbone, no fine-tuning, no attention, no self-supervision.
+
+2. HYPOTHESIS
+   A zero-learned-representation model beats the no-image floor of 82.62 EMD,
+   with the well-sampled bands e4/e8/e16 carrying most of the signal.
+   Evidence going in: rho(e8,logD50)=0.764, rho(e16,logD50)=0.763 at soil level,
+   both beating their shuffled-label control and ~94-96% soil variance.
+
+3. DATASET USED  (verified preprocessing outputs; raw data never read)
+   config_hash          : 010f44c36c74
+   pipeline_version     : 1.0.0
+   target_ppm           : 4.552516 px/mm (derived, not typed)
+   tiles                : 1976 materialised @ 256px = 56.23 mm square
+   tiles used in agg    : 1946 (soil_fraction >= 0.5); 30 excluded
+   images               : 162 (train 127 / test 35)
+   soils                : 24 train, 10 test
+   input_root           : C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images
+
+4. FEATURE FAMILIES  (each documented; no undocumented features)
+   texture DoG bands     : e4, e8, e16
+   colour                : R, G, B, sat
+   intensity             : lum_p10, lum_p50, lum_p90, lum_sd
+   gradient/edge         : grad_mean
+   frequency/scale       : spec_centroid_cpm, dom_wavelength_mm
+   capture geometry      : soil_fraction, crop_area_fraction
+   MODEL FEATURE COUNT  : 16
+   excluded as sub-Nyquist: ['e1', 'e2'] (centre wavelength 2.5px / 5.0px at this scale)
+   banned as inputs       : camera, native_ppm, effective_ppm, exif_*, icc_*, site,
+                            sample_id, cv_group  -- they identify the device or the sample
+
+5. FEATURE INSPECTION  (soil-level Spearman vs log D50, with shuffled-label control)
+   ------------------------------------------------------------------------
+   e16                  rho=  0.7878 control=  0.6557 beats=Y cam_ratio=41.3651
+   e8                   rho=  0.7426 control=  0.5409 beats=Y cam_ratio=32.6768
+   e4                   rho=  0.6704 control=  0.5443 beats=Y cam_ratio=21.7211
+   lum_p10              rho= -0.6609 control=  0.6539 beats=Y cam_ratio=30.8901
+   lum_sd               rho=  0.6583 control=  0.5209 beats=Y cam_ratio=35.3753
+   lum_p90              rho=  0.5336 control=  0.5279 beats=Y cam_ratio=45.0686
+   soil_fraction        rho= -0.4659 control=  0.4901 beats=n cam_ratio=58.6512
+   e2                   rho=  0.4548 control=  0.6035 beats=n cam_ratio=17.4928
+   grad_mean            rho= -0.3313 control=  0.6957 beats=n cam_ratio=19.3646
+   R                    rho= -0.3243 control=  0.7513 beats=n cam_ratio=15.6183
+   sat                  rho= -0.3052 control=  0.5991 beats=n cam_ratio=203.9775
+   lum_p50              rho=  0.1400 control=  0.4861 beats=n cam_ratio=7.5705
+   e1                   rho= -0.1365 control=  0.5861 beats=n cam_ratio=21.9141
+   G                    rho= -0.1261 control=  0.5522 beats=n cam_ratio=20.1753
+   dom_wavelength_mm    rho= -0.1157 control=  0.5948 beats=n cam_ratio=12.1594
+   spec_centroid_cpm    rho=  0.1113 control=  0.6017 beats=n cam_ratio=13.0330
+   B                    rho=  0.0965 control=  0.4843 beats=n cam_ratio=96.4320
+   crop_area_fraction   rho=  0.0809 control=  0.5617 beats=n cam_ratio=77.1270
+
+6. AGGREGATION
+   tile -> image -> soil. Median at both levels (robust to excluded low-soil tiles);
+   mean and IQR also computed and retained for a later aggregation experiment.
+   one feature row per soil sample; the SOIL is the unit of supervision.
+
+7. TARGET / OUTPUT REPRESENTATION
+   mean curve + 3 PCA coefficients = 3 predicted numbers,
+   then clip to [0,100], cummax for monotonicity, force 100 at 200mm.
+   Rationale: PC1 alone holds 91.4% of label variance and correlates 0.995 with
+   log D50, so 11 free outputs is unlearnable at n=24. Rank-3 ceiling
+   is EMD 7.35. Direct 11-output monotone is deferred to a later
+   controlled comparison rather than mixed into this experiment.
+
+8. MODEL AND HYPERPARAMETERS
+   estimator            : sklearn Ridge (multi-output on curve coefficients)
+   alpha grid           : (0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0)
+   alpha selected by    : inner leave-one-family-out on the training fold
+   final alpha (all 24) : 0.03
+   feature scaling      : StandardScaler, fit inside each training fold only
+   curve basis          : PCA refit inside each training fold only (leak guard)
+   epochs/batch/scheduler: n/a - closed-form linear estimator, no iterative training
+   augmentation         : n/a - none applied (classical features, deterministic)
+
+9. RANDOMNESS
+   seed                 : 20260926 (numpy + permutation control)
+   determinism          : no stochastic model; clustering and PCA are deterministic
+   library versions     : {"python": "3.14.6", "platform": "Windows-11-10.0.26200-SP0", "numpy": "2.5.2", "pandas": "2.3.3", "scipy": "1.18.0", "sklearn": "1.9.0", "matplotlib": "3.11.1", "Pillow": "12.3.0"}
+
+10. VALIDATION STRATEGY
+   Leave-one-family-out over curve-distance families: average linkage on pairwise
+   label-curve EMD, cut at 14.0 -> 16 groups (6 multi-member, 10 singletons).
+   NOTE: the manifest's soil_family column is ID-prefix derived and is NOT this
+   grouping; families are recomputed here from labels and written to cv_families.csv.
+   No random image-level split. No soil is ever split across folds.
+   Secondary diagnostic: cross-camera transfer (Motorola-fit -> Samsung-predict),
+   reported but never used for model selection.
+
+11. METRIC
+   log-weighted EMD = trapezoid(|F - Fhat|, log10 d), mean over samples, 0-500 scale.
+   self-check: our trivial-baseline score 100.31 vs competition page 100.31 -> metric reimplementation agrees.
+
+12. RESULTS -- every fold
+   FAM1   n_val=2 alpha=0.03   fold EMD =   29.49 (worst soil   41.59)  [H038 H637]
+   FAM10  n_val=1 alpha=0.03   fold EMD =    3.08 (worst soil    3.08)  [F827]
+   FAM11  n_val=1 alpha=0.03   fold EMD =   39.87 (worst soil   39.87)  [H405]
+   FAM12  n_val=2 alpha=0.03   fold EMD =   20.55 (worst soil   21.59)  [H493 H666]
+   FAM13  n_val=1 alpha=0.03   fold EMD =   29.14 (worst soil   29.14)  [H030]
+   FAM14  n_val=1 alpha=0.03   fold EMD =   39.62 (worst soil   39.62)  [H617]
+   FAM15  n_val=1 alpha=0.03   fold EMD =   19.54 (worst soil   19.54)  [G190]
+   FAM16  n_val=1 alpha=0.03   fold EMD =   64.59 (worst soil   64.59)  [H616]
+   FAM2   n_val=2 alpha=0.03   fold EMD =   17.90 (worst soil   19.42)  [H181 H183]
+   FAM3   n_val=2 alpha=0.1    fold EMD =   18.47 (worst soil   19.25)  [H368 H615]
+   FAM4   n_val=4 alpha=0.03   fold EMD =   57.84 (worst soil   63.54)  [H366 H367 H371 H372]
+   FAM5   n_val=1 alpha=0.03   fold EMD =   74.14 (worst soil   74.14)  [H374]
+   FAM6   n_val=1 alpha=0.03   fold EMD =   28.82 (worst soil   28.82)  [H516]
+   FAM7   n_val=1 alpha=0.03   fold EMD =   67.15 (worst soil   67.15)  [H037]
+   FAM8   n_val=2 alpha=0.1    fold EMD =   36.30 (worst soil   51.29)  [H549 H668]
+   FAM9   n_val=1 alpha=0.03   fold EMD =   29.11 (worst soil   29.11)  [H126]
+
+13. RESULTS -- summary
+   n soils                                     : 24.000
+   n folds (families)                          : 16.000
+   n features                                  : 16.000
+   mean CV EMD                                 : 35.976
+   median CV EMD                               : 29.315
+   std CV EMD                                  : 19.628
+   min / max fold                              : 3.08 / 74.14
+   pooled out-of-fold EMD                      : 36.326
+   baseline: constant median curve (no images) : 82.618
+   improvement vs baseline                     : 46.643
+   ceiling: best possible rank-3               : 7.349
+   gap to ceiling                              : 28.627
+
+14. BASELINE COMPARISON
+   no-image constant median curve : 82.62
+   official trivial baseline      : 100.31
+   this experiment (mean CV)      : 35.98
+   improvement over no-image      : +46.64 EMD (56.5% relative)
+   rank-3 representation ceiling   : 7.35  (gap +28.63)
+
+15. OBSERVATIONS
+   features beating their control: 6/16 -> e4, e8, e16, lum_p10, lum_p90, lum_sd
+   WARNING e8 is 33% camera-explained
+   WARNING e16 is 41% camera-explained
+   WARNING B is 96% camera-explained
+   WARNING sat is 204% camera-explained
+   WARNING lum_p10 is 31% camera-explained
+   WARNING lum_p90 is 45% camera-explained
+   WARNING lum_sd is 35% camera-explained
+   WARNING soil_fraction is 59% camera-explained
+   WARNING crop_area_fraction is 77% camera-explained
+   CROSS-CAMERA TRANSFER (the headline result of this experiment):
+     in-domain (fit and predict on the same camera) :   27.44
+     camera transfer (fit Motorola, predict Samsung):  185.23
+     no-image baseline on the same soils          :   86.71
+   -> changing only the capture device, with the soil held FIXED, drives the model
+      BELOW the no-image baseline. The within-training CV score of 35.98 is therefore not an estimate of test-set performance.
+   worst fold FAM5 at 74.14; best FAM10 at 3.08. Spread across folds is 71.06 EMD,
+   which at n=24 means single-fold differences carry very little information.
+
+16. Kaggle RESULT
+   (a) file                 : Submission_Model1_E1.csv
+       public score         : 172.69929      (submitted 2026-09-27)
+       private score        : ____________________
+       local CV expectation : 35.98
+       VERDICT: the cross-camera diagnostic in section 15 PREDICTED this. The band
+       written before submitting was "~150 and above -> confirmed". It landed at 172.70.
+       The in-domain LOGO CV number of 35.98 is now falsified as an estimate of
+       test-set performance. It is not optimistic; it is the wrong quantity.
+
+   (b) file                 : MetricCheck_mean_curve_baseline.csv
+       public score         : 102.37237      (submitted 2026-09-27, 3 minutes before (a))
+       VERDICT: inside the predicted 16.8..136.6 band. Metric reading confirmed.
+
+   (c) METRIC RECONCILIATION against the formula printed on the competition page:
+         page formula, left-endpoint sum |Fi-Fhat_i|*d(log10 x)  -> trivial baseline 102.02
+         our implementation, trapezoid on log10 d               -> trivial baseline 100.3132
+         the reference value the HOST publishes                 -> 100.31
+       Our implementation reproduces the host's own published reference number to four
+       significant figures; the page's rendered formula does not. The page notation is a
+       loose description of the integral and the grader integrates the absolute CDF
+       difference with the trapezoidal rule. No rework of any EMD number in this project
+       is required. The difference is bounded by 0.5*|error at 0.002 mm| and measured at
+       <= 3.7 EMD per soil, so it would not change any ranking even if the page were literal.
+
+   (d) FOLLOW-UP ANALYSIS (read-only, local, 2026-09-27; not part of Experiment 1):
+       Mechanism behind the 172.70 score, found by comparing the test soils' feature
+       vectors against the training envelope. Measured as the excess beyond the training
+       [min,max], normalised by the training range, so it cannot be inflated by a
+       near-constant column:
+         texture features (7) : 1 of 70 test cells outside, excess 0.00 x range
+         colour/geometry  (9) : 35 of 90 outside
+         all 16, dropping the degenerate column below: 27 of 140 outside, mean 0.17 x range
+       Every out-of-domain cell is carried by colour or geometry. The texture bands,
+       gradients and frequency features land INSIDE the training envelope on cameras the
+       model has never seen, which is direct evidence that the canonical-PPM and
+       P3-to-sRGB normalisation did their job for texture.
+       BUG FOUND: soil_fraction is constant to 4 decimal places across all 24 training
+       soils (mean 0.9999, std 0.00027, range 0.0012) but ranges down to 0.829 on the test
+       soils. Its z-score is therefore a divide-by-noise amplifier and it is unlearnable
+       in-domain while varying out-of-domain. It must be dropped from every Model 1
+       experiment. crop_area_fraction is the same failure in milder form (8 of 10 test
+       soils outside, 0.89 x range). B and sat are outside on 8 of 10 each.
+       59% of predicted test columns sit pinned at exactly 0 or 100, against 27% in real
+       labels, and 8 of 10 rows reach 100 by the 0.63 mm point.
+       Alpha sweep on the identical matrix (LOGO cv | test saturation | test vs mean curve):
+         0.03 (Exp1 choice) -> 36.03 | 59.1% |  92.8
+            1              -> 40.77 | 30.9% |  77.1
+           10              -> 47.15 | 22.7% |  64.4
+          100              -> 65.07 | 17.3% |  44.7
+         1000              -> 87.32 | 16.4% |  22.2   (cv now WORSE than no-image)
+        10000              -> 92.31 |  9.1% |   4.6   (model has become the mean curve)
+       CV improves monotonically as alpha falls, so CV selects alpha=0.03, which is optimal
+       in-domain and catastrophic out-of-domain. The selection criterion, not the regressor,
+       is the broken component. This must be fixed before any further Model 1 experiment is
+       scored, and before any backbone is fine-tuned, or every future conclusion is void.
+       CALIBRATION OF THE INTERNAL PROXY: on the 21 soils photographed by BOTH training
+       cameras, the Motorola-vs-Samsung feature shift for the same soil averages 0.81
+       training ranges of |z| and never exceeds 2.65. The train-to-test shift is far larger.
+       A held-out-camera test inside training is therefore a LOWER BOUND on the real gap,
+       not an estimate of it.
+
+17. DEVIATIONS FROM PLAN
+   None. No pretrained backbone, fine-tuning, attention pooling or self-supervised
+   pretraining was introduced. Any future deviation must be recorded here.
+
+18. NEXT EXPERIMENT HYPOTHESIS
+   The cross-camera collapse outranks any tuning question: the pipeline does not
+   transfer between capture devices. Candidate follow-ups, in priority order:
+     E2  aggregation statistic (mean vs median vs IQR-augmented) and tile vs whole-image
+     E3  feature-family ablation: which of texture / colour / frequency / geometry pays
+     E4  camera-invariance: gray-world applied vs not, and per-camera gain
+         normalisation of the texture bands, scored by the cross-camera test
+     E5  regressor: robust (Huber) and gradient boosting on the identical matrix
+   A new Model number is justified only by a change of kind, not of feature set.
+==============================================================================

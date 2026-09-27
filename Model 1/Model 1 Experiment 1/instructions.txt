@@ -1,0 +1,81 @@
+MODEL 1 — EXPERIMENT 1
+================================================================================
+
+WHAT THIS EXPERIMENT DOES
+--------------------------------------------------------------------------------
+Classical, hand-designed image features -> ridge regression -> 4 low-dimensional
+curve parameters -> reconstructed cumulative grain-size distribution.
+
+No pretrained backbone. No fine-tuning. No attention. No learned representation.
+
+HYPOTHESIS
+--------------------------------------------------------------------------------
+A model with zero learned visual representation already beats the "ignore the
+images" floor of EMD 82.62, and the well-sampled texture bands (e8, e16) carry most
+of that signal.
+
+Basis for the hypothesis, already measured during the preprocessing phase:
+  rho(e8, log D50) = 0.764 and rho(e16, log D50) = 0.763 at soil level, both beating
+  their shuffled-label control, both ~94-96% soil variance and ~1.2-1.6% camera
+  variance, and both provably signal-neutral through preprocessing (identical to
+  three decimals before and after resampling).
+
+WHY IT IS WORTH RUNNING
+--------------------------------------------------------------------------------
+It answers the question every later model silently depends on: how much grain-size
+information is present in these photographs at all. It also produces the reference
+rows (constant-curve floor, best-possible-k-parameters ceilings) that all later
+experiments are scored against, and it runs on CPU so it is fully testable before
+any GPU quota is spent.
+
+HOW TO RUN
+--------------------------------------------------------------------------------
+Local (CPU, no GPU needed):
+    Run all cells of Model1_Experiment1.ipynb top to bottom.
+    INPUT_ROOT auto-resolves to the repository root when not on Kaggle.
+    Requires: numpy, scipy, pandas, scikit-learn, matplotlib, Pillow.
+
+Kaggle:
+    Read kaggle_setup.md in this folder first. Attach the soil-gsd-processed
+    dataset, set GPU to none (this experiment does not need one), Restart & Run All.
+
+    NOTE: this notebook is designed to run top-to-bottom in a fresh session with no
+    manual steps. It creates every file it depends on inside this experiment folder.
+
+WHAT IT READS
+--------------------------------------------------------------------------------
+    data/processed_meta/manifest_images.csv     162 rows, single source of truth
+    data/processed_meta/manifest_tiles.csv      tile coordinates + soil_fraction
+    data/tiles/**                               1,976 materialised 256 px tiles
+    data/training_down/, data/testing_down/     162 canonical PNGs
+    data/processed_meta/manifest_samples.csv    labels + submission_id mapping
+    preprocess/verify.py                        the validated feature definition
+
+Feature computation IMPORTS preprocess.verify.feats rather than reimplementing it, so
+the model's features are byte-for-byte the definition that golden_checks.json was
+computed against. A silently divergent reimplementation is the easiest way to make an
+experiment unrepeatable.
+
+WHAT IT DOES NOT DO
+--------------------------------------------------------------------------------
+    Does not re-run preprocessing.
+    Does not read raw data/Training or data/Test.
+    Does not create a second preprocessing pipeline.
+    Does not use the manifest's soil_family column for validation (that column is
+      ID-prefix derived and is NOT the approved curve-distance grouping).
+    Does not use camera / PPM / EXIF / ICC / site / sample-id as model inputs.
+
+OUTPUTS PRODUCED
+--------------------------------------------------------------------------------
+    Experiment1.txt                     full experiment record (auto-generated)
+    Submission_Model1_E1.csv            validated submission, exact competition format
+    cv_families.csv                     the 16 curve-distance families used for CV
+    features_soil.csv                   the per-soil feature matrix actually used
+    cv_results.csv                      per-fold scores and predictions
+
+READ THIS BEFORE CHANGING ANYTHING
+--------------------------------------------------------------------------------
+Model 1 varies the FEATURE SET only. Validation protocol, curve representation,
+metric and aggregation are fixed by Model 1/instructions.txt. If you believe a change
+outside that scope is warranted, record it in Experiment1.txt as a documented
+deviation rather than editing it in silently.

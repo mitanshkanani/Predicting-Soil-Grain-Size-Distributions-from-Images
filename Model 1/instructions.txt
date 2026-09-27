@@ -1,0 +1,109 @@
+MODEL 1 — IMAGE-SIGNAL BASELINE
+================================================================================
+
+WHAT THIS MODEL REPRESENTS
+--------------------------------------------------------------------------------
+Model 1 establishes how much soil grain-size information is recoverable from the
+preprocessed photographs using ONLY classical, hand-designed image features and a
+simple interpretable regressor.
+
+It is a baseline ladder, not a backbone. Every experiment inside Model 1 keeps the
+validation protocol, the output/curve representation, the loss/metric and the
+sample-level aggregation FIXED. The only thing that varies between experiments is
+the capacity or kind of the FEATURE SET fed to the head.
+
+WHY WE ARE TESTING IT
+--------------------------------------------------------------------------------
+The project's verified findings say the problem is low-dimensional and the dataset
+is tiny:
+
+  * The label manifold is nearly one-dimensional. PC1 holds 91.4% of label variance
+    and correlates 0.995 with log10(D50). Best achievable EMD if you predict k
+    numbers perfectly: k=1 -> 20.5, k=2 -> 11.0, k=3 -> 7.4.
+  * There are only 24 labelled soils. With shuffled labels reaching |rho| ~ 0.52 at
+    n=24, most small differences between complex models are not evidence.
+  * The "ignore the images entirely" floor is EMD 82.62. Before spending GPU quota
+    on a pretrained backbone, we must know whether the pixels beat that floor at all
+    and by how much.
+
+A classical baseline answers that with zero learned visual representation, runs on
+CPU, and gives every later model a reference point that is reproducible and cheap.
+
+WHAT MAKES IT DIFFERENT FROM OTHER MODELS
+--------------------------------------------------------------------------------
+Model 1 changes FEATURES only. A new Model number requires a change of KIND.
+
+  Model 2  learned representation   (frozen / partially fine-tuned pretrained
+                                     backbone, e.g. DINOv2 or ConvNeXt)
+  Model 3  changed output parameterisation (physical grading-curve family with
+                                     structural monotonicity, or direct 11-output
+                                     with differentiable EMD loss)
+  Model 4  changed aggregation / task framing (attention-based multiple-instance
+                                     pooling, self-supervised pretraining on all
+                                     162 images)
+  Model 5  explicit domain adaptation (camera-invariant learning, per-camera
+                                     contrast-response correction)
+
+PROMOTION TEST: if the change can be described as "same model, different features",
+it is a new EXPERIMENT in Model 1. If it changes what the model fundamentally IS,
+it is a new MODEL.
+
+EXPERIMENTS THAT BELONG UNDER MODEL 1
+--------------------------------------------------------------------------------
+  E1  classical texture + colour + frequency features -> ridge -> 4 curve parameters
+  E2  same model, different aggregation statistic (median vs mean vs trimmed, and
+      tile-level vs whole-image input)
+  E3  same model, feature-family ablation (which of texture / colour / frequency /
+      gradient actually carries the signal)
+  E4  same model, different classical regressor (robust regression, gradient boosting)
+  E5  same model, camera-invariance treatment (with vs without gray-world gains,
+      per-camera gain correction estimated label-free)
+
+Each experiment changes a LIMITED, recorded set of variables. Do not change
+backbone, loss, aggregation, output representation and optimiser simultaneously.
+
+VARIABLES WE INTEND TO INVESTIGATE
+--------------------------------------------------------------------------------
+  * whether the well-sampled bands (e4, e8, e16) alone reach the k=3 ceiling
+  * whether a dominant-wavelength feature (spectral centroid in cycles/mm) is a
+    direct physical proxy for grain size
+  * how much of the apparent signal is camera identity wearing a disguise
+  * how sensitive aggregation is to the tile-count asymmetry (test soils have
+    systematically fewer tiles than training soils)
+  * whether leave-one-camera-out predicts the real generalisation gap
+
+FIXED ACROSS ALL MODEL 1 EXPERIMENTS
+--------------------------------------------------------------------------------
+  Metric      log-weighted EMD, np.trapezoid(|F - Fhat|, log10(d)), mean over
+              samples, official 0-500 scale. Verified against the published trivial
+              baseline (100.31).
+  Validation  Leave-One-Family-Out over curve-distance families (average linkage on
+              pairwise label-curve EMD, cut at 14) -> 16 groups: 6 multi-member
+              families + 10 singletons. Families are derived deterministically from
+              the label file by the notebook itself; the preprocessing manifest's
+              soil_family column is ID-prefix derived, is NOT this grouping, and is
+              not used for validation.
+  Leakage     No random image-level split. The soil sample is the unit of
+              supervision. Feature standardisation, the PCA curve basis and any
+              feature selection are fitted on the training folds only.
+  Inputs      No camera, ppm, EXIF, ICC, site or sample-id features. Those identify
+              the capture device or the sample and would inflate validation while
+              being worthless on the private split.
+  Data        Verified processed outputs only. The notebook never re-runs
+              preprocessing and never reads raw data/Training or data/Test.
+
+SUBMISSION NAMING
+--------------------------------------------------------------------------------
+  Submission_Model1_E1.csv
+  Submission_Model1_E2.csv
+  ...
+
+Generated by the notebook itself under that exact name — never renamed from a
+generic file. IDs come from the project's normalised submission-ID mapping in
+manifest_samples.csv (submission_id, submission_row_order), never constructed from
+folder names.
+
+RULES
+--------------------------------------------------------------------------------
+  Never overwrite a previous experiment's results. Never delete a failed experiment.
+  A failed experiment is still research information.
