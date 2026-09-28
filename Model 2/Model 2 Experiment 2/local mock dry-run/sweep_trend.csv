@@ -1,0 +1,2 @@
+backend,n_crops,rho_crop_vs_error,p,monotonic,first,last,direction
+mock,4,-1.0,0.0,True,96.80859419004828,87.81934785068704,smaller crop -> better

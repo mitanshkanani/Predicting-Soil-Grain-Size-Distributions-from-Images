@@ -1,0 +1,8 @@
+id,prediction,blind,status,evidence
+P1,mock in-domain LOGO-CV is worse than the no-image floor at EVERY crop,no,CONFIRMED,best mock arm 87.82 vs floor 82.62
+P2,crop 256 reproduces E1's in-domain table within 0.05 EMD,no,CONFIRMED,asserted in cell H3; the notebook would have stopped otherwise
+P3,D's in-domain error decreases as the crop shrinks (negative rho vs crop px),YES,not evaluated,no dinov2 arms
+P4,the 256->32 gain is larger in the mid/coarse groups than in the fines,YES,not evaluated,no group data
+P5,R also improves with magnification (its 256px collapse is itself a scale effect),YES,not evaluated,no vit_random arms
+P6,D stays camera-stable at every crop (camera/soil ratio below 0.35),YES,not evaluated,no dinov2 arms
+P7,no crop lets D beat both M1 and R with a significant CI,YES,not evaluated,"gate not evaluable: ['M1', 'mock@c256', 'mock@c128', 'mock@c64', 'mock@c32']"

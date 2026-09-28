@@ -1,0 +1,196 @@
+MODEL 2 - EXPERIMENT 2 - DOES THE E1 REFUTATION SURVIVE CORRECTING THE MAGNIFICATION?
+================================================================================
+
+WHAT THIS EXPERIMENT TESTS
+--------------------------------------------------------------------------------
+E1 refuted its own premise: a frozen DINOv2 ViT-S/14 did not beat Model 1's 12 hand-built
+features in-domain (D 44.33 vs M1 43.02) and did not beat its own random-weights control
+(D - R = +4.55, CI [-7.02, +16.78]).
+
+But E1 declared a hole in itself before it ran. A patch spans 3.51 mm and twelve of the
+twenty-four training soils have D50 below 1.03 mm, so for those soils the backbone sees
+fines as texture and never as particles. Testing a representation at a magnification that
+cannot resolve the thing being measured is a weak test. **E2 closes that hole.**
+
+Single variable: how much physical soil a tile contributes to the backbone. Everything
+else is frozen at E1's values - the same tiles, the same two-stage tile->image->soil
+median, the same StandardScaler, rank-3 curve basis, closed-form ridge, monotone
+projection, 16 CV families, trapezoid EMD, and the same `backbones.py`.
+
+THE MEASUREMENT THAT BOUNDS THIS EXPERIMENT BEFORE IT RUNS
+--------------------------------------------------------------------------------
+Taken from the real tiles and real labels on 2026-09-28, and asserted in
+`check_crop_geometry.py` so it cannot drift:
+
+    crop px   patch mm   window mm   soils resolvable   tile area used
+      256       3.5145      56.23           12              100.0%
+      128       1.7573      28.12           13               25.0%
+       64       0.8786      14.06           13                6.2%
+       32       0.4393       7.03           14                1.6%
+
+Two consequences, both load-bearing:
+
+1. **Magnification barely helps.** The full sweep buys two soils and discards 98.4% of the
+   tile area. The curve is flat because the D50 distribution is bimodal: ten soils at
+   0.02-0.10 mm, twelve at 1.8-6.1 mm, only two in between.
+
+2. **The fines are physically unreachable, not under-sampled.** To give the largest fine
+   soil (D50 = 0.1035 mm) a one-third-patch grain needs a ~23x23 canonical px window
+   upsampled to 224 - 507 real pixels carrying no grain-level information. Upsampling
+   re-spaces what is there; it cannot add resolution.
+
+So E2's realistic scope is the twelve coarse soils and the two mid ones. That produces a
+sharper prediction than "does magnification help": **any gain must appear in the patch-
+limited D50 groups and be absent in the fines.** A uniform gain across sizes cannot be
+explained by magnification. A gain concentrated in the fines is physically impossible and
+would mean a leak.
+
+THE ARMS
+--------------------------------------------------------------------------------
+  M1   Model 1 E3's 12 hand-built features, full tile. The fixed external anchor. NOT
+       re-cropped: cropping it would change two things at once and destroy the comparison
+       to every Model 1 experiment.
+
+  R    DINOv2 ViT-S/14 with RANDOM untrained weights. Rides the entire crop sweep.
+
+  D    The same architecture, pretrained, frozen. Rides the entire crop sweep.
+
+  mock Pure-numpy plumbing arm. Runs locally where torch does not exist. Never a result.
+
+R must ride the whole sweep for two independent reasons. First, if D improves at fine
+crops that is only evidence about pretraining if R does not improve equally - R at 256 px
+already beat everything in-domain by exploiting a collapsed feature space, and a finer
+crop plausibly un-collapses it, which would be a scale effect on a random projection and
+nothing to do with learning. Second, E1's most useful control is worthless at one scale
+only.
+
+CROP 256 IS A REGRESSION CHECK, NOT AN ARM
+--------------------------------------------------------------------------------
+E2's crop-256 arm D is the same computation as E1's arm D. So E2 must reproduce E1's
+in-domain table - M1 43.02, D 44.33, R 39.78 - within 0.05 EMD, from a different notebook
+in a different session. If it does not, E2 is not comparable to E1 and **the notebook
+stops**. This costs nothing, because crop 256 is the sweep's baseline anyway. It is the
+strongest correctness gate the project has ever had.
+
+A CORRECTION CARRIED FORWARD, NOT SILENTLY APPLIED
+--------------------------------------------------------------------------------
+E1 recorded `PATCH_MM = 14 / 4.552516 = 3.0752 mm`. That omits the 256 -> 224 resize. A
+256 px tile is a 56.23 mm window squeezed into 224 px, so one 14 px patch covers
+**3.5145 mm** - 14.3% more.
+
+`backbones.py` is **not edited.** E1's record and its cached embeddings must stay byte-
+reproducible, and rewriting a shipped module to fix a comment is how two experiments end
+up disagreeing about what they measured. E2 computes the correct value in
+`crop_geometry.patch_mm` and prints both numbers with the reason.
+
+E1's conclusions do not change: the resolvability count is 12 either way, and the
+refutation rests on in-domain error, not on the scale figure.
+
+FILES OWNED BY THIS EXPERIMENT
+--------------------------------------------------------------------------------
+  crop_geometry.py          the crop and the arithmetic. No torch, ever.
+  check_crop_geometry.py    28 assertions pinning the sweep, the centring, the geometry and
+                            the bounded-reachability finding. Runs locally.
+  Model2_Experiment2.ipynb  generated by scratch/build_m2e2.py, never hand-edited.
+  Experiment2.txt           generated by the notebook from live objects.
+  Submission_Model2_E2.csv  generated only if the gate fires.
+
+WHAT IS DELIBERATELY OUT OF SCOPE
+--------------------------------------------------------------------------------
+Multi-crop per tile (changes the aggregation input count - a second variable). Patch-token
+mean pooling instead of CLS. Any other backbone. Fine-tuning. **A label-adaptive crop:
+D50 is a label and test labels are unknown, so choosing a crop per soil is leakage.**
+Re-tiling at a new physical size (a preprocessing change; only 256 px tiles are
+materialised). Re-running preprocessing.
+
+THE DECISION GATE - FIXED BEFORE THE RUN, EXECUTED AS CODE
+--------------------------------------------------------------------------------
+    submit = exists a crop c in {128, 64, 32} such that
+               in_domain(D, c) < in_domain(M1)
+             AND in_domain(D, c) < in_domain(R, c)
+             AND the paired soil-bootstrap CI of (D - R) at c excludes zero with D better
+             AND the gain at c is CONCENTRATED in the patch-limited D50 groups
+
+The fourth clause is new and it is the point of the experiment. Magnification only changes
+anything for soils whose grain was below the patch scale, so a gain that is uniform across
+size groups cannot be attributed to magnification. Requiring the gain to be *located* is
+what stops a lucky mean from reviving a dead premise.
+
+  outcome                                        meaning                     action
+  a crop satisfies all four clauses              E1's refutation was partly   submit; the
+                                                 a scale artefact             corrected crop
+                                                                              becomes frozen
+  D improves with magnification but never        the scale effect is real     do not submit;
+  past R                                         but is not about             Model 2 closes;
+                                                 pretraining                  report the crop
+                                                                              finding
+  no crop helps D at all                         E1's refutation survives     do not submit;
+                                                 its declared confound        MODEL 2 IS CLOSED
+                                                                              ON EVIDENCE
+  crop 256 fails the regression check            E2 is void                   fix the pipeline,
+                                                                              read nothing
+
+Three of the four outcomes close Model 2. That is the honest expectation given the
+reachability table, and it is still worth one session: the fourth would matter, and E1's
+hole stays open until it is tested.
+
+PRE-REGISTERED PREDICTIONS
+--------------------------------------------------------------------------------
+Written before implementation. The blind/confirmation label may not be edited afterwards.
+
+  P1  mock in-domain LOGO-CV is at or worse than the no-image floor 82.62 at EVERY crop
+      [CONFIRMATION - plumbing correctness. If mock scores well at some crop, that crop's
+      aggregation leaks and nothing at that scale means anything.]
+
+  P2  crop 256 reproduces E1's in-domain table within 0.05 EMD
+      [CONFIRMATION - regression check. If it fails, E2 is void, not negative.]
+
+  P3  D's in-domain error decreases monotonically as the crop shrinks 256 -> 32
+      [BLIND]
+
+  P4  the improvement from crop 256 to crop 32 is LARGER for the coarse and mid groups
+      than for the fines
+      [BLIND - the mechanism prediction. This is the one that distinguishes a real scale
+      effect from noise, and the gate depends on it.]
+
+  P5  R's in-domain error also decreases with magnification, because its feature collapse
+      at 256 px is itself a scale artefact
+      [BLIND - if P3 and P5 both hold with similar size, the gain is not about pretraining]
+
+  P6  D's camera/soil distance ratio stays below 0.35 at every crop - magnification does
+      not cost it the stability E1 measured
+      [BLIND - diagnostic]
+
+  P7  no crop lets D beat both M1 and R with a significant CI
+      [BLIND - this is what I actually expect, given the reachability table. Stating it
+      plainly is the point: the experiment is designed to be refutable in the direction
+      that would matter, not to be vindicated.]
+
+LOCAL VERIFICATION IS PARTIAL, AND IS ISOLATED RATHER THAN HIDDEN
+--------------------------------------------------------------------------------
+The development machine has no torch and no timm, so the backbone arms cannot execute
+here at all. The response is structural:
+  - `backbones.py` is imported from E1's folder, **unmodified**
+  - `crop_geometry.py` holds every line of new logic and is fully tested locally
+  - the `mock` backend exercises the whole surrounding pipeline at every crop
+  - `check_crop_geometry.py` and `check_backbones.py` both run inside the notebook before
+    a single tile is processed
+
+A mock run is a plumbing test and is never a result, and it writes only into
+`local mock dry-run/` - never the experiment root. That routing is enforced in cell A1
+because a mock dry run once overwrote E1's downloaded Kaggle outputs.
+
+RULES
+--------------------------------------------------------------------------------
+Never overwrite a previous experiment's results. Model 1's folders and Model 2 E1's folder
+are read-only inputs here.
+Do not edit `backbones.py` to make something work. If it appears necessary, stop and
+record why - it is a different experiment.
+Cache keys MUST include the crop. E1's key omits it; reusing that key would silently load
+the 256 px embedding at every scale and produce a completely fake sweep. This is a
+correctness gate, asserted in-cell, not a detail.
+
+SUBMISSION NAMING
+  Submission_Model2_E2.csv   generated by the notebook only if the gate fires; written
+  under that exact name, never renamed, IDs from manifest_samples.csv, validated by eight
+  gates before writing and re-read from disk afterwards.

@@ -1,0 +1,2 @@
+backend,from_crop,to_crop,overall,fines_n,fines_delta,mid_n,mid_delta,coarse_n,coarse_delta,concentrated_in_patch_limited
+mock,256,32,8.98924633936124,10,9.789041635996261,2,-17.923195957180553,12,12.808157308255687,False

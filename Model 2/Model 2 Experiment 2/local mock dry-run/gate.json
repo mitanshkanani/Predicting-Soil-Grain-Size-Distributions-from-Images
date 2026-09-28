@@ -1,0 +1,38 @@
+{
+  "submit": false,
+  "evaluable": false,
+  "best_crop": null,
+  "candidate_crops": [
+    128,
+    64,
+    32
+  ],
+  "winners": [],
+  "clauses": [
+    {
+      "clause": "both backbone arms present",
+      "passed": false,
+      "detail": "arms: ['M1', 'mock@c256', 'mock@c128', 'mock@c64', 'mock@c32']"
+    }
+  ],
+  "in_domain": {
+    "M1": 43.0217308796477,
+    "mock@c256": 87.81934785068704,
+    "mock@c128": 94.94642235182964,
+    "mock@c64": 95.70063325964225,
+    "mock@c32": 96.80859419004828
+  },
+  "trend": [
+    {
+      "backend": "mock",
+      "n_crops": 4,
+      "rho_crop_vs_error": -1.0,
+      "p": 0.0,
+      "monotonic": true,
+      "first": 96.80859419004828,
+      "last": 87.81934785068704,
+      "direction": "smaller crop -> better"
+    }
+  ],
+  "per_group": []
+}

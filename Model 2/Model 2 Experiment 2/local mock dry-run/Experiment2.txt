@@ -1,0 +1,120 @@
+==============================================================================
+Model 2 / Experiment 2 - patch magnification sweep
+==============================================================================
+run context      : local
+seed             : 20260931   embedding seed: 20260930
+config_hash      : 010f44c36c74   pipeline 1.0.0
+BACKEND requested: ('mock',)
+crop sweep       : [256, 128, 64, 32]
+arms executed    : ['M1', 'mock@c256', 'mock@c128', 'mock@c64', 'mock@c32']
+outputs          : Model 2\Model 2 Experiment 2\local mock dry-run
+platform         Windows-11-10.0.26200-SP0
+
+1. WHAT CHANGED, AND ONLY THIS
+   How much physical soil a tile contributes to the backbone: a centred window of the
+   existing 256px tile is cropped to c in {256,128,64,32} and resized to 224.
+   Frozen from Model 2 E1: tiles, soil-fraction filter, two-stage tile->image->soil
+   median, StandardScaler, rank-3 curve basis, closed-form ridge, monotone projection,
+   the 16 CV families, the alpha grid, the trapezoid EMD, and backbones.py UNMODIFIED.
+   Not done: multi-crop per tile, patch-mean pooling, other backbones, fine-tuning,
+   label-adaptive cropping (that is label leakage), re-tiling (a preprocessing change).
+
+2. THE REGRESSION CHECK - THE GATE BEFORE THE GATE
+   control vs E3 feature matrix: max drift 2.842e-14 (gate < 1e-6)
+   crop 256 vs Model 2 E1 per-soil nested scores: asserted in cell H3 to within 0.05 EMD.
+   If either had failed this notebook stopped; every number below is downstream of both.
+
+3. GEOMETRY, AND THE CORRECTION TO E1
+ crop px  patch mm  window mm  resolvable  area used
+     256    3.5145      56.23          12     100.0%
+     128    1.7573      28.12          13      25.0%
+      64    0.8786      14.06          13       6.2%
+      32    0.4393       7.03          14       1.6%
+   E1 recorded PATCH_MM = 3.0752 mm, omitting the 256->224 resize.
+   True footprint at crop 256 = 3.5145 mm. backbones.py is
+   left as authored so E1 stays byte-reproducible; E2 computes the correct value.
+   The whole sweep buys 2 more resolvable soils while using 1.6% of the tile area.
+   The fines are physically unreachable: resolving them needs a sub-24px window
+   upsampled to 224, which contains no grain information.
+
+4. PRIMARY RESULT - nested in-domain LOGO-CV by arm and crop
+   M1        crop 256px patch 3.5145 mm  n_feat  12  nested  43.02  oracle alpha 3
+   MOCK@32   crop  32px patch 0.4393 mm  n_feat 384  nested  96.81  oracle alpha 1e+06
+   MOCK@64   crop  64px patch 0.8786 mm  n_feat 384  nested  95.70  oracle alpha 1000
+   MOCK@128  crop 128px patch 1.7573 mm  n_feat 384  nested  94.95  oracle alpha 1000
+   MOCK@256  crop 256px patch 3.5145 mm  n_feat 384  nested  87.82  oracle alpha 0.03
+   no-image floor 82.62 | rank-3 ceiling 7.35
+   per-fold and per-soil scores: cv_per_fold.csv, cv_per_soil.csv
+
+5. THE SWEEP AS A TREND (primary read; picking the best of four is a trap)
+   mock         rho(crop px, error) = -1.000 p=0.000  monotonic=True  96.81 -> 87.82
+
+6. WHERE ANY GAIN ACTUALLY LIVES (per D50 group)
+   mock         overall  +8.99 | fines  +9.79 (n=10) | mid -17.92 (n=2) | coarse +12.81 (n=12)
+   Magnification can only act on mid and coarse. A gain concentrated in the fines would
+   indicate a leak, not a result.
+
+7. PRETRAINING ABLATION AT EACH CROP
+
+8. MECHANISM - does magnification cost D its camera stability?
+   M1                     camera  1.214 z  sharpness  0.714 z   camera/soil 1.105  blur/soil 0.818
+   mock@c256              camera  1.601 z  sharpness  0.328 z   camera/soil 1.096  blur/soil 0.047
+   mock@c128              camera  1.542 z  sharpness  0.331 z   camera/soil 0.994  blur/soil 0.048
+   mock@c64               camera  1.521 z  sharpness  0.338 z   camera/soil 0.969  blur/soil 0.053
+   mock@c32               camera  1.575 z  sharpness  0.347 z   camera/soil 1.026  blur/soil 0.054
+   E1 reference: D camera/soil 0.209, blur/soil 0.029; M1 1.105 and 0.818.
+
+9. CAM+RES - REPORTED, NOT USED TO SELECT
+   M1                     CAM+RES   54.98  CAM   55.40  in-domain  43.02
+   mock@c256              CAM+RES   93.60  CAM   93.60  in-domain  87.82
+   mock@c128              CAM+RES   93.59  CAM   93.59  in-domain  94.95
+   mock@c64               CAM+RES   93.59  CAM   93.59  in-domain  95.70
+   mock@c32               CAM+RES   93.59  CAM   93.59  in-domain  96.81
+   E1's probe is the calibration point that matters: CAM+RES said 47.08 for arm D and
+   the leaderboard returned 60.56.
+
+10. DECISION GATE
+   submit: False   winning crops: []   best: None
+   [FAIL] both backbone arms present
+   submit = exists a crop where D beats M1 in-domain AND beats R with a significant
+   paired CI AND the gain is concentrated in the patch-limited D50 groups.
+   Three of the four outcomes close Model 2; that was the honest expectation written
+   into the plan before the run, given the reachability table in section 3.
+
+11. SUBMISSION
+   NO SUBMISSION WAS PRODUCED BY THIS RUN.
+   gate.submit = False; probe armed = False.
+
+12. PRE-REGISTERED PREDICTIONS
+   P1  [no ] mock in-domain LOGO-CV is worse than the no-image floor at EVERY crop
+        -> CONFIRMED: best mock arm 87.82 vs floor 82.62
+   P2  [no ] crop 256 reproduces E1's in-domain table within 0.05 EMD
+        -> CONFIRMED: asserted in cell H3; the notebook would have stopped otherwise
+   P3  [YES] D's in-domain error decreases as the crop shrinks (negative rho vs crop px)
+        -> not evaluated: no dinov2 arms
+   P4  [YES] the 256->32 gain is larger in the mid/coarse groups than in the fines
+        -> not evaluated: no group data
+   P5  [YES] R also improves with magnification (its 256px collapse is itself a scale effect)
+        -> not evaluated: no vit_random arms
+   P6  [YES] D stays camera-stable at every crop (camera/soil ratio below 0.35)
+        -> not evaluated: no dinov2 arms
+   P7  [YES] no crop lets D beat both M1 and R with a significant CI
+        -> not evaluated: gate not evaluable: ['M1', 'mock@c256', 'mock@c128', 'mock@c64', 'mock@c32']
+
+13. SCOPE OF VERIFICATION
+   torch/timm are absent here, so only the mock backbone executed. crop_geometry.py
+   is fully tested locally (check_crop_geometry.py, 28 assertions); backbones.py is
+   imported from E1 UNMODIFIED. A mock run is a plumbing test and is never a result.
+   Unverified by a local run: the real embedding geometry at each crop, and every number
+   involving arms R and D.
+
+14. ENVIRONMENT
+   python       3.14.6
+   platform     Windows-11-10.0.26200-SP0
+   numpy        2.5.2
+   pandas       2.3.3
+   scipy        1.18.0
+   sklearn      1.9.0
+   matplotlib   3.11.1
+   Pillow       12.3.0
+==============================================================================

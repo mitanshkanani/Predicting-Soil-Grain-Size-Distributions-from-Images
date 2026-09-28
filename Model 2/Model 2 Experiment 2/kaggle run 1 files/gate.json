@@ -1,0 +1,76 @@
+{
+  "submit": false,
+  "evaluable": true,
+  "best_crop": null,
+  "candidate_crops": [
+    128,
+    64,
+    32
+  ],
+  "winners": [],
+  "clauses": [
+    {
+      "clause": "exists a crop in [128, 64, 32] where D beats R with a significant CI",
+      "passed": false,
+      "detail": "best D-R +0.96"
+    },
+    {
+      "clause": "and D beats the M1 control at that crop",
+      "passed": false,
+      "detail": ""
+    },
+    {
+      "clause": "and the gain is concentrated in the patch-limited D50 groups",
+      "passed": false,
+      "detail": ""
+    }
+  ],
+  "in_domain": {
+    "M1": 43.02173087964769,
+    "vit_random@c256": 39.77693008453303,
+    "vit_random@c128": 42.355726388532844,
+    "vit_random@c64": 40.69541910812804,
+    "vit_random@c32": 38.63746531919636,
+    "dinov2@c256": 44.330245615450906,
+    "dinov2@c128": 43.319487436316706,
+    "dinov2@c64": 43.834388758993875,
+    "dinov2@c32": 44.872840530087046
+  },
+  "trend": [
+    {
+      "backend": "dinov2",
+      "n_crops": 4,
+      "rho_crop_vs_error": -0.39999999999999997,
+      "p": 0.6,
+      "monotonic": false,
+      "first": 44.872840530087046,
+      "last": 44.330245615450906,
+      "direction": "smaller crop -> better"
+    },
+    {
+      "backend": "vit_random",
+      "n_crops": 4,
+      "rho_crop_vs_error": 0.39999999999999997,
+      "p": 0.6,
+      "monotonic": false,
+      "first": 38.63746531919636,
+      "last": 39.77693008453303,
+      "direction": "smaller crop -> worse"
+    }
+  ],
+  "per_group": [
+    {
+      "backend": "dinov2",
+      "from_crop": 256,
+      "to_crop": 32,
+      "overall": 0.5425949146361376,
+      "fines_n": 10,
+      "fines_delta": -0.6828457083484221,
+      "mid_n": 2,
+      "mid_delta": -2.878714063167692,
+      "coarse_n": 12,
+      "coarse_delta": 2.134013596757242,
+      "concentrated_in_patch_limited": false
+    }
+  ]
+}

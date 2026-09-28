@@ -1,0 +1,3 @@
+backend,n_crops,rho_crop_vs_error,p,monotonic,first,last,direction
+dinov2,4,-0.39999999999999997,0.6,False,44.872840530087046,44.330245615450906,smaller crop -> better
+vit_random,4,0.39999999999999997,0.6,False,38.63746531919636,39.77693008453303,smaller crop -> worse

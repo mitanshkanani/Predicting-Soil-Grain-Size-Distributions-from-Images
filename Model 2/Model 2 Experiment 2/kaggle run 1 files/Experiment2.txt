@@ -1,0 +1,140 @@
+==============================================================================
+Model 2 / Experiment 2 - patch magnification sweep
+==============================================================================
+run context      : kaggle
+seed             : 20260931   embedding seed: 20260930
+config_hash      : 010f44c36c74   pipeline 1.0.0
+BACKEND requested: ('vit_random', 'dinov2')
+crop sweep       : [256, 128, 64, 32]
+arms executed    : ['M1', 'vit_random@c256', 'vit_random@c128', 'vit_random@c64', 'vit_random@c32', 'dinov2@c256', 'dinov2@c128', 'dinov2@c64', 'dinov2@c32']
+outputs          : /kaggle/working
+platform         Linux-6.12.90+-x86_64-with-glibc2.35
+
+1. WHAT CHANGED, AND ONLY THIS
+   How much physical soil a tile contributes to the backbone: a centred window of the
+   existing 256px tile is cropped to c in {256,128,64,32} and resized to 224.
+   Frozen from Model 2 E1: tiles, soil-fraction filter, two-stage tile->image->soil
+   median, StandardScaler, rank-3 curve basis, closed-form ridge, monotone projection,
+   the 16 CV families, the alpha grid, the trapezoid EMD, and backbones.py UNMODIFIED.
+   Not done: multi-crop per tile, patch-mean pooling, other backbones, fine-tuning,
+   label-adaptive cropping (that is label leakage), re-tiling (a preprocessing change).
+
+2. THE REGRESSION CHECK - THE GATE BEFORE THE GATE
+   control vs E3 feature matrix: max drift 2.842e-14 (gate < 1e-6)
+   crop 256 vs Model 2 E1 per-soil nested scores: asserted in cell H3 to within 0.05 EMD.
+   If either had failed this notebook stopped; every number below is downstream of both.
+
+3. GEOMETRY, AND THE CORRECTION TO E1
+ crop px  patch mm  window mm  resolvable  area used
+     256    3.5145      56.23          12     100.0%
+     128    1.7573      28.12          13      25.0%
+      64    0.8786      14.06          13       6.2%
+      32    0.4393       7.03          14       1.6%
+   E1 recorded PATCH_MM = 3.0752 mm, omitting the 256->224 resize.
+   True footprint at crop 256 = 3.5145 mm. backbones.py is
+   left as authored so E1 stays byte-reproducible; E2 computes the correct value.
+   The whole sweep buys 2 more resolvable soils while using 1.6% of the tile area.
+   The fines are physically unreachable: resolving them needs a sub-24px window
+   upsampled to 224, which contains no grain information.
+
+4. PRIMARY RESULT - nested in-domain LOGO-CV by arm and crop
+   M1        crop 256px patch 3.5145 mm  n_feat  12  nested  43.02  oracle alpha 3
+   D@32      crop  32px patch 0.4393 mm  n_feat 384  nested  44.87  oracle alpha 300
+   D@64      crop  64px patch 0.8786 mm  n_feat 384  nested  43.83  oracle alpha 300
+   D@128     crop 128px patch 1.7573 mm  n_feat 384  nested  43.32  oracle alpha 100
+   D@256     crop 256px patch 3.5145 mm  n_feat 384  nested  44.33  oracle alpha 300
+   R@32      crop  32px patch 0.4393 mm  n_feat 384  nested  38.64  oracle alpha 3
+   R@64      crop  64px patch 0.8786 mm  n_feat 384  nested  40.70  oracle alpha 3
+   R@128     crop 128px patch 1.7573 mm  n_feat 384  nested  42.36  oracle alpha 10
+   R@256     crop 256px patch 3.5145 mm  n_feat 384  nested  39.78  oracle alpha 0.03
+   no-image floor 82.62 | rank-3 ceiling 7.35
+   per-fold and per-soil scores: cv_per_fold.csv, cv_per_soil.csv
+
+5. THE SWEEP AS A TREND (primary read; picking the best of four is a trap)
+   dinov2       rho(crop px, error) = -0.400 p=0.600  monotonic=False  44.87 -> 44.33
+   vit_random   rho(crop px, error) = +0.400 p=0.600  monotonic=False  38.64 -> 39.78
+
+6. WHERE ANY GAIN ACTUALLY LIVES (per D50 group)
+   dinov2       overall  +0.54 | fines  -0.68 (n=10) | mid  -2.88 (n=2) | coarse  +2.13 (n=12)
+   vit_random   overall  -1.14 | fines  -7.87 (n=10) | mid  -3.11 (n=2) | coarse  +4.80 (n=12)
+   Magnification can only act on mid and coarse. A gain concentrated in the fines would
+   indicate a leak, not a result.
+
+7. PRETRAINING ABLATION AT EACH CROP
+   crop 256px  D-R   +4.55 CI [  -7.47, +16.54] wins 11/24 ns   D-M1   +1.31 CI [  -6.30,  +9.25]
+   crop 128px  D-R   +0.96 CI [  -9.23, +12.12] wins 14/24 ns   D-M1   +0.30 CI [  -6.37,  +7.18]
+   crop  64px  D-R   +3.14 CI [  -8.93, +15.75] wins 10/24 ns   D-M1   +0.81 CI [  -5.93,  +7.42]
+   crop  32px  D-R   +6.24 CI [  -4.93, +17.45] wins 11/24 ns   D-M1   +1.85 CI [  -5.99,  +9.71]
+
+8. MECHANISM - does magnification cost D its camera stability?
+   M1                     camera  1.214 z  sharpness  0.714 z   camera/soil 1.105  blur/soil 0.818
+   vit_random@c256        camera  1.262 z  sharpness  0.321 z   camera/soil degenerate  blur/soil degenerate
+   vit_random@c128        camera  1.245 z  sharpness  0.334 z   camera/soil degenerate  blur/soil degenerate
+   vit_random@c64         camera  1.263 z  sharpness  0.356 z   camera/soil degenerate  blur/soil degenerate
+   vit_random@c32         camera  1.298 z  sharpness  0.388 z   camera/soil degenerate  blur/soil degenerate
+   dinov2@c256            camera  0.620 z  sharpness  0.232 z   camera/soil 0.209  blur/soil 0.029
+   dinov2@c128            camera  0.724 z  sharpness  0.379 z   camera/soil 0.252  blur/soil 0.068
+   dinov2@c64             camera  0.806 z  sharpness  0.744 z   camera/soil 0.295  blur/soil 0.245
+   dinov2@c32             camera  0.973 z  sharpness  1.117 z   camera/soil 0.444  blur/soil 0.568
+   E1 reference: D camera/soil 0.209, blur/soil 0.029; M1 1.105 and 0.818.
+
+9. CAM+RES - REPORTED, NOT USED TO SELECT
+   M1                     CAM+RES   54.98  CAM   55.40  in-domain  43.02
+   vit_random@c256        CAM+RES   91.89  CAM   99.71  in-domain  39.78
+   vit_random@c128        CAM+RES   82.41  CAM   89.85  in-domain  42.36
+   vit_random@c64         CAM+RES   85.79  CAM   94.92  in-domain  40.70
+   vit_random@c32         CAM+RES   64.92  CAM   76.13  in-domain  38.64
+   dinov2@c256            CAM+RES   54.01  CAM   53.95  in-domain  44.33
+   dinov2@c128            CAM+RES   51.33  CAM   52.79  in-domain  43.32
+   dinov2@c64             CAM+RES   53.51  CAM   53.95  in-domain  43.83
+   dinov2@c32             CAM+RES   58.59  CAM   51.97  in-domain  44.87
+   E1's probe is the calibration point that matters: CAM+RES said 47.08 for arm D and
+   the leaderboard returned 60.56.
+
+10. DECISION GATE
+   submit: False   winning crops: []   best: None
+   [FAIL] exists a crop in [128, 64, 32] where D beats R with a significant CI
+   [FAIL] and D beats the M1 control at that crop
+   [FAIL] and the gain is concentrated in the patch-limited D50 groups
+   submit = exists a crop where D beats M1 in-domain AND beats R with a significant
+   paired CI AND the gain is concentrated in the patch-limited D50 groups.
+   Three of the four outcomes close Model 2; that was the honest expectation written
+   into the plan before the run, given the reachability table in section 3.
+
+11. SUBMISSION
+   NO SUBMISSION WAS PRODUCED BY THIS RUN.
+   gate.submit = False; probe armed = False.
+
+12. PRE-REGISTERED PREDICTIONS
+   P1  [no ] mock in-domain LOGO-CV is worse than the no-image floor at EVERY crop
+        -> not evaluated: mock arm not executed in this run
+   P2  [no ] crop 256 reproduces E1's in-domain table within 0.05 EMD
+        -> CONFIRMED: asserted in cell H3; the notebook would have stopped otherwise
+   P3  [YES] D's in-domain error decreases as the crop shrinks (negative rho vs crop px)
+        -> REFUTED: rho=-0.400 monotonic=False
+   P4  [YES] the 256->32 gain is larger in the mid/coarse groups than in the fines
+        -> REFUTED: fines -0.68 | mid -2.88 | coarse +2.13
+   P5  [YES] R also improves with magnification (its 256px collapse is itself a scale effect)
+        -> REFUTED: rho=0.400
+   P6  [YES] D stays camera-stable at every crop (camera/soil ratio below 0.35)
+        -> REFUTED: max ratio 0.444 over 4 crops
+   P7  [YES] no crop lets D beat both M1 and R with a significant CI
+        -> CONFIRMED: gate submit=False, winning crops=[]
+
+13. SCOPE OF VERIFICATION
+   torch present; backbone arms executed: ['dinov2', 'vit_random'].
+   Unverified by a local run: the real embedding geometry at each crop, and every number
+   involving arms R and D.
+
+14. ENVIRONMENT
+   python       3.12.13
+   platform     Linux-6.12.90+-x86_64-with-glibc2.35
+   numpy        2.0.2
+   pandas       2.3.3
+   scipy        1.16.3
+   sklearn      1.6.1
+   matplotlib   3.10.0
+   Pillow       11.3.0
+   torch        2.10.0+cu128
+   timm         1.0.26
+==============================================================================

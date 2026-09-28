@@ -1,0 +1,3 @@
+backend,from_crop,to_crop,overall,fines_n,fines_delta,mid_n,mid_delta,coarse_n,coarse_delta,concentrated_in_patch_limited
+dinov2,256,32,0.5425949146361376,10,-0.6828457083484221,2,-2.878714063167692,12,2.134013596757242,False
+vit_random,256,32,-1.1394647653366745,10,-7.872868411435834,2,-3.107908314947,12,4.799778864681014,False
