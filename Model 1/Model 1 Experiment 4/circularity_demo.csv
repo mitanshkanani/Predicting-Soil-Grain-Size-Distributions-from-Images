@@ -1,0 +1,4 @@
+train_view,test_view,note,no_freq,with_freq,freq_costs
+real,res16,DEPLOYMENT - blur never seen in training,53.811005263390015,111.40745072644657,57.596445463056554
+res14,res16,held out - a different blur level,51.541150374152366,86.78543917143327,35.2442887972809
+res16,res16,MATCHED - ruler target equals training view,53.514247017049165,50.438549251012674,-3.075697766036491

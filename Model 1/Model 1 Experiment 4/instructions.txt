@@ -1,0 +1,205 @@
+MODEL 1 — EXPERIMENT 4 — DOES THE COLOUR BLOCK EARN ITS PLACE?
+================================================================================
+
+WHAT THIS EXPERIMENT REPRESENTS
+--------------------------------------------------------------------------------
+One variable: how colour is REPRESENTED. Everything else is frozen at Experiment 3's
+values — the texture core, the rank-3 curve basis, closed-form ridge, the monotone
+projection, the two-stage tile->image->soil median aggregation, the 16 CV families, the
+24/10 split, the EMD implementation, and the construction of the CAM+RES ruler.
+
+It is also the first experiment whose central question is one the ruler is FORBIDDEN to
+answer. See "Why this is not a formality" below.
+
+WHY THIS IS THE NEXT EXPERIMENT — TWO SCHEDULED ONES WERE CANCELLED
+--------------------------------------------------------------------------------
+Both cancellations are reproduced from artifacts inside the notebook (section D), not
+asserted from a scratch file.
+
+1. The scheduled E4, "train on resolution-matched views", is dead. Once the frequency
+   features are removed the model is already blur-insensitive: across all nine
+   train-blur x test-blur combinations the 12-feature set spans only 9.2 EMD, and matched
+   training buys at most 2.3 on the deployment column. E3's feature selection absorbed
+   the sharpness problem.
+
+2. The scheduled aggregation experiment is dead. Adding mean, sd, p10 and p90 tile
+   summaries took LOGO-CV from 41.15 to 42.22. Quintupling the feature space made it
+   slightly worse. A grain-size DISTRIBUTION deserves a distributional summary in physics
+   and not at n=24 labelled soils.
+
+That leaves the camera's colour pipeline as the only measured, surviving source of domain
+shift: colour moves 1.54 z between Motorola and Samsung, the largest of any family, and
+the model still carries seven colour features.
+
+WHY THIS IS NOT A FORMALITY
+--------------------------------------------------------------------------------
+Experiment 3's own numbers cannot decide this:
+
+  cell A  core only, no colour  ( 5 feats)  nested CAM+RES 56.98   nested CAM 49.27
+  cell C  core + colour         (12 feats)  nested CAM+RES 51.87   nested CAM 52.26
+
+CAM+RES prefers colour. CAM prefers no colour. The CAM+RES gap is 5 EMD, which is inside
+the ~15 EMD that E3's ruling says may not be resolved. **The ruler is structurally unable
+to make this choice, so it goes to the leaderboard.**
+
+THE RULER'S STATUS, INHERITED FROM E3
+--------------------------------------------------------------------------------
+Calibration against the four externally measured configurations:
+
+  E1  CAM+RES 205.34 -> actual 172.70   factor 0.84
+  E2  CAM+RES  75.73 -> actual  71.27   factor 0.94
+  E3  CAM+RES  51.87 -> actual  61.24   factor 1.18
+
+The factor moved monotonically outward and crossed its window. The RANKING held three
+times running. The ruler's optimism GROWS as configurations improve — the signature of a
+proxy that models the nuisances it was built from and goes blind once they are removed.
+
+BINDING RULE: CAM+RES is an ORDINAL instrument. It may rank candidates. It must not
+forecast a score, and it must not choose between two candidates whose readings differ by
+less than ~15 EMD. Every expectation in this experiment is written as "better or worse
+than 61.24", never as a number.
+
+THE ARMS
+--------------------------------------------------------------------------------
+  texture core (always present, 5): e4, e8, e16, lum_sd, grad_mean
+
+  C0  raw channel means + saturation + luminance percentiles   12 feats
+      E3's selected configuration. Control; external score already known (61.24).
+  C1  no colour                                                 5 feats
+      The camera-preferred option. Maximum robustness and parsimony.
+  C2a per-camera robust z-score of the same 7 colour feats     12 feats
+      Device identity taken from the manifest. Removes the between-camera offset while
+      keeping within-camera colour variation.
+  C2b same, but device groups found by unsupervised clustering 12 feats
+      Never reads the camera label. See "The two problems with C2".
+  C3  chromaticity r=R/sum, g=G/sum replacing R,G,B; sat and    11 feats
+      luminance percentiles kept
+      Scale-invariant colour that cannot carry a device's gain or brightness.
+      DEVIATION FROM PLAN, recorded: the plan listed C3 as 4 features, which would also
+      have deleted the luminance percentiles and changed two things at once. Keeping
+      luminance isolates the variable to the colour representation.
+  C4  colour block alone, core removed                          7 feats
+      NEGATIVE CONTROL. E3 measured colour-only transfer as catastrophic. If C4 does not
+      reproduce that, the pipeline has changed and nothing else in this file is
+      trustworthy.
+
+No arm re-extracts anything. Every arm is derived from Experiment 3's existing tile
+caches. C2 and C3 are new REPRESENTATIONS of an existing family, not new measurements.
+
+THE TWO PROBLEMS WITH C2
+--------------------------------------------------------------------------------
+Problem 1 — circularity. Per-camera standardization removes precisely the between-camera
+mean and scale difference that the CAM ruler measures. CAM would rate C2 near-perfect by
+construction. This is the same failure mode that killed the resolution-matched training
+idea, in our own experiment. Therefore:
+
+  - C2 is never ranked on CAM alone.
+  - C2 is ranked on CAM+RES, whose blur component is untouched by colour normalisation.
+  - The circularity is demonstrated numerically in section I, not just asserted.
+  - C2's true value is settled by the leaderboard.
+
+Problem 2 — it may be a metadata exploit wearing a normalisation costume. C2a needs to
+know which camera produced each test image. The delivered filenames do say, so it is
+technically available, but the host varied cameras DELIBERATELY to force generalisation,
+and the project rules already ban camera as an input feature. C2b exists to test this: if
+clustering recovers the same grouping, the trick is legitimate and portable. If C2a beats
+C2b by a wide margin, C2 only works by exploiting device identity and must be rejected on
+principle even if it scores.
+
+TRANSDUCTIVE NORMALISATION — A DECLARED DEVIATION
+--------------------------------------------------------------------------------
+The project rule says feature standardisation is fitted on training folds only. C2's
+per-group median/IQR are computed once per (view, camera) group over all rows of that
+group, including the held-out soil's own rows, and reused across folds.
+
+Justification: the transform is completely label-free, and the target view's statistics
+are properties of unlabeled input data that the competition hands us. Recomputing per
+fold was measured to be unnecessary for the ranking and would triple runtime.
+
+This is a genuine, declared departure from the letter of the leakage rule. It is NOT
+applied to any other arm. If it turns out to matter, C2's result is void and must be
+re-run fold-wise.
+
+EVALUATION CONDITIONS
+--------------------------------------------------------------------------------
+  CAM+RES (4, primary)  Mot>Samsung and Samsung>Mot, each against res14 and res16
+  CAM      (2, secondary) both directions against the unblurred view
+  LOGO-CV  (reported only, never used to choose)
+
+Training views are always the unblurred real view, so CAM+RES holds blur OUT from the
+training side — the ruler already tests generalisation to unseen sharpness.
+
+STATISTICAL PROTOCOL — unchanged from E3 on purpose
+--------------------------------------------------------------------------------
+1. Nested procedure scores. Alpha chosen inside each outer fold on CAM+RES. The headline
+   number is the score of the PROCEDURE, never of the best alpha.
+2. Paired per-soil differences as the primary statistic.
+3. The bootstrap resamples SOILS, not observations. The six conditions share 21 soils;
+   treating them as independent would give falsely tight intervals. Asserted in-cell.
+4. A null is reported as a null: "not distinguishable from zero", never "no effect".
+5. THE ORDINAL RULE. If two arms' paired CI spans zero, the notebook must print
+   "the ruler cannot separate these" and must not pick between them on score. The tie is
+   broken by parsimony (fewer features) and the choice is flagged as a bet.
+
+PRE-REGISTERED PREDICTIONS
+--------------------------------------------------------------------------------
+Written before the run. Arms C2, C3 and C4 were NOT tested in reconnaissance, so unlike
+E3 most of these are genuinely blind. The blind/confirmation label is per prediction and
+may not be edited afterwards.
+
+  P1  C4 reproduces E3's catastrophic colour-only transfer, CAM > 75
+      [CONFIRMATION — a pipeline consistency check, worth little if it passes]
+  P2  C1 and C0 are NOT separable by CAM+RES: the paired CI spans zero
+      [BLIND — this is the plan's central claim, so refuting it is the better news]
+  P3  C3 transfers better than C0 under CAM+RES while retaining most of C0's in-domain
+      score   [BLIND]
+  P4  C2a beats C2b on CAM+RES, i.e. identity-based normalisation gains something
+      clustering cannot recover   [BLIND]
+  P5  the submitted arm scores below 61.24   [BLIND — the only real test]
+  P6  no point estimate for the score is offered anywhere in this experiment; any
+      forecast outside a +-15 EMD band is declared invalid by the ruling above
+      [a commitment, not a prediction]
+
+P2 is the important one. If the ruler CAN separate C0 from C1, then E3's ambiguous result
+was a measurement problem rather than a power problem, and the ordinal-only ruling was
+too hasty.
+
+SELECTION AND SUBMISSION
+--------------------------------------------------------------------------------
+1. Rank arms by nested CAM+RES.
+2. Apply the ordinal rule; unresolved ties go to fewer features.
+3. C2a is excluded from internal ranking entirely as the circular arm. It is submitted
+   only if it wins on CAM+RES, and the record must state that basis explicitly.
+4. The record must state which of two reasons applies to the chosen arm: either the ruler
+   separated the arms, or it did not and parsimony decided.
+
+WHAT WOULD CHANGE THE INTERPRETATION
+--------------------------------------------------------------------------------
+  - P2 refuted (C0 and C1 separate cleanly) -> the ruler has more power than E3's ruling
+    allowed; revisit the ordinal constraint.
+  - No arm separates from C0 -> Model 1 has plateaued. Sharpness handled, aggregation
+    exhausted, colour undecided. Model 2 becomes an evidence-backed decision, not
+    restlessness. This is a legitimate and expected outcome, not a failure.
+  - C2a >> C2b -> reject C2 on principle regardless of score.
+  - C4 fails to reproduce E3 -> stop everything; the pipeline drifted.
+
+LIMITS
+--------------------------------------------------------------------------------
+  - 21 dual-camera soils. Six conditions raise the observation count but not the number
+    of independent soils. This design cannot resolve differences below ~15 EMD. That is a
+    property of the dataset, not of the design.
+  - Five arms is more multiple-comparison surface than E3's two factors. The ordinal rule
+    is the only guard and it must be applied, not admired.
+  - The synthetic resolution camera is a Gaussian approximation of a Lanczos prefilter.
+  - Public leaderboard is 3 fixed soils of 10; final score is 0.30*public + 0.70*private.
+  - All four calibration points assume the public subset never changed. That is the
+    largest single assumption in the project and it is untestable from our side.
+
+RULES
+--------------------------------------------------------------------------------
+Never overwrite a previous experiment's results. E1, E2 and E3 are read-only inputs.
+A failed experiment is still research information.
+
+SUBMISSION NAMING
+  Submission_Model1_E4.csv   generated by the notebook, never renamed from a generic
+  file, IDs taken from manifest_samples.csv (submission_id, submission_row_order).

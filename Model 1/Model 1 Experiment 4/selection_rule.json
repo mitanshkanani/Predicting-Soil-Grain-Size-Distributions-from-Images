@@ -1,0 +1,22 @@
+{
+ "arm": "C1 no colour",
+ "feats": [
+  "e4",
+  "e8",
+  "e16",
+  "lum_sd",
+  "grad_mean"
+ ],
+ "norm": "None",
+ "primary": "C0 raw colour (E3)",
+ "minimax": "C0 raw colour (E3)",
+ "why": "primary and minimax agree; the rule returned the control, so the probe is C1 no colour (2/3 rulers prefer it to C0)",
+ "bet": true,
+ "probe": true,
+ "nested_camres": 56.97794955579343,
+ "vs_C0": [
+  5.10622409499055,
+  -5.92322717399133,
+  17.060130322669252
+ ]
+}

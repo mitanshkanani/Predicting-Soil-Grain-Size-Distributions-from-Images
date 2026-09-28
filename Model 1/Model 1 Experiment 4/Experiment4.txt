@@ -1,0 +1,141 @@
+==============================================================================
+EXPERIMENT RECORD -- Model1 / E4
+==============================================================================
+generated_at   : 2026-09-27T16:29:07+00:00
+name           : Model 1 / Experiment 4 - does the colour block earn its place
+context        : local on Windows-11-10.0.26200-SP0
+
+0. TYPE
+   An ordinary Model 1 experiment. ONE variable: how colour is represented.
+   It is also the first experiment whose central question is one the ruler is
+   forbidden by rule to answer.
+
+1. RULER STATUS INHERITED FROM E3
+   E1  CAM+RES  205.34 -> actual  172.70   factor 0.84
+   E2  CAM+RES   75.73 -> actual   71.27   factor 0.94
+   E3  CAM+RES   51.87 -> actual   61.24   factor 1.18
+   E1->E2 ruler delta 129.6 vs actual 101.4 (ratio 0.78);
+   E2->E3 ruler delta 23.9 vs actual 10.0 (ratio 0.42).
+   RULING: CAM+RES is ORDINAL. No score forecasts; no choice between arms differing
+   by less than 15 EMD.
+
+2. TWO SCHEDULED EXPERIMENTS CANCELLED, WITH EVIDENCE (reproduced in section D)
+   resolution-matched training: the 12-feature blur matrix spans only 9.2 EMD
+   across all nine train x test combinations (14-feature set spans 67.2).
+   E3's feature selection already absorbed the sharpness problem.
+   richer tile aggregation: median-only LOGO-CV 41.15; adding mean, sd, p10, p90
+   gave 42.13 then 42.22. Quintupling the feature space made it slightly worse.
+   A THIRD FINDING, general and not anticipated by any plan: training on a view and
+   scoring with a ruler whose target is that same view is CIRCULAR. Under a matched
+   ruler the frequency features E3 removed appear to HELP by ~3 EMD; under held-out
+   blur they still cost +35 to +58. A ~35 EMD artefact. Rule: a treatment that alters
+   the training distribution must be evaluated on a held-out level of the nuisance.
+
+3. ARMS
+   C0 raw colour (E3)         12 feats  norm=None      control
+   C1 no colour                5 feats  norm=None      camera-preferred option
+   C2a per-cam norm (id)      12 feats  norm=camera    device-group from manifest
+   C2b per-cam norm (clu)     12 feats  norm=cluster   device-group from clustering
+   C3 chromaticity            11 feats  norm=None      scale-invariant colour
+   C4 colour only              7 feats  norm=None      NEGATIVE CONTROL
+   C0 is exactly E3's cell C; feature matrix reproduced to 2.84e-14.
+
+4. NESTED PROCEDURE SCORES
+   C0 raw colour (E3)         CAM+RES  51.87   CAM  52.26   LOGO  46.94   alphas [10.0]
+   C1 no colour               CAM+RES  56.98   CAM  49.27   LOGO  39.46   alphas [0.03, 30.0]
+   C2a per-cam norm (id)      CAM+RES  49.57   CAM  47.78   LOGO  43.71   alphas [10.0]
+   C2b per-cam norm (clu)     CAM+RES  59.34   CAM  56.68   LOGO  45.84   alphas [10.0, 30.0]
+   C3 chromaticity            CAM+RES  62.63   CAM  64.62   LOGO  43.00   alphas [10.0, 30.0]
+   C4 colour only             CAM+RES  82.13   CAM  84.94   LOGO  82.51   alphas [100.0]
+
+5. PAIRED EFFECTS vs C0 (soil-level bootstrap, negative = the arm is BETTER)
+   CAM+RES  C1 no colour - C0                  +5.11 CI [   -6.23,  +17.31] wins 12/21  NOT RESOLVABLE by an ordinal ruler (|delta| < 15 and CI spans 0)
+   CAM+RES  C2a per-cam norm (id) - C0         -2.30 CI [  -11.16,   +6.42] wins 11/21  NOT RESOLVABLE by an ordinal ruler (|delta| < 15 and CI spans 0)
+   CAM+RES  C2b per-cam norm (clu) - C0        +7.47 CI [   +1.16,  +13.57] wins 8/21  SIGNIFICANT (first worse)
+   CAM+RES  C3 chromaticity - C0              +10.75 CI [   +3.94,  +18.30] wins 6/21  SIGNIFICANT (first worse)
+   CAM+RES  C4 colour only - C0               +30.26 CI [  +14.84,  +45.86] wins 9/21  SIGNIFICANT (first worse)
+   (CAM comparisons are reported for transparency but C2 is not ranked on them.)
+
+6. MECHANISM
+   colour block mean camera shift 1.54 z (largest of any family); mean sharpness shift 0.78 z
+   E3 established that a large shift does not imply a load-bearing feature. E4 tests
+   whether that also holds for colour specifically.
+
+7. C2 CIRCULARITY AUDIT
+   C0 raw colour (E3)         CAM  52.26 (gain  +0.00)   CAM+RES  51.87 (gain  +0.00)
+   C2a per-cam norm (id)      CAM  47.78 (gain  -4.48)   CAM+RES  49.57 (gain  -2.30)
+   C2b per-cam norm (clu)     CAM  56.68 (gain  +4.42)   CAM+RES  59.34 (gain  +7.47)
+   circularity on CAM confirmed: False. C2 is therefore ranked only on
+   CAM+RES, whose blur component is untouched by colour normalisation.
+   unsupervised device groups reached 78.2% purity at k=5
+
+8. PREDICTION VERDICTS
+   P1 C4 negative control CAM > 75          : CONFIRMED (CAM=84.94)   [consistency check]
+   P2 C1 vs C0 NOT separable by CAM+RES     : CONFIRMED   [BLIND]
+   P3 C3 better than C0 on CAM+RES          : REFUTED   [BLIND]
+   P4 C2a beats C2b on CAM+RES              : CONFIRMED   [BLIND]
+   P5 submitted arm beats 61.24             : pending submission   [BLIND]
+   P6 no point estimate offered anywhere      : HONOURED (PRED_BAND = None)
+
+9. SELECTION
+   primary (C2a excluded as circular) : C0 raw colour (E3)
+   minimax                            : C0 raw colour (E3)
+   primary and minimax agree; the rule returned the control, so the probe is C1 no colour (2/3 rulers prefer it to C0)
+   SELECTED: C1 no colour (5 feats), alpha 30
+   alpha rule: grid optimum was 0.03 at 55.04; the LARGEST alpha
+   within 15 EMD of it (30) was used instead. E1's collapse came from an
+   oracle-chosen alpha at the edge of the grid, so where the ruler cannot resolve a
+   difference this protocol prefers more regularisation. Rule adopted before the
+   submission, not after seeing a score.
+   CAM+RES across the whole alpha grid spans 34.70 EMD, so the choice does matter.
+   STATUS: DISCRIMINATING PROBE, NOT AN IMPROVEMENT CLAIM. The pre-stated rule
+   returned the control arm, i.e. the internal comparison is a null. Re-submitting
+   E3 would cost a submission and teach nothing, so the submission was redirected
+   to the arm that most directly tests this experiment's question.
+   vs C0 paired: +5.11 EMD CI [-5.92,+17.06]  -> A BET
+   Which of the two reasons applied is stated above, as the protocol requires.
+
+9b. A PREDICTION OF MINE THAT WAS TOO STRONG
+   instructions.txt predicted CAM would rate C2 'near perfect by construction'. It
+   did not: C2a's CAM gain is -4.48 EMD against a CAM+RES gain of
+   -2.30. The circularity is real but mild (~2x), not total.
+   Excluding C2 from CAM ranking was still the right call, but the stated magnitude
+   was overstated and is corrected here rather than quietly left in the earlier file.
+
+10. OUTPUT
+   columns pinned at 0/100: E1 59.1%  E2 10.0%  E3 13.6%  E4 9.1%  (real 27%)
+
+11. Kaggle RESULT  (fill in by hand after submitting)
+   file            : Submission_Model1_E4.csv
+   public score    : ____________________   must beat 61.24  (no band, per P6)
+   P5 verdict      : ____________________
+   private score   : ____________________
+
+12. LIMITS
+   21 dual-camera soils; six conditions share them. Cannot resolve below
+   ~15 EMD. Five rankable arms is more multiple-comparison surface than
+   E3's two factors; the ordinal rule is the only guard.
+   The synthetic resolution camera is a Gaussian approximation of a Lanczos prefilter.
+   C2's per-group statistics are transductive and fitted once, not per fold - a
+   declared deviation, applied to C2 only, justified because the transform is
+   label-free. If it matters, C2's result is void and must be re-run fold-wise.
+   All four calibration points assume the public 3-soil subset never changed.
+
+13. DEVIATIONS FROM PLAN
+   C3 was planned as 4 features, which would also have deleted the luminance
+   percentiles and changed two things at once. It is implemented as 11 features so the
+   only difference from C0 is how the channel means are expressed.
+   C2 was split into C2a (manifest identity) and C2b (unsupervised clustering) after
+   the plan was written, because normalising by device identity may be a metadata
+   exploit rather than a generalisation method. Strictly more careful than planned.
+   No new measurements, no learned representation, no change to aggregation, output
+   or estimator.
+
+14. NEXT
+   The ruler could not separate the selected arm from C0, so this experiment's
+   submission IS the measurement. Read the score, then:
+     better than 61.24 -> the parsimonious representation is right; keep it and
+       move to blur-robust frequency surrogates (band ratios) for interpretability.
+     not better      -> Model 1 has plateaued. Sharpness handled, aggregation
+       exhausted, colour undecided. Model 2 becomes evidence-backed, not a hunch.
+==============================================================================

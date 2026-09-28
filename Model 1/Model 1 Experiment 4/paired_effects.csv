@@ -1,0 +1,11 @@
+effect,estimate,ci_lo,ci_hi,wins_first_better,n,significant,resolvable,verdict
+CAM+RES  C1 no colour - C0,5.10622409499055,-6.227010820448701,17.306339547594526,12,21,False,False,NOT RESOLVABLE by an ordinal ruler (|delta| < 15 and CI spans 0)
+CAM+RES  C2a per-cam norm (id) - C0,-2.300786805344847,-11.164711079943952,6.416943466672133,11,21,False,False,NOT RESOLVABLE by an ordinal ruler (|delta| < 15 and CI spans 0)
+CAM+RES  C2b per-cam norm (clu) - C0,7.468005180381524,1.16293163594024,13.569793700748638,8,21,True,True,SIGNIFICANT (first worse)
+CAM+RES  C3 chromaticity - C0,10.753835942273485,3.9355942173026572,18.295369579462722,6,21,True,True,SIGNIFICANT (first worse)
+CAM+RES  C4 colour only - C0,30.26124577798606,14.836120105886263,45.855525629145966,9,21,True,True,SIGNIFICANT (first worse)
+CAM      C1 no colour - C0,-2.9860745560729405,-10.37030713988373,4.426501023290935,13,21,False,True,not distinguishable from zero
+CAM      C2a per-cam norm (id) - C0,-4.477467021477968,-13.147543373154011,3.9279462185892666,12,21,False,False,not distinguishable from zero
+CAM      C2b per-cam norm (clu) - C0,4.421677029877433,-3.1733449086689776,11.864737515241963,8,21,False,False,not distinguishable from zero
+CAM      C3 chromaticity - C0,12.360351186962056,6.231633895262147,19.34387747364891,5,21,True,True,SIGNIFICANT (first worse)
+CAM      C4 colour only - C0,32.68011552492036,18.53250148594579,45.896436504576556,3,21,True,True,SIGNIFICANT (first worse)

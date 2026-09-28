@@ -92,20 +92,65 @@ RUN SO FAR
       the actual fragility -- they read the resampling history, not the soil.
       Selected cell C (core + colour, 12 features), alpha 10. Paired advantage over E2's
       configuration -27.6 EMD, CI [-39.5, -16.9], wins 18/21 soils: a FINDING, not a bet.
-      Predicted Kaggle 44-49.
+      Predicted Kaggle 44-49. ACTUAL 61.24: P4 CONFIRMED, P5 and P6 REFUTED. The ruler's
+      bias factor moved 0.84 -> 0.94 -> 1.18, so its absolute calibration is not stable
+      even though its ranking held for the third time running.
+
+  E4  COLOUR-REPRESENTATION FACTORIAL. Six arms on a fixed texture core: raw colour,
+      none, per-device normalisation by manifest identity, the same by unsupervised
+      clustering, chromaticity ratios, and colour-only as a negative control.
+      RESULT - A NULL, AND THE ONE THE EXPERIMENT PREDICTED. Nested CAM+RES: C0 raw 51.87,
+      C1 none 56.98, C2a identity 49.57, C2b clustered 59.34, C3 chromaticity 62.63,
+      C4 colour-only 82.13. C1 vs C0 paired +5.11 EMD, CI [-6.23, +17.31], wins 12/21:
+      NOT RESOLVABLE. The pre-registered P2, which predicted exactly this null, is
+      CONFIRMED. C3 and C4 are significantly worse than C0. C2a is the only arm beating C0
+      on CAM+RES and it is excluded from ranking as circular.
+      THE SELECTION RULE RETURNED THE CONTROL. Re-submitting E3 would cost a submission
+      and teach nothing, so the submission was redirected to C1 as a DISCRIMINATING PROBE:
+      C1 wins 2 of 3 rulers over C0 (in-domain 39.46 vs 46.94, CAM 49.27 vs 52.26) and
+      loses only CAM+RES. Whether colour earns its place is settled by the leaderboard.
+      ALPHA PARSIMONY RULE, adopted before the submission rather than after a score: C1's
+      grid optimum was alpha 0.03 at 55.04, and 0.03 is the exact setting that caused E1's
+      collapse. Where a LARGER alpha lies within the ruler's own 15 EMD resolution it is
+      preferred, because the failure mode of too little regularisation is known and the
+      failure mode of too much is merely a worse score. Alpha 30 used.
+      C2b cluster purity was 78.2% at k=5: unsupervised grouping does NOT recover the
+      devices, so C2a's advantage is partly device identity rather than generalisation.
+
+TWO CANCELLED HYPOTHESES - CHECK HERE BEFORE PROPOSING A NEW EXPERIMENT
+--------------------------------------------------------------------------------
+  Resolution-matched training. Cancelled by E4 section D3. Once the frequency features are
+  gone the 12-feature model spans only 9.2 EMD across all nine train-blur x test-blur
+  combinations, and matched training buys at most 2.3. E3's feature selection already
+  absorbed the sharpness problem.
+  Richer tile aggregation. Cancelled by E4 section D4. Adding mean, sd, p10 and p90 to the
+  median took LOGO-CV from 41.15 to 42.22. Quintupling the feature space made it slightly
+  worse. A grain-size DISTRIBUTION deserves a distributional summary in physics and not at
+  n=24 labelled soils.
+  Also dead earlier: aliasing as the explanation of the texture shift (E2's P3), and
+  particle counting (preprocessing).
+
+THE TRAINING-DISTRIBUTION CIRCULARITY RULE
+--------------------------------------------------------------------------------
+A treatment that alters the TRAINING distribution must be evaluated on a held-out level of
+the nuisance it targets. A ruler whose evaluation condition equals the treatment condition
+reports the treatment as free. Demonstrated numerically in E4 section D5: under a matched
+ruler the frequency features E3 removed appear to HELP by ~3 EMD, a ~35 EMD artefact;
+under held-out blur they still cost +35 to +58.
 
 PLANNED
 --------------------------------------------------------------------------------
-  E4  train on resolution-matched views -- the complementary fix to REMOVING
-      sharpness-sensitive features, kept separate so the two contributions stay
-      attributable to each other.
   E5  blur-robust frequency surrogates: band RATIOS (e4/e8) instead of absolute spectral
       position. Restores the physical interpretability lost in E3.
-  E6  same model, different aggregation statistic (median vs mean vs trimmed, and
-      tile-level vs whole-image input)
-  E7  same model, different classical regressor (robust regression, gradient boosting)
-  E8  same model, camera-invariance treatment (with vs without gray-world gains,
+  E6  same model, different classical regressor (robust regression, gradient boosting)
+  E7  same model, camera-invariance treatment (with vs without gray-world gains,
       per-camera gain correction estimated label-free)
+
+  MODEL 2 DECISION GATE. If E4's probe does not beat 61.24 then Model 1 has plateaued:
+  sharpness handled, aggregation exhausted, colour undecided, and the in-domain headroom
+  (39.5 against a rank-3 ceiling of 7.35) is not reachable by re-summarising the same
+  hand-built features. At that point a learned representation is an evidence-backed
+  decision rather than restlessness.
 
 The E2 slot was previously listed as the aggregation experiment and E3 as the ablation;
 both moved. The renumbering is recorded here so E1's `Experiment1.txt` section 18 and
