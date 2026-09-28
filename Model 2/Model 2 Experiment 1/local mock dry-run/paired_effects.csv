@@ -1,0 +1,2 @@
+effect,estimate,ci_lo,ci_hi,wins_first_better,n,significant,verdict
+"MOCK - M1 (plumbing control, not a result)",44.79761697103933,31.80590707834322,57.67657586942297,3,24,True,SIGNIFICANT (first is worse)

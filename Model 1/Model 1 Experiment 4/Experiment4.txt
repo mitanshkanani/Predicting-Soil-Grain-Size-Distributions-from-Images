@@ -1,7 +1,7 @@
 ==============================================================================
 EXPERIMENT RECORD -- Model1 / E4
 ==============================================================================
-generated_at   : 2026-09-27T16:29:07+00:00
+generated_at   : 2026-09-28T01:57:46+00:00
 name           : Model 1 / Experiment 4 - does the colour block earn its place
 context        : local on Windows-11-10.0.26200-SP0
 
@@ -14,6 +14,7 @@ context        : local on Windows-11-10.0.26200-SP0
    E1  CAM+RES  205.34 -> actual  172.70   factor 0.84
    E2  CAM+RES   75.73 -> actual   71.27   factor 0.94
    E3  CAM+RES   51.87 -> actual   61.24   factor 1.18
+   E4  CAM+RES   56.98 -> actual   77.12   factor 1.35
    E1->E2 ruler delta 129.6 vs actual 101.4 (ratio 0.78);
    E2->E3 ruler delta 23.9 vs actual 10.0 (ratio 0.42).
    RULING: CAM+RES is ORDINAL. No score forecasts; no choice between arms differing
@@ -74,7 +75,7 @@ context        : local on Windows-11-10.0.26200-SP0
    P2 C1 vs C0 NOT separable by CAM+RES     : CONFIRMED   [BLIND]
    P3 C3 better than C0 on CAM+RES          : REFUTED   [BLIND]
    P4 C2a beats C2b on CAM+RES              : CONFIRMED   [BLIND]
-   P5 submitted arm beats 61.24             : pending submission   [BLIND]
+   P5 submitted arm beats 61.24             : REFUTED (actual 77.12)   [BLIND]
    P6 no point estimate offered anywhere      : HONOURED (PRED_BAND = None)
 
 9. SELECTION
@@ -105,11 +106,32 @@ context        : local on Windows-11-10.0.26200-SP0
 10. OUTPUT
    columns pinned at 0/100: E1 59.1%  E2 10.0%  E3 13.6%  E4 9.1%  (real 27%)
 
-11. Kaggle RESULT  (fill in by hand after submitting)
+11. Kaggle RESULT
    file            : Submission_Model1_E4.csv
-   public score    : ____________________   must beat 61.24  (no band, per P6)
-   P5 verdict      : ____________________
+   public score    : 77.12257   E3 was 61.24   -> +15.89 EMD WORSE
+   P5 verdict      : REFUTED
+   ruler reading   : CAM+RES said 56.98 for this arm against 51.87 for C0, i.e. -5.11 BETTER
+   reality         : +15.89 WORSE. Sign inverted, by 24.6 EMD of error.
+   implied factor  : 1.35 (E1 0.84, E2 0.94, E3 1.18)
    private score   : ____________________
+
+11b. THE HEADLINE RESULT OF EXPERIMENT 4
+   The colour question is answered: colour earns its place. Dropping it cost +15.89
+   EMD externally, and CAM+RES's preference for keeping it was right.
+   But the larger finding is about the instrument. Tested on all four externally
+   measured configurations, 1 of 6 pairs are ranked backwards by
+   CAM+RES:
+     E2 vs E4: ruler says E2 is 18.75 better; reality says E2 is 5.85 worse
+   E3's ruling said CAM+RES 'may rank, may not forecast'. E4 falsifies the ranking
+   half as well. The ruler is not valid across representational families; it appears
+   specifically to under-penalise REMOVING colour, which is the one thing E4 was built
+   to test. That is not a coincidence: the ruler's only two colour-relevant nuisances
+   are the Motorola-Samsung offset and a Gaussian blur, and neither reproduces
+   whatever makes colour informative on the iPhones.
+   CONSEQUENCE: no further Model 1 experiment may be selected by CAM+RES alone. Any
+   future internal ranking must be treated as a hypothesis to be tested by submission,
+   and submissions must be spent on well-separated candidates rather than fine
+   distinctions.
 
 12. LIMITS
    21 dual-camera soils; six conditions share them. Cannot resolve below
@@ -131,11 +153,21 @@ context        : local on Windows-11-10.0.26200-SP0
    No new measurements, no learned representation, no change to aggregation, output
    or estimator.
 
-14. NEXT
-   The ruler could not separate the selected arm from C0, so this experiment's
-   submission IS the measurement. Read the score, then:
-     better than 61.24 -> the parsimonious representation is right; keep it and
-       move to blur-robust frequency surrogates (band ratios) for interpretability.
-     not better      -> Model 1 has plateaued. Sharpness handled, aggregation
-       exhausted, colour undecided. Model 2 becomes evidence-backed, not a hunch.
+14. NEXT — BOTH BRANCHES RESOLVED BY THE SCORE
+   The probe did NOT beat 61.24, so the pre-stated branch applies: Model 1 has
+   plateaued. Colour is load-bearing and stays; sharpness is handled; aggregation has
+   nothing to give; the frequency family is near-useless and fragile. What remains in
+   Model 1 is re-summarising the same hand-built features, and E3/E4 together show that
+   route is exhausted.
+   The E3 decision gate therefore fires: a learned representation is now an
+   evidence-backed next step rather than restlessness. In-domain sits at 39.5-46.9
+   against a rank-3 representation ceiling of 7.35, and none of the four submitted
+   configurations has moved that in-domain number at all. Every gain so far came from
+   REMOVING things and adding regularisation, which is variance reduction, not signal.
+   BUT carry this forward into Model 2, from section 11b: CAM+RES mis-ranked E4 against
+   E2 by 24.6 EMD in the wrong direction. Model 2 must not be selected by that ruler
+   alone. Use it to generate hypotheses and the leaderboard to test them, and spend
+   submissions on well-separated candidates rather than fine distinctions.
+   Cancelled as low-value given 11b: E5 band ratios and E6 alternative regressors. Both
+   would produce internal rankings the instrument cannot be trusted to order.
 ==============================================================================

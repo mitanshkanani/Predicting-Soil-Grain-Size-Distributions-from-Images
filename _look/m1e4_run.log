@@ -27,30 +27,37 @@ external ground truth (public LB, 3 fixed soils of 10):
     102.372   mean-curve probe (ignores images)
      71.273   Model1_E2  14 feats, no degenerate cols
      61.236   Model1_E3  12 feats, no frequency
+     77.123   Model1_E4  5 feats, no colour (PROBE)
 
 no-image floor (internal, constant median curve): 82.62
-trajectory: 172.7 -> 71.3 -> 61.2   (rank 49 on the board = 40.22)
+submitted-so far trajectory: 172.7 -> 71.3 -> 61.2   (rank 49 on the board = 40.22)
+the E4 probe scored 77.12, i.e. +15.89 EMD vs E3.
  >>> cell 9
-experiment  ruler  actual                              change  factor
-        E1 205.34  172.70     16 feats, alpha 0.03 by LOGO-CV    0.84
-        E2  75.73   71.27 dropped 2 degenerate cols, alpha 30    0.94
-        E3  51.87   61.24        dropped the frequency family    1.18
+experiment                          config  ruler  actual  factor
+        E1 16 feats, alpha 0.03 by LOGO-CV 205.34  172.70    0.84
+        E2              14 feats, alpha 30  75.73   71.27    0.94
+        E3              12 feats, alpha 10  51.87   61.24    1.18
+        E4   5 feats, alpha 30 (no colour)  56.98   77.12    1.35
 
-factors: 0.84 -> 0.94 -> 1.18   (monotonically outward, crossed the 0.7-1.1 window E3 pre-registered)
+factors: 0.84 -> 0.94 -> 1.18 -> 1.35   (monotonic: the ruler is increasingly optimistic as models improve)
 
 marginal check -- does the ruler predict the SIZE of a gain?
   E1->E2  ruler says  129.6 EMD   actual  101.4   ratio 0.78
   E2->E3  ruler says   23.9 EMD   actual   10.0   ratio 0.42
-  The ruler's optimism GROWS as configurations improve. That is the signature of
-  a proxy that models the nuisances it was built from and goes blind once those
-  nuisances are removed.
 
-ranking preserved across all three points: True
+*** THE TEST THAT MATTERS: does the ruler rank correctly on all 6 pairs?
+    INVERTED  E2 vs E4: ruler says E2 is 18.75 EMD better, reality says it is 5.85 EMD worse
+    1 of 6 pairs inverted.
 
-BINDING RULE FOR THIS EXPERIMENT:
-  CAM+RES may RANK candidates. It may NOT forecast a score, and it may not
-  choose between two candidates whose readings differ by less than
-  15 EMD. Every expectation below is 'better or worse than 61.24', never a number.
+RANKING HELD: False
+Not raised as an assertion on purpose: this is the experiment's finding, not a
+broken precondition, and the rest of the notebook still has to run to report
+it. Consequence recorded in Experiment4.txt section 11b.
+The E3 ruling said CAM+RES 'may rank, may not forecast'. E4's probe falsifies
+even the ranking half: dropping the colour block looked 18.75 EMD BETTER to
+the ruler and was 5.85 EMD WORSE in reality. The ruler is not ordinal across
+representational families. It appears to under-penalise removing colour
+specifically, which is the one thing this experiment was built to test.
  >>> cell 10
 E3 artifacts from Model 1\Model 1 Experiment 3
   features_soil (34, 18) | paired_effects (7, 8)
@@ -319,14 +326,14 @@ HPC_Kleinkummerfeld 18-3    4.56    9.09   21.41   45.39   68.80   80.15   84.49
 12 of 21 soils improve. A mean gain carried by a minority of
 soils, or by a few extreme ones, is not robust - read this before the mean.
  >>> cell 32
-wrote Model 1\Model 1 Experiment 4\Experiment4.txt (141 lines)
+wrote Model 1\Model 1 Experiment 4\Experiment4.txt (173 lines)
 
 8. PREDICTION VERDICTS
    P1 C4 negative control CAM > 75          : CONFIRMED (CAM=84.94)   [consistency check]
    P2 C1 vs C0 NOT separable by CAM+RES     : CONFIRMED   [BLIND]
    P3 C3 better than C0 on CAM+RES          : REFUTED   [BLIND]
    P4 C2a beats C2b on CAM+RES              : CONFIRMED   [BLIND]
-   P5 submitted arm beats 61.24             : pending submission   [BLIND]
+   P5 submitted arm beats 61.24             : REFUTED (actual 77.12)   [BLIND]
    P6 no point estimate offered anywhere      : HONOURED (PRED_BAND = None)
 
  >>> cell 33

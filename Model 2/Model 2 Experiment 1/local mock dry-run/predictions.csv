@@ -1,0 +1,7 @@
+id,prediction,blind,status,evidence
+P1,mock in-domain LOGO-CV is worse than the no-image floor 82.62,no,CONFIRMED,"mock 87.82 vs floor 82.62. A plumbing correctness check, not a result: if it fails, the pipeline leaks."
+P2,DINOv2 embeddings shift LESS between cameras than the colour block does,YES,not evaluated,arm D not executed here; colour block baseline was 1.541 z
+P3,random-init arm R does NOT beat the Model 1 control in-domain,YES,not evaluated,"R not run vs M1 43.02. If R wins too, the effect is width, not pretraining."
+P4,DINOv2 arm D beats the Model 1 control in-domain,YES,not evaluated,D not run vs M1 43.02; paired D-M1 the contrast is not computable in this run (an arm is absent)
+P5,D beats R by a paired margin whose CI excludes zero,YES,not evaluated,paired D-R the contrast is not computable in this run (an arm is absent)
+P6,if a submission is made it beats 61.24,YES,not applicable,"no submission this run (gate submit=False, probe=False). E3's 61.24 stands."

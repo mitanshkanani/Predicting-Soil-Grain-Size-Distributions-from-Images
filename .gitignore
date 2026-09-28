@@ -1,1 +1,17 @@
+# raw + derived data: never committed, regenerable only by the frozen preprocessing run
 data/
+
+# Kaggle upload archives. One per experiment, built by scratch/make_kaggle_zip.py and
+# rebuilt only when a file inside it actually changes. 278 MB each - they are transfer
+# artifacts, not history, and git has no reason to hold a copy of what Kaggle already has.
+*.zip
+
+# regenerable caches. The tile-feature CSVs under experiment .cache/ ARE kept: they are
+# the evidence behind the "control reproduces the previous experiment" assertion.
+**/.cache/*.npy
+**/__pycache__/
+*.pyc
+
+# headless dry-run logs from scratch/run_*.py
+scratch/*.log
+final_kaggle_upload_m2e1.zip

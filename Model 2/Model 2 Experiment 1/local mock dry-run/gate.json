@@ -1,0 +1,23 @@
+{
+  "submit": false,
+  "evaluable": false,
+  "in_domain": {
+    "M1": 43.0217308796477,
+    "MOCK": 87.81934785068704
+  },
+  "clauses": [
+    {
+      "clause": "all three gate arms present",
+      "passed": false,
+      "detail": "have ['M1', 'MOCK']"
+    }
+  ],
+  "selected_arm": null,
+  "probe": {
+    "armed": true,
+    "taken": false,
+    "arm": null,
+    "prediction": "D scores BELOW 61.24 on the public leaderboard",
+    "reason": "the gate measures in-domain signal, which the premise needed and did not get; it cannot measure cross-camera transfer, which is where D leads on every readout and which E1 proved our internal metrics rank backwards"
+  }
+}

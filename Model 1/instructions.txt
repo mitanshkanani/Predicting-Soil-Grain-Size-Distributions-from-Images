@@ -64,6 +64,11 @@ PROMOTION TEST: if the change can be described as "same model, different feature
 it is a new EXPERIMENT in Model 1. If it changes what the model fundamentally IS,
 it is a new MODEL.
 
+  The promotion test fired after E4 and Model 1 is CLOSED. The change of kind it called
+  for is in `../Model 2/instructions.txt`: a learned visual representation replacing the
+  hand-built tile features, under a frozen head. Read Model 1's instrument rulings there
+  before scoping anything.
+
 EXPERIMENTS THAT BELONG UNDER MODEL 1
 --------------------------------------------------------------------------------
 RUN SO FAR
@@ -116,6 +121,32 @@ RUN SO FAR
       failure mode of too much is merely a worse score. Alpha 30 used.
       C2b cluster purity was 78.2% at k=5: unsupervised grouping does NOT recover the
       devices, so C2a's advantage is partly device identity rather than generalisation.
+      KAGGLE 77.12 for the C1 probe -- 15.89 EMD WORSE than E3. Colour earns its place;
+      it stays. P1, P2 and P4 CONFIRMED, P3 and P5 REFUTED.
+
+THE INSTRUMENT IS DEMOTED — READ THIS BEFORE DESIGNING ANY NEW EXPERIMENT
+--------------------------------------------------------------------------------
+E4 produced a larger result than its own question. Tested on all four externally
+measured configurations, CAM+RES ranks 1 of 6 pairs BACKWARDS:
+
+  E2 (14 feats) ruler 75.73  actual 71.27
+  E4 ( 5 feats) ruler 56.98  actual 77.12
+  the ruler says E4 is 18.75 EMD BETTER; reality says E4 is 5.85 EMD WORSE.
+
+E3's ruling said CAM+RES "may rank, may not forecast". E4 falsifies the ranking half
+too. The bias factors across the four points are 0.84, 0.94, 1.18, 1.35 — monotonically
+more optimistic as the models improve.
+
+The ruler's blind spot is specific and understandable: its only two colour-relevant
+nuisances are the Motorola-Samsung offset and a Gaussian approximation of a Lanczos
+prefilter, and neither reproduces whatever makes colour informative on the iPhones. It
+under-penalises REMOVING colour.
+
+BINDING CONSEQUENCE: no further experiment in this project may be SELECTED by CAM+RES
+alone. Use it to generate hypotheses and to reject configurations it says are
+catastrophic (it never missed those), but treat any finer ordering as a hypothesis that
+only a submission can test. Spend submissions on well-separated candidates, not on fine
+distinctions.
 
 TWO CANCELLED HYPOTHESES - CHECK HERE BEFORE PROPOSING A NEW EXPERIMENT
 --------------------------------------------------------------------------------
@@ -138,19 +169,46 @@ reports the treatment as free. Demonstrated numerically in E4 section D5: under 
 ruler the frequency features E3 removed appear to HELP by ~3 EMD, a ~35 EMD artefact;
 under held-out blur they still cost +35 to +58.
 
-PLANNED
+PLANNED — ALL CANCELLED, SEE "MODEL 1 IS CLOSED" BELOW
 --------------------------------------------------------------------------------
   E5  blur-robust frequency surrogates: band RATIOS (e4/e8) instead of absolute spectral
-      position. Restores the physical interpretability lost in E3.
-  E6  same model, different classical regressor (robust regression, gradient boosting)
-  E7  same model, camera-invariance treatment (with vs without gray-world gains,
-      per-camera gain correction estimated label-free)
+      position. CANCELLED. Restores interpretability but the frequency family scored
+      LOGO-CV 97.7 alone, worse than ignoring the images, so the ceiling on any ratio of
+      it is low.
+  E6  same model, different classical regressor (robust regression, gradient boosting).
+      CANCELLED. 24 samples and 12 features; a boosted tree will overfit and a Huber fit
+      is a second-order effect on a linear model already dominated by the curve basis.
+  E7  camera-invariance treatment (gray-world variants, per-camera gain correction).
+      CANCELLED FROM MODEL 1, NOT FROM THE PROJECT. E4's C2 arm showed the cheap version
+      is either circular or dependent on device identity. Invariance moves to Model 2,
+      where it must be handled before any backbone is fine-tuned.
 
-  MODEL 2 DECISION GATE. If E4's probe does not beat 61.24 then Model 1 has plateaued:
-  sharpness handled, aggregation exhausted, colour undecided, and the in-domain headroom
-  (39.5 against a rank-3 ceiling of 7.35) is not reachable by re-summarising the same
-  hand-built features. At that point a learned representation is an evidence-backed
-  decision rather than restlessness.
+MODEL 1 IS CLOSED — THE DECISION GATE FIRED
+--------------------------------------------------------------------------------
+The gate said: if E4's probe does not beat 61.24, Model 1 has plateaued. It did not beat
+it (77.12). The ladder therefore ends at E4, and E5 (band ratios) and E6 (alternative
+regressors) are CANCELLED for a specific reason rather than impatience: with the
+instrument demoted, both would produce internal rankings we are not allowed to believe,
+and their expected effect size is well under the 15 EMD the ruler can no longer resolve.
+
+Why this is a plateau and not a lack of effort. Across E1-E4 the IN-DOMAIN number never
+moved: 39.5 to 46.9 the whole time, against a rank-3 representation ceiling of 7.35.
+Every external gain came from REMOVING things — two degenerate columns, the frequency
+family — and from adding regularisation. That is variance reduction, and it is exhausted.
+The ~34 EMD of in-domain headroom is a signal-extraction problem, and E3 plus E4 together
+show that re-summarising the same hand-built tile features does not reach it.
+
+Carry two things into Model 2:
+  1. The camera-transfer penalty is real and is roughly 16-20 EMD of the current best
+     61.24. A learned representation trained on 127 images from two Android devices will
+     meet the same wall. Budget for invariance explicitly; do not assume a backbone
+     solves it, and do not fine-tune one before the invariance question is addressed.
+  2. The selection instrument is demoted. Judge Model 2 by submissions on well-separated
+     candidates, with CAM+RES used only as a catastrophe filter — it never missed a
+     catastrophic configuration, but it can no longer order a close one.
+
+Best Model 1 configuration to date: 12 features (5-feature texture core + 7 colour),
+rank-3 curve basis, ridge alpha 10, Kaggle 61.24.
 
 The E2 slot was previously listed as the aggregation experiment and E3 as the ablation;
 both moved. The renumbering is recorded here so E1's `Experiment1.txt` section 18 and

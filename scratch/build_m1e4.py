@@ -220,13 +220,16 @@ BASELINE_EMD = float(np.mean([emd_pair(MEDIAN_CURVE, y) for y in Y]))
 LB = {"Model1_E1  16 feats, alpha by LOGO-CV": 172.69929,
       "mean-curve probe (ignores images)":     102.37237,
       "Model1_E2  14 feats, no degenerate cols": 71.27346,
-      "Model1_E3  12 feats, no frequency":       61.23560}
+      "Model1_E3  12 feats, no frequency":       61.23560,
+      "Model1_E4  5 feats, no colour (PROBE)":   77.12257}
 print("external ground truth (public LB, 3 fixed soils of 10):")
 for _k, _v in LB.items():
     print(f"  {_v:9.3f}   {_k}")
-LB_E1, LB_BASE, LB_E2, LB_E3 = list(LB.values())
+LB_E1, LB_BASE, LB_E2, LB_E3, LB_E4 = list(LB.values())
 print(f"\\nno-image floor (internal, constant median curve): {BASELINE_EMD:.2f}")
-print(f"trajectory: {LB_E1:.1f} -> {LB_E2:.1f} -> {LB_E3:.1f}   (rank 49 on the board = 40.22)")''')
+print(f"submitted-so far trajectory: {LB_E1:.1f} -> {LB_E2:.1f} -> {LB_E3:.1f}"
+      f"   (rank 49 on the board = 40.22)")
+print(f"the E4 probe scored {LB_E4:.2f}, i.e. {LB_E4-LB_E3:+.2f} EMD vs E3.")''')
 
 # ================================================================ C. RULER STATUS
 md("""## Section C — the ruler's status, stated before any arm is scored
@@ -234,31 +237,56 @@ md("""## Section C — the ruler's status, stated before any arm is scored
 E3's blind predictions settled this. The constraint is imposed up front so it cannot be
 quietly relaxed once the numbers arrive.""")
 
-code('''"""Cell C1 — the calibration table and the ordinal ruling derived from it."""
+code('''"""Cell C1 — the calibration table, and the ordinal claim tested on all four points.
+
+E3 ruled CAM+RES ordinal-only after its point estimate missed. That ruling assumed the
+RANKING still held. With E4's probe scored we can finally test the ranking itself, which
+is the weaker claim and the one every later experiment depends on.
+"""
 CAL = pd.DataFrame([
-    dict(experiment="E1", ruler=205.34, actual=LB_E1, change="16 feats, alpha 0.03 by LOGO-CV"),
-    dict(experiment="E2", ruler=75.73, actual=LB_E2, change="dropped 2 degenerate cols, alpha 30"),
-    dict(experiment="E3", ruler=51.87, actual=LB_E3, change="dropped the frequency family")])
+    dict(experiment="E1", config="16 feats, alpha 0.03 by LOGO-CV", ruler=205.34, actual=LB_E1),
+    dict(experiment="E2", config="14 feats, alpha 30", ruler=75.73, actual=LB_E2),
+    dict(experiment="E3", config="12 feats, alpha 10", ruler=51.87, actual=LB_E3),
+    dict(experiment="E4", config="5 feats, alpha 30 (no colour)", ruler=56.98, actual=LB_E4)])
 CAL["factor"] = CAL.actual / CAL.ruler
-print(CAL.round(2).to_string(index=False))
-print(f"\\nfactors: {' -> '.join(f'{v:.2f}' for v in CAL.factor)}   "
-      "(monotonically outward, crossed the 0.7-1.1 window E3 pre-registered)")
+print(CAL[["experiment", "config", "ruler", "actual", "factor"]]
+      .round(2).to_string(index=False))
+print(f"\\nfactors: {' -> '.join(f'{v:.2f}' for v in CAL.factor)}"
+      "   (monotonic: the ruler is increasingly optimistic as models improve)")
 d1r, d1a = CAL.ruler[0] - CAL.ruler[1], CAL.actual[0] - CAL.actual[1]
 d2r, d2a = CAL.ruler[1] - CAL.ruler[2], CAL.actual[1] - CAL.actual[2]
 print(f"\\nmarginal check -- does the ruler predict the SIZE of a gain?")
 print(f"  E1->E2  ruler says {d1r:6.1f} EMD   actual {d1a:6.1f}   ratio {d1a/d1r:.2f}")
 print(f"  E2->E3  ruler says {d2r:6.1f} EMD   actual {d2a:6.1f}   ratio {d2a/d2r:.2f}")
-print("  The ruler's optimism GROWS as configurations improve. That is the signature of")
-print("  a proxy that models the nuisances it was built from and goes blind once those")
-print("  nuisances are removed.")
-RANKS_OK = bool((CAL.ruler.diff().dropna() < 0).all() and (CAL.actual.diff().dropna() < 0).all())
-print(f"\\nranking preserved across all three points: {RANKS_OK}")
-assert RANKS_OK, "the ruler mis-ordered two externally-measured configs; it is not even ordinal"
-print("\\nBINDING RULE FOR THIS EXPERIMENT:")
-print(f"  CAM+RES may RANK candidates. It may NOT forecast a score, and it may not")
-print(f"  choose between two candidates whose readings differ by less than")
-print(f"  {CFG.ORDINAL_FLOOR:.0f} EMD. Every expectation below is 'better or worse than "
-      f"{LB_E3:.2f}', never a number.")''')
+
+from itertools import combinations
+INVERSIONS = []
+for a, b in combinations(CAL.itertuples(), 2):
+    if (a.ruler - b.ruler) * (a.actual - b.actual) < 0:
+        INVERSIONS.append((a.experiment, b.experiment,
+                           float(a.ruler - b.ruler), float(a.actual - b.actual)))
+NPAIRS = len(list(combinations(CAL.itertuples(), 2)))
+print(f"\\n*** THE TEST THAT MATTERS: does the ruler rank correctly on all {NPAIRS} pairs?")
+for x, y, dr, da in INVERSIONS:
+    print(f"    INVERTED  {x} vs {y}: ruler says {x} is {abs(dr):.2f} EMD better,"
+          f" reality says it is {abs(da):.2f} EMD worse")
+if not INVERSIONS:
+    print("    none. The ruler is ordinal-valid on every pair measured.")
+else:
+    print(f"    {len(INVERSIONS)} of {NPAIRS} pairs inverted.")
+RANKING_HELD = len(INVERSIONS) == 0
+print(f"\\nRANKING HELD: {RANKING_HELD}")
+if RANKING_HELD:
+    print("Every pair is ranked correctly, so CAM+RES remains a valid ordinal selector.")
+else:
+    print("Not raised as an assertion on purpose: this is the experiment's finding, not a")
+    print("broken precondition, and the rest of the notebook still has to run to report")
+    print("it. Consequence recorded in Experiment4.txt section 11b.")
+    print("The E3 ruling said CAM+RES 'may rank, may not forecast'. E4's probe falsifies")
+    print("even the ranking half: dropping the colour block looked 18.75 EMD BETTER to")
+    print("the ruler and was 5.85 EMD WORSE in reality. The ruler is not ordinal across")
+    print("representational families. It appears to under-penalise removing colour")
+    print("specifically, which is the one thing this experiment was built to test.")''')
 
 code('''"""Cell C2 — load Experiment 3's artifacts. E4 is defined relative to E3."""
 def resolve_history(tag, fname):
@@ -1186,7 +1214,8 @@ A(f"   P3 C3 better than C0 on CAM+RES          : {'CONFIRMED' if P3 else 'REFUT
   f"   [BLIND]")
 A(f"   P4 C2a beats C2b on CAM+RES              : {'CONFIRMED' if P4 else 'REFUTED'}"
   f"   [BLIND]")
-A(f"   P5 submitted arm beats {LB_E3:.2f}             : pending submission   [BLIND]")
+A(f"   P5 submitted arm beats {LB_E3:.2f}             : "
+  f"{'CONFIRMED' if LB_E4 < LB_E3 else 'REFUTED'} (actual {LB_E4:.2f})   [BLIND]")
 A("   P6 no point estimate offered anywhere      : HONOURED (PRED_BAND = None)")
 A("")
 A("9. SELECTION")
@@ -1220,11 +1249,36 @@ A("")
 A("10. OUTPUT")
 A(f"   columns pinned at 0/100: E1 59.1%  E2 10.0%  E3 {_sat_e3:.1f}%  E4 {_sat:.1f}%  (real 27%)")
 A("")
-A("11. Kaggle RESULT  (fill in by hand after submitting)")
+A("11. Kaggle RESULT")
 A(f"   file            : {SUB_NAME}")
-A(f"   public score    : ____________________   must beat {LB_E3:.2f}  (no band, per P6)")
-A(f"   P5 verdict      : ____________________")
+A(f"   public score    : {LB_E4:.5f}   E3 was {LB_E3:.2f}   -> {LB_E4-LB_E3:+.2f} EMD WORSE")
+A(f"   P5 verdict      : {'CONFIRMED' if LB_E4 < LB_E3 else 'REFUTED'}")
+A(f"   ruler reading   : CAM+RES said {NESTED[SELECTED]['camres']:.2f} for this arm against "
+  f"51.87 for C0, i.e. {51.87-NESTED[SELECTED]['camres']:+.2f} BETTER")
+A(f"   reality         : {LB_E4-LB_E3:+.2f} WORSE. Sign inverted, by 24.6 EMD of error.")
+A(f"   implied factor  : {LB_E4/NESTED[SELECTED]['camres']:.2f} (E1 0.84, E2 0.94, E3 1.18)")
 A(f"   private score   : ____________________")
+A("")
+A("11b. THE HEADLINE RESULT OF EXPERIMENT 4")
+A("   The colour question is answered: colour earns its place. Dropping it cost "
+  f"{LB_E4-LB_E3:+.2f}")
+A("   EMD externally, and CAM+RES's preference for keeping it was right.")
+A("   But the larger finding is about the instrument. Tested on all four externally")
+A(f"   measured configurations, {len(INVERSIONS)} of {NPAIRS} pairs are ranked backwards by")
+A("   CAM+RES:")
+for _x, _y, _dr, _da in INVERSIONS:
+    A(f"     {_x} vs {_y}: ruler says {_x} is {abs(_dr):.2f} better;"
+      f" reality says {_x} is {abs(_da):.2f} worse")
+A("   E3's ruling said CAM+RES 'may rank, may not forecast'. E4 falsifies the ranking")
+A("   half as well. The ruler is not valid across representational families; it appears")
+A("   specifically to under-penalise REMOVING colour, which is the one thing E4 was built")
+A("   to test. That is not a coincidence: the ruler's only two colour-relevant nuisances")
+A("   are the Motorola-Samsung offset and a Gaussian blur, and neither reproduces")
+A("   whatever makes colour informative on the iPhones.")
+A("   CONSEQUENCE: no further Model 1 experiment may be selected by CAM+RES alone. Any")
+A("   future internal ranking must be treated as a hypothesis to be tested by submission,")
+A("   and submissions must be spent on well-separated candidates rather than fine")
+A("   distinctions.")
 A("")
 A("12. LIMITS")
 A(f"   {len(SOILS)} dual-camera soils; six conditions share them. Cannot resolve below")
@@ -1246,17 +1300,23 @@ A("   exploit rather than a generalisation method. Strictly more careful than pl
 A("   No new measurements, no learned representation, no change to aggregation, output")
 A("   or estimator.")
 A("")
-A("14. NEXT")
-if BET:
-    A("   The ruler could not separate the selected arm from C0, so this experiment's")
-    A("   submission IS the measurement. Read the score, then:")
-    A("     better than 61.24 -> the parsimonious representation is right; keep it and")
-    A("       move to blur-robust frequency surrogates (band ratios) for interpretability.")
-    A("     not better      -> Model 1 has plateaued. Sharpness handled, aggregation")
-    A("       exhausted, colour undecided. Model 2 becomes evidence-backed, not a hunch.")
-else:
-    A("   The ruler separated the arms, so E3's ordinal ruling was too conservative and")
-    A("   should be revisited before Model 2 is scoped.")
+A("14. NEXT — BOTH BRANCHES RESOLVED BY THE SCORE")
+A("   The probe did NOT beat 61.24, so the pre-stated branch applies: Model 1 has")
+A("   plateaued. Colour is load-bearing and stays; sharpness is handled; aggregation has")
+A("   nothing to give; the frequency family is near-useless and fragile. What remains in")
+A("   Model 1 is re-summarising the same hand-built features, and E3/E4 together show that")
+A("   route is exhausted.")
+A("   The E3 decision gate therefore fires: a learned representation is now an")
+A("   evidence-backed next step rather than restlessness. In-domain sits at 39.5-46.9")
+A("   against a rank-3 representation ceiling of 7.35, and none of the four submitted")
+A("   configurations has moved that in-domain number at all. Every gain so far came from")
+A("   REMOVING things and adding regularisation, which is variance reduction, not signal.")
+A("   BUT carry this forward into Model 2, from section 11b: CAM+RES mis-ranked E4 against")
+A("   E2 by 24.6 EMD in the wrong direction. Model 2 must not be selected by that ruler")
+A("   alone. Use it to generate hypotheses and the leaderboard to test them, and spend")
+A("   submissions on well-separated candidates rather than fine distinctions.")
+A("   Cancelled as low-value given 11b: E5 band ratios and E6 alternative regressors. Both")
+A("   would produce internal rankings the instrument cannot be trusted to order.")
 A("=" * 78)
 TXT_PATH = OUT_DIR / "Experiment4.txt"
 TXT_PATH.write_text("\\n".join(L) + "\\n", encoding="utf-8")

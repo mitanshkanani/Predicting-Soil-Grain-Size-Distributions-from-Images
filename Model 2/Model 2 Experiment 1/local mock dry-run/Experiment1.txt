@@ -1,0 +1,145 @@
+==============================================================================
+Model 2 / Experiment 1 - frozen pretrained backbone vs hand-built features
+==============================================================================
+run context      : local
+seed             : 20260930   embedding seed: 20260930
+config_hash      : 010f44c36c74   pipeline 1.0.0
+requested BACKEND: ('mock',)
+torch present    : False
+arms executed    : ['M1', 'mock']
+outputs          : Model 2\Model 2 Experiment 1
+platform         Windows-11-10.0.26200-SP0
+
+1. WHAT CHANGED, AND ONLY THIS
+   Per-tile feature vector: Model 1's 12 hand-built features vs frozen DINOv2
+   ViT-S/14 embeddings vs the same architecture with random untrained weights.
+   Frozen and unchanged from Experiment 3: tile size, soil-fraction filter, two-stage
+   tile->image->soil median aggregation, StandardScaler, rank-3 PCA curve basis,
+   closed-form ridge, clip->cummax->force-100 projection, the 16 CV families, the
+   trapezoid EMD, and the label source (manifest_samples.csv).
+   Declared accommodation: the alpha grid is extended upward to 1e6 and the extension is
+   applied to EVERY arm including the control (grid = [0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0, 100.0, 300.0, 1000.0, 3000.0, 10000.0, 30000.0, 100000.0, 300000.0, 1000000.0]).
+   Not done, on purpose: no fine-tuning, no attention pooling, no new tile size, no
+   ConvNeXt, no different regression head, no embedding-PCA, no preprocessing change.
+
+2. ARMS
+   M1    backend=M1          features= 12  kind=hand-built
+   MOCK  backend=mock        features=384  kind=plumbing mock
+   M1 is Model 1 E3's cell C: core (e4,e8,e16,lum_sd,grad_mean) + colour (R,G,B,sat,
+   lum_p10,p50,p90). Frequency is excluded, per E3's finding.
+   Full per-arm configuration: arms_config.csv
+
+3. REPRODUCTION OF THE CONTROL
+   max absolute drift vs Experiment 3's features_soil.csv: 2.842e-14 (gate < 1e-6)
+   CV families copied unchanged: 16 families over 24 soils
+   Therefore every difference in section 5 is attributable to the representation.
+
+4. METRIC
+   trapezoid EMD reproduces the host's published trivial baseline: 100.3132 vs 100.31
+   page's printed left-endpoint formula gives 102.0200 and does not; the page notation
+   is loose and the grader uses the trapezoid (confirmed in E2, re-confirmed here).
+   no-image in-domain floor 82.62 | rank-3 ceiling 7.35
+
+5. PRIMARY RESULT - nested in-domain LOGO-CV (lower is better)
+   M1    mean  43.02  median  39.76  worst 104.73  n=24
+   MOCK  mean  87.82  median  83.56  worst 139.61  n=24
+   per-fold and per-soil scores: cv_per_fold.csv, cv_per_soil.csv (32 fold-rows)
+   Alpha was chosen inside each outer fold, so these are procedure scores, not the
+   score of the best alpha. Oracle alphas and the parsimony rule are in
+   alpha_selection_in_domain.csv.
+   M1    oracle alpha 3 at  41.15, parsimony alpha 30 at  51.70, grid spread  51.87
+   MOCK  oracle alpha 0.03 at  87.82, parsimony alpha 1e+06 at  93.02, grid spread   5.20   <- parsimony hit the grid top
+
+6. PRETRAINING ABLATION (paired, soil-level bootstrap)
+   MOCK - M1 (plumbing control, not a result)     +44.80  CI [  +31.81,  +57.68]  wins  3/24  SIGNIFICANT (first is worse)
+
+7. MECHANISM
+   M1           camera  1.214 z   sharpness  0.714 z   (n=12.0)
+   M1:core      camera  0.756 z   sharpness  0.873 z   (n=5.0)
+   M1:colour    camera  1.541 z   sharpness  0.600 z   (n=7.0)
+   MOCK         camera  1.601 z   sharpness  0.328 z   (n=384.0)
+   Model 1 reference: colour 1.54 z camera, texture core 0.85 z, absolute-frequency
+   4.31 z under blur.
+   M1           camera/soil distance ratio  1.105   blur/soil  0.818
+   MOCK         camera/soil distance ratio  1.096   blur/soil  0.047
+
+8. CAM+RES - REPORTED, NOT USED TO SELECT
+   E4's ruling demoted the ruler (it ranked E4 above E2 by 24.6 EMD and the leaderboard
+   reversed them). These are new calibration points for its failure analysis only.
+   M1    CAM+RES at parsimony alpha   54.98   best ruler alpha 30 at   54.98   in-domain  43.02
+   MOCK  CAM+RES at parsimony alpha   93.60   best ruler alpha 1e+06 at   93.60   in-domain  87.82
+
+9. DECISION GATE
+   evaluable: False     submit: False
+   [FAIL] all three gate arms present
+   submit = D beats M1 in-domain AND D beats R in-domain AND the paired D-R CI
+   excludes zero. Fixed before the run, executed as code in cell L1.
+   VERDICT: THE GATE DID NOT FIRE - the premise that
+   a learned representation extracts more grain-size signal than Model 1's 12
+   hand-built features is REFUTED. That verdict is not revisited below.
+
+9b. DECLARED PROBE - A SEPARATE DECISION, NOT A GATE OVERRIDE
+   probe taken: False     arm: dinov2
+   reason : the gate measures in-domain signal, which the premise needed and did not get; it cannot measure cross-camera transfer, which is where D leads on every readout and which E1 proved our internal metrics rank backwards
+   The gate measures in-domain signal. It is structurally blind to cross-camera
+   transfer, which is the failure that has dominated this project - and E1 proved
+   our internal CV ranks transfer in the WRONG ORDER, so no internal number can
+   settle it. D lost in-domain by 1.31 EMD (CI -6.67 to +9.36, i.e. unresolved)
+   while being the most device-stable representation ever measured here.
+   PREDICTION, FIXED BEFORE THE SCORE WAS SEEN: D scores BELOW 61.24 on the public leaderboard
+   beats 61.24  -> cross-camera transfer is dominated by device stability, not by
+                  in-domain fit. The remaining time goes to invariance.
+   does not     -> Model 2 is closed on evidence. The remaining time goes to
+                  hardening E3's 61.24 configuration.
+   Either outcome leaves section 9's refutation intact. This decides only where the
+   remaining effort is spent, and it spends one submission slot to find out.
+
+10. SUBMISSION
+   NO SUBMISSION WAS PRODUCED BY THIS RUN.
+   reason: gate.submit = False, probe taken = False; arms present ['M1', 'MOCK'].
+   This is the designed behaviour for a mock/plumbing run.
+
+11. PRE-REGISTERED PREDICTIONS
+   P1  [no ] mock in-domain LOGO-CV is worse than the no-image floor 82.62
+        -> CONFIRMED: mock 87.82 vs floor 82.62. A plumbing correctness check, not a result: if it fails, the pipeline leaks.
+   P2  [YES] DINOv2 embeddings shift LESS between cameras than the colour block does
+        -> not evaluated: arm D not executed here; colour block baseline was 1.541 z
+   P3  [YES] random-init arm R does NOT beat the Model 1 control in-domain
+        -> not evaluated: R not run vs M1 43.02. If R wins too, the effect is width, not pretraining.
+   P4  [YES] DINOv2 arm D beats the Model 1 control in-domain
+        -> not evaluated: D not run vs M1 43.02; paired D-M1 the contrast is not computable in this run (an arm is absent)
+   P5  [YES] D beats R by a paired margin whose CI excludes zero
+        -> not evaluated: paired D-R the contrast is not computable in this run (an arm is absent)
+   P6  [YES] if a submission is made it beats 61.24
+        -> not applicable: no submission this run (gate submit=False, probe=False). E3's 61.24 stands.
+
+12. SCALE CAVEAT
+   tile 256px = 56.23 mm, resized to 224px = 49.20 mm;
+   one ViT-S/14 patch = 3.075 mm at 4.5525 px/mm.
+   12 of 24 training soils have D50 < 1.03 mm, so one patch spans more than 3 median grains;
+   16 of 24 have a median grain smaller than one whole patch; 10 of 24 have D50 < 0.11 mm
+   (patch = 28x the median grain there). D50 range 0.0213..6.126 mm.
+   Cropping a smaller physical area and upsampling is a DIFFERENT variable and belongs
+   in Model 2 E2. A null for D here may mean wrong magnification, not wrong
+   representation, and E1 alone cannot exclude that.
+
+13. SCOPE OF VERIFICATION - WHAT THIS RUN COULD AND COULD NOT TEST
+   torch/timm are absent from the development machine, so the backbone arms could not
+   execute. backbones.py is the only module that imports torch; check_backbones.py
+   verifies the mock path and proves the torch branches raise ImportError naming
+   Kaggle instead of falling back silently. Everything else - aggregation, the fold-
+   local fits, nested CV, the bootstrap, the gate, the submission gates - ran for real
+   here. A mock score is a plumbing result and is never reported as a finding.
+   Unverified by any local run: the real embedding geometry, the timm CLS readout shape,
+   and any number involving arms R or D.
+
+14. ENVIRONMENT
+   python       3.14.6
+   platform     Windows-11-10.0.26200-SP0
+   numpy        2.5.2
+   pandas       2.3.3
+   scipy        1.18.0
+   sklearn      1.9.0
+   matplotlib   3.11.1
+   Pillow       12.3.0
+==============================================================================

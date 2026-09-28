@@ -1,0 +1,132 @@
+MODEL 2 — LEARNED VISUAL REPRESENTATION
+================================================================================
+
+WHAT THIS MODEL REPRESENTS
+--------------------------------------------------------------------------------
+Model 2 asks whether a *learned* visual representation extracts more grain-size
+information from the preprocessed photographs than Model 1's hand-built tile features.
+
+It is the change of KIND that Model 1's promotion test required: Model 1 varied the
+feature set fed to a fixed head; Model 2 replaces the feature-producing stage itself.
+Everything downstream of the per-tile feature vector stays exactly as Model 1 left it.
+
+WHAT MODEL 1 ESTABLISHED, AND WHY IT CLOSED
+--------------------------------------------------------------------------------
+Model 1 ran four experiments and the IN-DOMAIN number never moved:
+
+  E1  in-domain LOGO-CV 35.98   Kaggle 172.70
+  E2  in-domain LOGO-CV 42.66   Kaggle  71.27
+  E3  in-domain LOGO-CV 41.15   Kaggle  61.24   <- best
+  E4  in-domain LOGO-CV 39.46   Kaggle  77.12   (probe: colour removed)
+
+Every external gain came from REMOVING features and adding regularisation. That is
+variance reduction, not better signal extraction. Against a rank-3 curve representation
+ceiling of 7.35, roughly 34 EMD of in-domain headroom is untouched, and E3 (which feature
+families carry signal) plus E4 (which colour representation carries it) both indicate that
+re-summarising the same hand-built tile features cannot reach it.
+
+THE MAIN COMPARISON — THIS IS THE WHOLE MODEL
+--------------------------------------------------------------------------------
+      Model 1 E3 hand-built features  ->  ridge
+  vs
+      frozen DINOv2 ViT-S/14 features ->  ridge
+
+One variable: the per-tile feature vector. Nothing else.
+
+FROZEN ACROSS EVERY MODEL 2 EXPERIMENT
+--------------------------------------------------------------------------------
+  tiles         the existing 256 px materialised tiles (56.23 mm square at the canonical
+                4.5525 px/mm). No new tile size, no new stride, no re-tiling.
+  aggregation   two-stage median, tile -> image -> soil, exactly Model 1's code path.
+                Low-soil-fraction tiles excluded at soil_fraction >= 0.50.
+  head          StandardScaler on features, rank-3 PCA curve basis, closed-form multi-
+                output ridge on the curve coefficients.
+  output        mean curve + 3 coefficients, then clip to [0,100], cummax, force 100 at
+                200 mm. The monotone projection is load-bearing and unchanged.
+  metric        trapezoid EMD on log10 d, mean over soils, 0-500 scale. Reconciled against
+                the host's published trivial baseline 100.31; the page's printed
+                left-endpoint formula gives 102.02 and is NOT what the grader computes.
+  validation    leave-one-family-out over the 16 curve-distance families, copied
+                byte-identical from E1/E2/E3. No random image-level split. The soil is
+                the unit of supervision.
+  leakage       scaler and curve basis refit inside each training fold only.
+  preprocessing never re-run. config_hash 010f44c36c74 pinned and asserted.
+
+EXPLICITLY OUT OF SCOPE FOR MODEL 2 EXPERIMENT 1
+--------------------------------------------------------------------------------
+These are not forbidden forever; they are excluded so that E1's result means one thing.
+Introducing any of them turns a clean comparison into an unattributable one.
+
+  - fine-tuning or partial fine-tuning of any backbone
+  - attention pooling, learned pooling, or multiple-instance pooling
+  - new tile sizes, new tile strides, or any change to tiling
+  - ConvNeXt, CLIP, ResNet, or any backbone other than the one arm definition
+  - different regression heads, or any change to the ridge / curve-basis stage
+  - any change to preprocessing, resampling, colour handling, masking or cropping
+  - direct 11-output regression or a differentiable-EMD loss
+  - ensembles, stacking, or multi-model averaging
+
+If one of these looks necessary mid-experiment, STOP and record why rather than folding it
+in. Each is a candidate for a later, separately named experiment.
+
+PRIMARY SELECTION METRIC — AND WHY IT IS NOT THE DEMOTED RULER
+--------------------------------------------------------------------------------
+Model 1's E1 experiment proved that in-domain LOGO-CV ranks configurations in the WRONG
+ORDER for cross-camera transfer, and E4 proved the replacement CAM+RES ruler mis-ranks
+even within Model 1 once a representational family is removed. Both rulings stand.
+
+Model 2 E1 nevertheless uses in-domain LOGO-CV as its primary metric, and this is a
+deliberate, argued exception rather than a regression:
+
+  E1's claim is narrow: LOGO-CV is invalid for predicting the LEADERBOARD under camera
+  shift. It is not a claim that LOGO-CV fails to measure how much curve signal a
+  representation carries on devices already seen. That is the representation question,
+  and it is the only quantity that was constant across all four Model 1 experiments.
+
+  Therefore: in-domain LOGO-CV may DECIDE Model 2 E1. It may not forecast a Kaggle score.
+  CAM+RES is reported for every arm as a diagnostic and as a further calibration point,
+  and is never used to select.
+
+This keeps E1 decidable without spending a submission, which matters because the
+experiment is designed to be refutable cheaply.
+
+THE CAPACITY CONTROL
+--------------------------------------------------------------------------------
+A frozen DINOv2 vector is 384-dimensional; Model 1's feature vector is 12. If DINOv2 wins,
+the obvious confound is dimensionality rather than pretraining.
+
+Every Model 2 experiment therefore reports three configurations, not two:
+
+  M1   Model 1 E3's 12 hand-built features          the control
+  R    the same ViT-S/14 architecture, RANDOM untrained weights   the capacity control
+  D    the same architecture, PRETRAINED DINOv2 weights           the claim
+
+R has the same dimensionality, the same receptive field, the same aggregation and the same
+head. **An experiment in this model is not interpretable unless all three are present**,
+and the notebook refuses to evaluate its own decision gate when any is missing.
+
+PROMOTION TEST
+--------------------------------------------------------------------------------
+  Model 3  a changed output parameterisation or a changed task framing
+  Model 4  changed aggregation / pooling as its own subject
+  Model 5  explicit domain adaptation as its own subject
+
+A change of backbone WITHIN the frozen-head protocol is a new EXPERIMENT in Model 2, not a
+new Model. A change to what the model OUTPUTS, or to how tiles are POOLED, is a new Model.
+
+SUBMISSION NAMING
+--------------------------------------------------------------------------------
+  Submission_Model2_E1.csv
+  Submission_Model2_E2.csv
+  ...
+
+Generated by the notebook itself under that exact name, never renamed from a generic file.
+IDs from manifest_samples.csv (submission_id, submission_row_order), never constructed from
+folder names. A Model 2 submission is written ONLY if the experiment's pre-stated decision
+gate passes; if it does not, the notebook writes nothing and says why.
+
+RULES
+--------------------------------------------------------------------------------
+Never overwrite a previous experiment's results. Never delete a failed experiment.
+Model 1's four experiment folders are read-only inputs to this model.
+A null result is a result and must be reported as one.

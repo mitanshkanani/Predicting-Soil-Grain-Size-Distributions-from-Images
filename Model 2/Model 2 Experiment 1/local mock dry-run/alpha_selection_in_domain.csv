@@ -1,0 +1,3 @@
+arm,backend,n_feat,oracle_alpha,oracle_emd,parsimony_alpha,parsimony_emd,parsimony_is_grid_max,grid_spread
+M1,M1,12,3.0,41.1475158656982,30.0,51.70090238135678,False,51.87155861984616
+MOCK,mock,384,0.03,87.81934785068704,1000000.0,93.02288325852801,True,5.203535407840974

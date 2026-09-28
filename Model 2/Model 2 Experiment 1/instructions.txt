@@ -1,0 +1,333 @@
+MODEL 2 — EXPERIMENT 1 — FROZEN DINOv2 vs HAND-BUILT FEATURES
+================================================================================
+
+WHAT THIS EXPERIMENT TESTS
+--------------------------------------------------------------------------------
+One question: does a frozen pretrained vision backbone extract more grain-size signal
+from the existing tiles than Model 1's 12 hand-built features, and is any gain due to
+PRETRAINING rather than to having more dimensions?
+
+Single variable: the per-tile feature vector. The head, the aggregation, the curve
+representation, the metric, the CV families, the split and the preprocessing are all
+frozen at Model 1 E3's values. See `Model 2/instructions.txt`.
+
+THE THREE ARMS
+--------------------------------------------------------------------------------
+  M1  Model 1 E3's 12 hand-built tile features. The control. Its in-domain LOGO-CV is
+      re-derived here rather than quoted, so the three arms are measured by one identical
+      pipeline. (The 41.15 and 46.94 figures in Model 1's records were produced with alpha
+      chosen by CAM+RES, which is not how alpha is chosen in this notebook.)
+
+  R   DINOv2 ViT-S/14 architecture with RANDOM, UNTRAINED weights. The capacity control.
+      Same 384 dimensions, same receptive field, same tiles, same aggregation, same head.
+
+  D   DINOv2 ViT-S/14 with pretrained weights, frozen. The claim under test.
+
+      R is not optional. A win for D that does not also beat R is evidence that
+      DIMENSIONALITY helps, not that pretraining helps, and must be reported that way.
+
+FEATURE DEFINITION
+--------------------------------------------------------------------------------
+  tiles      the existing 1,976 materialised 256 px tiles. No re-tiling, no new size.
+  input      each tile resized 256 -> 224 with bilinear interpolation, ImageNet-standard
+             normalisation (mean [0.485,0.456,0.406], std [0.229,0.224,0.225]).
+  readout    the CLS token, 384-dimensional, L2-normalised.
+             RECORDED AS A CHOICE: patch-token mean pooling is a different readout and is
+             deliberately NOT taken here, so that a later change is visible rather than
+             silent.
+  frozen     no gradient is ever computed. model.eval() under torch.no_grad(). The
+             backbone is not trained, not fine-tuned, and not adapted in any way.
+  aggregation  two-stage median, tile -> image -> soil, identical to Model 1.
+             Median is kept even though mean is more conventional for embeddings, because
+             changing it would be a second variable. mean-vs-median over embeddings is a
+             legitimate later experiment and is noted in section 14.
+
+HEAD, AND THE ONE DECLARED ACCOMMODATION
+--------------------------------------------------------------------------------
+The head is Model 1's exactly: fold-local StandardScaler, rank-3 PCA curve basis fitted
+on training rows only, closed-form multi-output ridge on curve coefficients, then the
+clip/cummax/force-100 monotone projection.
+
+No embedding-PCA or dimensionality-reduction step is added, even though 384 features on 24
+training soils looks degenerate. Ridge solves p > n in closed form, and inserting a
+reduction step would be a second change to the pipeline and would make the comparison to
+Model 1 uninterpretable.
+
+The one accommodation: **the alpha grid is extended upward to 1e6.** A grid topping out at
+1000 would silently under-regularise a 384-dim arm, which is the exact failure that caused
+Model 1's E1 collapse. The extended grid is applied to ALL THREE ARMS including the
+control, so it is not a differential advantage to the new arms. This is declared as a
+necessary consequence of the representation change, not an independent variable.
+
+WHERE EACH ALPHA RULE APPLIES — same split as E3 and E4, stated because it is easy to
+get wrong:
+  * the NESTED procedure score (the primary result) chooses alpha by plain inner-fold
+    argmin, exactly as E3's nested engine did. Applying parsimony inside the folds would
+    make the reported score a policy rather than a measurement.
+  * the FINAL FIT used for a submission uses the E4 parsimony rule: the LARGEST alpha
+    within 15 EMD of the grid optimum. Where the whole sweep is inside 15 EMD the rule
+    lands on the top of the grid, which the notebook prints as an explicit warning instead
+    of hiding. The mock arm does exactly that here, and it is the designed signal that the
+    arm carries no alpha-resolvable signal.
+
+PRIMARY METRIC
+--------------------------------------------------------------------------------
+In-domain leave-one-family-out LOGO-CV, nested, reported as the score of the PROCEDURE and
+never of the best alpha.
+
+This is a deliberate exception to Model 1's ruling that LOGO-CV may not select. The
+justification is in Model 2/instructions.txt: E1 proved LOGO-CV mis-ranks under CAMERA
+SHIFT, which is not the question this experiment asks. In-domain error is the only
+quantity that was constant across all four Model 1 experiments, and it is the one the
+representation question lives in.
+
+CAM+RES is computed for all three arms and REPORTED, with a header saying it is not used
+to select. It also becomes new calibration data for the ruler's failure analysis.
+
+THE DECISION GATE — FIXED BEFORE IMPLEMENTATION, EXECUTED AS CODE
+--------------------------------------------------------------------------------
+  submit = in_domain(D) < in_domain(M1)
+           AND in_domain(D) < in_domain(R)
+           AND the paired soil-bootstrap CI of (D - R) excludes zero
+
+  outcome                                        meaning                    action
+  D beats control and beats random-init          pretraining extracts signal  submit
+  D beats control but not random-init            it is CAPACITY             do not submit
+  D does not beat control                        representation is not the  do not submit
+                                                 bottleneck
+  any arm missing                                gate cannot be evaluated   do not submit
+
+The gate is evaluated in code and its inputs are printed. It may not be renegotiated after
+the numbers are seen. The second and third rows are real possibilities and both are useful
+answers; this experiment is designed to be refutable, not to be vindicated.
+
+PHYSICAL-SCALE CAVEAT, STATED UP FRONT
+--------------------------------------------------------------------------------
+Tiles are 256 px = 56.23 mm at the canonical 4.5525 px/mm. ViT-S/14 takes 224 px, so one
+patch spans 3.075 mm of soil.
+
+Ten of the 24 training soils have D50 below 0.11 mm (measured in cell B1; the plan said
+eleven, and the notebook prints the measured counts rather than the planned ones). For
+those, a patch is roughly 28 times the median grain: the backbone sees fines only as
+texture, never as particles. This is the same resolution floor that ruled out particle
+counting during preprocessing, and it applies to any patch-based transformer at this scale.
+Cell B1 reports three nested counts: soils where one patch spans more than three median
+grains (12 of 24), soils whose median grain is smaller than a whole patch (16 of 24), and
+the sub-0.11 mm group (10 of 24).
+
+The fix — cropping a smaller physical area and upsampling so patches land at
+sub-millimetre size — is a DIFFERENT VARIABLE and belongs in a later experiment. E1
+deliberately does not do it, so that a null result is interpretable: if D fails here it may
+be scale rather than representation, and the next experiment separates them. E1 alone
+cannot fully exclude that reading, and this is the experiment's main known weakness.
+
+PRE-REGISTERED PREDICTIONS
+--------------------------------------------------------------------------------
+Written before implementation. The blind/confirmation label is per prediction and may not
+be edited afterwards.
+
+  P1  the mock backend's in-domain LOGO-CV is at or worse than the no-image floor 82.62
+      [CONFIRMATION - a plumbing correctness check. If mock scores WELL, the aggregation or
+      the fold-local fitting is leaking and no real result may be trusted until fixed.]
+
+  P2  DINOv2 embeddings shift LESS between Motorola and Samsung than the colour block does
+      (Model 1 measured colour at 1.54 z mean camera shift)
+      [BLIND - and the important diagnostic: if learned features are NOT more
+      camera-stable, Model 2 inherits Model 1's transfer wall in full and invariance work
+      is mandatory regardless of which representation wins.]
+
+  P3  the random-init arm R does NOT beat the Model 1 control in-domain
+      [BLIND - the ablation the experiment rests on]
+
+  P4  the pretrained arm D beats the Model 1 control in-domain
+      [BLIND - the central claim]
+
+  P5  D beats R by a paired margin whose soil-bootstrap CI excludes zero
+      [BLIND - pretraining rather than capacity]
+
+  P6  if the gate fires and a submission is made, it beats 61.24
+      [BLIND - the only external test]
+
+P4 and P5 must BOTH hold for the gate to fire.
+
+LOCAL VERIFICATION IS PARTIAL, AND THAT IS ISOLATED RATHER THAN HIDDEN
+--------------------------------------------------------------------------------
+The development machine has no torch, no torchvision and no timm. The backbone arms
+therefore cannot be executed locally at all.
+
+The response is structural, not a substitution:
+  - every torch import is confined to ONE file, backbones.py, behind a three-function
+    interface
+  - a pure-numpy `mock` backend exercises the entire surrounding pipeline locally: tile
+    loading, resize, batching, caching, aggregation, fold-local fitting, nested CV, the
+    paired bootstrap, the gate, the submission gates and the record writer
+  - check_backbones.py tests the interface contract without torch, and asserts that the
+    torch branches FAIL LOUDLY with a message naming Kaggle rather than silently falling
+    back to mock
+
+Consequence: a mock run is a plumbing test and is NEVER a result. The notebook refuses to
+write a submission when the mock backend is involved, and the record labels a mock run
+explicitly as verification. The real comparison requires one Kaggle run with both backbone
+arms present, and the gate will not evaluate without them.
+
+Budget two or three Kaggle runs for plumbing. The backbone path is genuinely untested until
+the first one completes.
+
+RESULT - RUN 1 (2026-09-28, no submission) AND PROBE RUN 2 (same day)
+--------------------------------------------------------------------------------
+Run 1, 39/39 cells, 0 errors, torch 2.10.0+cu128 / timm 1.0.26, backbone construction
+{'img_size': 224, 'dynamic_img_size': True}, control reproduced E3 to 2.842e-14:
+
+    nested in-domain LOGO-CV     M1 43.02     D 44.33     R 39.78
+    gate: all three clauses FAILED -> no submission
+    P3 REFUTED  P4 REFUTED  P5 REFUTED  P2 CONFIRMED
+
+  The premise is REFUTED. A frozen pretrained ViT does not extract more grain-size
+  signal from these tiles than Model 1's 12 hand-built features.
+
+  R's 39.78 is the best in-domain number this project has ever produced and it is
+  an artefact, not a finding: not significant (paired -3.24, CI [-12.53,+6.06]);
+  optimum at the BOTTOM of the alpha grid, which is exactly what E1 did before
+  scoring 172.70; worst arm under transfer (CAM+RES 78.55 vs D's 47.08); and its
+  between-soil cosine distance is 0.0000 - a random ViT collapses its outputs, so
+  the scaler amplifies noise and an unregularised ridge fits it. Best in-domain
+  plus worst out-of-domain is overfitting.
+
+  The real finding is that robustness and informativeness separated:
+
+      camera shift z    camera/soil distance    blur/soil distance
+      M1 colour 1.541   M1 1.105                M1 0.818
+      D         0.620   D  0.209                D  0.029
+
+  D is ~2.5x more camera-stable and ~28x more blur-stable than anything Model 1
+  built, and no more accurate. That overturns the assumption behind Model 1's
+  camera work: making a representation device-invariant does not, by itself, make
+  it informative.
+
+PROBE RESULT - P6 CONFIRMED, and it does not rescue the premise
+--------------------------------------------------------------------------------
+    Submission_Model2_E1.csv (arm D, alpha 1000, 384 features)  ->  60.56167
+    best Model 1 so far: E3                                      ->  61.23560
+    improvement                                                  ->   0.674 EMD (1.1%)
+
+  The prediction was that D beats 61.24. It did, so P6 is CONFIRMED. But the margin
+  is small and the honest reading is a near-tie, not a vindication:
+
+  * the two submissions really are different models - mean absolute difference 2.46
+    percentage points, max 13.10, mean curve-to-curve EMD 13.40, and not one of the
+    10 rows agrees within 1 pp. So 60.56 is not E3 re-scored.
+  * but 0.674 EMD on the fixed 3-soil public set is inside what three soils can
+    move by chance. It is a hint, not a result.
+  * what the pair does show, and this is the useful part, is a SMALLER TRANSFER
+    PENALTY for D: M1 goes 43.02 in-domain -> 61.24 external (+18.2), D goes
+    44.33 -> 60.56 (+16.2). D starts worse and finishes level, which is consistent
+    with the mechanism table. Two points on a three-soil sample, though - it
+    motivates a direction, it does not establish one.
+
+  Therefore: Model 2 does not continue as a source of accuracy. The pretrained line
+  earns attention only as a route to a smaller transfer penalty, and that is a
+  different claim than the one this experiment was built to test.
+
+  Run 2 reproduced run 1's entire primary result table and the E3 reproduction line
+  byte-identically across two separate Kaggle sessions - the pipeline is stable.
+
+FILES
+  Model2_Experiment1.ipynb                       generated source notebook
+  Model2_Experiment1_KAGGLE_run2_executed.ipynb  the probe run, with outputs
+  soil-competition_model_2_exp1_run1.ipynb       run 1, with outputs
+  Kaggle run 1 - recovered transcript.md         run 1 tables, recovered after a local
+                                                 mock run overwrote the downloaded CSVs
+  Submission_Model2_E1.csv                       the probe submission, 60.56167
+  local mock dry-run/                            plumbing artifacts, never results
+
+RULES
+--------------------------------------------------------------------------------
+Never overwrite a previous experiment's results. Model 1's folders are read-only.
+Do not introduce fine-tuning, attention pooling, new tile sizes, another backbone, another
+regression head, or any preprocessing change in order to make something work. If one of
+them appears necessary, stop and record why; it is a different experiment.
+
+A LOCAL MOCK RUN WRITES ONLY INTO `local mock dry-run/`. It must never share a directory
+with real results, because the filenames are identical. This is enforced in cell A1, not
+left to discipline: a mock dry run on 2026-09-28 overwrote the downloaded Kaggle outputs.
+The numbers survived (the executed notebook carries every table, see
+`Kaggle run 1 - recovered transcript.md`) but the CSVs did not.
+
+THE DECLARED PROBE - REGISTERED 2026-09-28, BEFORE ANY PROBE SCORE WAS SEEN
+--------------------------------------------------------------------------------
+Run 1 answered the question it was built to answer, and the answer was no:
+
+    in-domain nested LOGO-CV   M1 43.02   D 44.33   R 39.78
+    gate: all three clauses FAILED -> no submission
+
+**The premise is refuted and that verdict is not revisited.** The probe is a separate
+decision about a different question.
+
+What run 1 also found is a split nobody expected: D is the most device-stable representation
+this project has ever measured - camera shift 0.620 z against the colour block's 1.541 z,
+camera/soil distance ratio 0.209 against Model 1's 1.105, blur/soil 0.029 against 0.818 -
+and it is no more accurate. Robustness and informativeness came apart.
+
+So the open question is which of those two matters for the score, and **no internal metric
+can answer it.** That is not a preference; it is E1's measured finding - leave-one-out CV
+ranks ridge configurations in the wrong order for cross-camera transfer, rank correlation
+-0.953 - and CAM+RES, the ruler built to fix that, is demoted to ordinal-only after it
+ranked E4 above E2 and the leaderboard reversed them. The only instrument that measures
+transfer is the leaderboard.
+
+    probe = submit arm D once, labelled as a probe, to test transfer directly
+    prediction, fixed here and not editable afterwards:
+        D scores BELOW 61.24 on the public leaderboard
+
+    beats 61.24  -> cross-camera transfer is dominated by device stability, not in-domain
+                    fit. Remaining time goes to invariance.
+    does not     -> Model 2 is closed on evidence. Remaining time goes to hardening E3's
+                    61.24 configuration.
+
+Cost: one submission slot. It is armed by `Config.probe_arm = "dinov2"` in cell A1 and set
+to None to disarm. Cell L1 prints the gate verdict first and the probe second, and
+`Experiment1.txt` sections 9, 9b and 10 keep them visibly distinct so no later reader can
+mistake a probe score for evidence about the premise.
+
+**What the probe is NOT:** it is not a gate pass, not an improvement claim, and not a
+reason to keep the pretrained line if it loses. If D beats 61.24 the conclusion is "pursue
+invariance", not "DINOv2 was right" - the in-domain table already settled that.
+
+SUBMISSION NAMING
+  Submission_Model2_E1.csv   generated by the notebook only if the gate fires; written
+  under that exact name, never renamed, IDs from manifest_samples.csv, validated by eight
+  gates before writing and re-read from disk afterwards.
+
+AS IMPLEMENTED — local mock dry run, 2026-09-28
+--------------------------------------------------------------------------------
+Notebook: Model2_Experiment1.ipynb, 55 cells (39 code, 16 markdown), generated by
+scratch/build_m2e1.py and flattened to scratch/run_m2e1.py by scratch/mk_run2.py, which
+compile()-checks the result so the notebook and the headless run cannot diverge.
+
+Sections: A setup · B data and metric · C Model 1 restated · D environment probe ·
+E embeddings · F aggregation · G arms · H in-domain nested CV · I pretraining ablation ·
+J mechanism · K report-only CAM+RES · L gate · M submission · N error analysis · O record.
+
+Measured locally, BACKEND=mock, two independent runs:
+  * control reproduces E3's features_soil.csv to 2.84e-14 (the gate is 1e-6)
+  * E3's CV families copied unchanged: 16 families over 24 soils
+  * metric self-check reproduces the host's 100.31 trivial baseline
+  * nested in-domain LOGO-CV: M1 43.02, MOCK 87.82 (no-image floor 82.62)
+  * MOCK - M1 = +44.80 EMD, CI [+31.81, +57.68], wins 3/24  -> P1 CONFIRMED
+  * the mechanism table reproduces E4's colour camera-shift figure: 1.541 z here against
+    E4's published 1.54 z, so section J is on Model 1's scale and not a new one
+  * gate: evaluable=False, submit=False; NO submission written
+  * all 16 emitted files byte-identical between the two runs
+  * preprocess.final_check PASSED afterwards; nothing in data/Training, data/Test or
+    data/processed_meta was modified
+  * a BACKEND=vit_random run on this machine exits 0 with the arm reported NOT EXECUTABLE,
+    which is the code path the first Kaggle session relies on
+
+Two numbers the plan stated were corrected against the data before the run, not after: the
+fine-soil count (ten, not eleven) and the control's expected in-domain figure (the 41.15 /
+46.94 pair in Model 1's records came from CAM+RES-chosen alphas, which is not this
+pipeline). The scale caveat itself is unchanged in substance.
+
+Still unverified anywhere: real embedding geometry, the timm CLS readout shape, and every
+number involving arms R and D. Cell E1 exists so those are checked before 1,976 tiles go
+through the backbone rather than after.
