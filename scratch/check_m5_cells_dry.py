@@ -26,6 +26,7 @@ import shutil
 ROOT = Path(__file__).resolve().parents[1]
 NB = ROOT / "Model 5" / "Model 5 Experiment 1" / "Model5_Experiment1.ipynb"
 DRY = ROOT / "scratch" / "_m5_dry"
+EXP_DIR = ROOT / "Model 5" / "Model 5 Experiment 1"
 FAILS, LINES = [], []
 
 
@@ -62,6 +63,21 @@ assert not _calls, (
 
 print("CHECK M5 CELLS DRY - real inputs, no arm scored, no artifact in the experiment folder")
 print("-" * 78)
+
+
+def snapshot():
+    """Content hash of every file in the experiment folder, so 'I changed nothing' is testable.
+
+    The earlier version of this checker asserted that a given result file did not exist there.
+    Once the experiment had actually run that assertion could never pass again - a check that
+    expires is not a check. Comparing the folder before and after works on either side of the run.
+    """
+    import hashlib
+    return {p.name: hashlib.sha256(p.read_bytes()).hexdigest()[:16]
+            for p in sorted(EXP_DIR.glob("*")) if p.is_file()}
+
+
+before = snapshot()
 shutil.rmtree(DRY, ignore_errors=True)
 DRY.mkdir(parents=True, exist_ok=True)
 ns = {}
@@ -131,10 +147,14 @@ check("every fold's fit set keeps at least two CV families, so alpha selection i
       len(set(famf)) >= 2, f"{len(set(famf))} families")
 check("the fitting pool shrinks by exactly one family per fold",
       all(len(f["fit_ids"]) < 24 for f in ns["_D"]["A"]))
-check("the written placeholder artifacts went to scratch, not the experiment folder",
-      sorted(p.name for p in DRY.glob("*")) == ["placebo_permutation.csv"]
-      and not (ROOT / "Model 5" / "Model 5 Experiment 1" / "placebo_permutation.csv").exists(),
+check("the dry run wrote only into scratch, never into the experiment folder",
+      sorted(p.name for p in DRY.glob("*")) == ["placebo_permutation.csv"],
       str(sorted(p.name for p in DRY.glob("*"))))
+after = snapshot()
+touched = [k for k, v in before.items() if after.get(k) != v] + \
+          [k for k in after if k not in before]
+check("and the experiment folder is UNCHANGED by running this checker",
+      not touched, f"{len(after)} files before and after, changed: {touched}")
 
 print("\n".join(LINES))
 print("-" * 78)

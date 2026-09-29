@@ -10,8 +10,8 @@ project's own rules. Every number below was measured, not guessed, and each is t
 - **[UNVERIFIED]** — plausible, recorded, not yet checked. Verify before acting on it.
 
 Rule of engagement: **trust the artifacts, not this document, where they disagree.** If you find
-a conflict, report it — do not silently pick one. This project has been corrected three times by
-its own measurements (see §14), and "the record was wrong, here is the measurement" is the most
+a conflict, report it — do not silently pick one. This project has been corrected four times by
+its own measurements (see §11), and "the record was wrong, here is the measurement" is the most
 valuable thing you can produce here.
 
 ---
@@ -603,6 +603,12 @@ entirely" floor. **A real model must land well under 82.** Perfect = 0.
     penalty: M1 goes 43.02 → 61.24 (+18.2); D goes 44.33 → 60.56 (+16.2). Two points on three soils
     *motivates* an invariance direction; it does not establish one. **Do not quote 60.56 as evidence
     that pretrained features work.**
+    **CORRECTED BY MODEL 5 (2026-09-29):** +18.2 is an *in-domain → external leaderboard* gap and
+    therefore bundles unseen-soil generalisation and the fixed 3-of-10 public subset with camera
+    transfer. The **camera-only** component, measured inside the training distribution, is ~5.55
+    EMD — roughly a third of it. Read the sentence above as motivation that was overstated in size,
+    and see `Model 5/instructions.txt` for the decomposition before attributing any loss to the
+    camera.
   - Determinism evidence: run 2 reproduced run 1's entire primary table and the E3 reproduction line
     **byte-identically across two separate Kaggle sessions**.
 - **M2 E2** — magnification rescue **REFUTED**. D lost to R at **every** crop (256 +4.55, 128 +0.96,
@@ -663,6 +669,57 @@ headline number.**
 | "colour carries the entire train→test shift, so drop colour" (E2's lever) | **WRONG as an action** | colour main effect on transfer −4.29, CI [−14.64, +5.27] |
 | "CAM+RES may rank configurations" | **WRONG (E4)** | ordinal at best; ranked 1 of 6 measured pairs backwards |
 | aliasing/sampling history explains the residual texture shift | **REFUTED** | synthetic matched low-pass induces only e4 −0.27, e8 −0.02, e16 +0.02 SD — ~2.4x too weak on e4, wrong sign on e16 |
+| label-free camera adaptation is the largest remaining loss, worth +16.2/+18.2 EMD | **WRONG (Model 5)** | that gap is an in-domain-to-external **composite**. Camera transfer, isolated inside the training distribution, is **~5.55 EMD**. Model 5 attacked a third of what it thought it was attacking — see below |
+
+**The camera penalty was misattributed, and this is the number to correct.** Model 5 was prioritised
+because "+18.2 EMD of camera penalty" looked like the largest unaddressed loss: M1's nested in-domain
+43.02 against its external leaderboard 61.24. Those two quantities are not the same kind of thing.
+That gap bundles (i) generalising to ten soils never seen in training, (ii) the fixed 3-of-10 public
+subset, and (iii) camera transfer. Model 5 measured (iii) alone, inside the training distribution on
+45 fold-honest cross-camera rows: **5.55 EMD**. Consequences to carry forward:
+
+- Do **not** attribute 18 EMD to the camera in any future argument.
+- **~12.7 EMD of that gap has never been decomposed at all.** It is now the largest known unexamined
+  quantity in this project — larger than the camera (5.6) and larger than the output-basis ceiling
+  (4.9). Any next model should start by splitting it, not by picking a technique.
+- The experiment that produced this correction was itself **refuted** (`DIRECTION-INCONSISTENT`,
+  H5 refuted, Model 5 closed). The correction is a by-product, not a support for the hypothesis.
+
+> ### CORRECTION 2 — written 2026-09-29, superseding the bullet above ("~12.7 EMD ... the largest
+> ### known unexamined quantity") and the "+16.98 population shift" figure in §9's ledger note
+>
+> **Superseded claim, verbatim:** "the population/label-space part is **measured, not guessed**: a
+> submission that ignores images scores 102.37 externally against an in-domain no-image floor of
+> 85.39, so +16.98 EMD of the gap is the test population being genuinely harder... ~12.7 EMD of that
+> gap has never been decomposed at all. It is now the largest known unexamined quantity."
+>
+> **What is wrong:** both numbers compare a **24-soil in-domain mean** with a **3-soil public mean**
+> and treat the difference as a measured quantity. It is not. The per-soil honest CV errors of the
+> shipped model have mean 43.02 and **SD 22.75**, so a 3-soil mean drawn from that distribution has
+> null SD **12.28** and a 95% band of **[21.7, 69.9]** around 43.0. Both observed public scores —
+> **61.24** (M1 E3) and **60.56** (M2 E1 D) — sit **inside** that band. The zero-skill probe fails
+> the same test: the constant train-mean curve scores 85.39 in-domain, its 3-soil null band is
+> **[56.6, 110.2]**, and the observed 102.37 has p = **0.09**. Neither figure distinguishes a harder
+> test population from ordinary sampling noise of a three-point average.
+>
+> **What survives, unchanged:** the camera-only term **is** measured — **+5.55 EMD**, cross-camera
+> against same-camera, inside the training distribution on 45 fold-honest rows. Do not attribute
+> 18 EMD to the camera, and do not treat the model-specific residual as large: it is **0 to +3.1
+> EMD** by that same arithmetic. What must go is the inference that ~17 EMD of *population shift*
+> was measured, and the "largest unexamined quantity" framing built on it.
+>
+> **Practical consequence:** differences below roughly **25 EMD are unmeasurable on the public set**.
+> Any future experiment must be decided by the honest 24-soil CV mean and its CI, because the public
+> leaderboard cannot confirm a small gain even if it exists. The private set is 10 soils (null SD
+> 5.51), so only the final ranking can resolve anything this fine.
+>
+> **A second, unrelated finding while reproducing the anchor:** the recorded "nested" alpha rule
+> (G0 = 43.0217308796477) selects alpha from inner leave-one-family-out folds computed over **all 24
+> soils**, so each fold's inner CV includes the outer held-out family. It is therefore not strictly
+> nested. This was reproduced exactly rather than fixed, because Models 1, 2 and 5 all share the
+> anchor and internal comparability matters more here — but any new experiment should state which
+> convention it uses.
+
 
 **Root cause of the biggest one:** the exploratory feature used
 `sigma = min(image_shape) // 12` for the illumination base — **frame-dependent** (59 px on a canonical
@@ -706,14 +763,24 @@ pre-existing Model 1 Kaggle state to preserve.
 | Per-camera colour standardisation | **not dead, but structurally unmeasurable internally** | see §8; must be run with and without camera identity |
 | Band **ratios** (e4/e8) as blur-robust frequency surrogates | **cancelled from Model 1, weakly** | the frequency family alone scored LOGO-CV **97.7** — worse than ignoring images — so the ceiling on any ratio of it is low |
 | Alternative classical regressors (robust, boosted trees) | **CANCELLED** | 24 samples, 12 features; a boosted tree overfits, Huber is second-order on a model dominated by the curve basis |
+| **Label-free camera adaptation (CORAL / moment matching, incl. transductive use of the unlabeled test images)** | **REFUTED, CLOSED (M5 E1)** | gain of CORAL over the unaligned control is **−8.748 EMD** pooled [−12.776, −3.967], −18.46 in one direction and +0.55 in the other. Rejected against a same-marginal placebo that degraded *further*, on both directions, with the canary clean and no alpha clipping. A mean-shift-only variant is **structurally inert** in this pipeline (the head standardises its inputs), so first-moment adaptation cannot work here at all. Do not re-propose a different alignment (OT, MK-MMD, adversarial) as a retry: it is a new pre-registered experiment requiring owner approval, and the target it would chase is only ~5.6 EMD — see §11 |
 
 **What is NOT dead:**
 - **In-domain headroom of ~34 EMD** (41.15 measured vs a rank-3 ceiling of **7.35**). Not reachable by
-  re-summarising the same hand-built features — which is what motivated Model 2.
-- **Whether DINOv2's 384 columns carry information the 12 hand features lack, tested by
-  CONCATENATION rather than replacement.** This is Model 2 E3, the only reading of E1's invariance
-  finding that leaves it mattering.
-- Model 3/4/5 territory: output parameterisation, pooling as a subject, explicit domain adaptation.
+  re-summarising the same hand-built features (Model 2 tested that three ways and closed), nor by
+  adapting the features to the test distribution (Model 5 tested that and closed).
+- ~~**The ~12.7 EMD of the in-domain→external gap that is NOT camera and NOT output-basis.**~~
+  **RETRACTED same day — see §11 CORRECTION 2.** That figure was the difference between a 24-soil
+  in-domain mean and a 3-soil public mean, and a 3-soil mean of this error distribution has a 95%
+  band of [21.7, 69.9]. Both our best public scores fall inside it, so it measures nothing. Unseen
+  soil generalisation and the public-subset composition remain plausible contributors; neither is
+  measured, and neither is measurable on a 3-soil public set.
+- **Making the current best submission robust.** Best score is still 60.56167 (M2 E1's probe, a tie
+  against M1 E3's 61.23560); the private set is 70 % of the ranking over 10 soils, so variance
+  reduction on what already works is a legitimate use of remaining time.
+- **Dead, do not re-open without new evidence:** Model 3's output basis (~4.9 total available),
+  Model 4's pooling as a subject (quintupling the space made it worse), Model 5's camera adaptation
+  (refuted above), and every branch of Model 2 (replacement, magnification, concatenation).
 
 ## 13. Current state (as of 2026-09-29)
 
@@ -805,8 +872,10 @@ pre-existing Model 1 Kaggle state to preserve.
     crop follow-up as a *new* pre-registered experiment. SHUF beats M1 → instrument leaking,
     nothing else is read. Alpha at grid edge → INCONCLUSIVE, **not** a refutation.
 
-- **Model 5: E1 BUILT AND VERIFIED, NOT YET RUN.** Tasks 1-4 are complete; the experiment has
-  **not** been scored and the Model 5 folder holds no result artifact.
+- **Model 5: E1 RUN AND REFUTED. MODEL 5 IS CLOSED AT ONE EXPERIMENT.** Ran locally on
+  2026-09-29, CPU only, no Kaggle session, exit 0, **no submission produced**.
+  Verdict `DIRECTION-INCONSISTENT`; H5 refuted; P1 (the main pre-registered prediction) CONFIRMED.
+  Model-level record: `Model 5/instructions.txt`.
   - Spec `Model 5/Model 5 Experiment 1/model_spec_m5e1.md`, plan `model_plan_m5e1.md`, contract
     `instructions.txt`. H5: label-free transductive CORAL alignment of the fitting camera's
     **image-level** features onto the 35 unlabeled test images, judged on a camera that was
@@ -848,9 +917,66 @@ pre-existing Model 1 Kaggle state to preserve.
     answer), `scratch/check_m5_cells_dry.py` (20 checks: A1-C1 + E1-E2 on the real manifests and
     fold structure while scoring nothing and writing only into `scratch/_m5_dry/`), plus
     `check_alignment.py` (32) and `check_transfer_eval.py` (63, including the new `oracle_sweep`).
-  - **Next: Task 5**, the real local run, on owner approval. Then Task 6 (no dataset/zip decision)
-    and Task 7 (record the verdict here, in `Model 5/instructions.txt`, and in memory). A
-    submission file may exist only if the verdict is exactly `SUPPORTED`.
+  - **RESULT [CONFIRMED by execution].** Gain of CORAL over the unaligned control, soil-clustered
+    95% CI: **pooled −8.748 [−12.776, −3.967]**; direction A (Motorola→Samsung) **−18.464**
+    [−24.843, −12.187], direction B (Samsung→Motorola) **+0.546** [−6.482, +8.222]. Other arms:
+    MEAN −0.000, CORAL_SELF −0.000, CORAL_TILE −0.391, CORAL_SOIL −7.784, CORAL_INDEP −13.446.
+    Gate: G0 PASS (gap **0.00e+00**), G1 FAIL, G2 FAIL, G3 FAIL, G4 FAIL (CORAL − placebo +4.698,
+    CI [−4.281, +13.968] includes 0), G5 PASS, G6 PASS (**both directions INTERIOR**, no caveat),
+    G7 PASS → `DIRECTION-INCONSISTENT`, `submit=False`, no `Submission_Model5_E1.csv`.
+    **The section 10 closure rule fires on its own stated terms** — Δ_CORAL missed G1 *and* there
+    was no boundary caveat — so Model 5 closes at one experiment and no alignment variant is
+    scheduled.
+  - **Two more implementation defects, found by the run and disclosed in `Experiment1.txt`
+    section 16.** Attempt 1 aborted at cell F1 on its own `n_clusters` assertion before any gate
+    ran. (a) **Δ was sign-inverted** against the contract (`err_arm − err_NONE` instead of
+    `err_NONE − err_arm`), which would have reported an 8.75 EMD *degradation* as an *improvement*
+    and could have produced `SUPPORTED` plus a submission on a harmful model. (b) **Pooled
+    bootstrap keys were direction-prefixed** (`'A:S07'`), so 45 rows became 45 clusters and the
+    soil-clustered bootstrap silently became the row bootstrap. Both were corrected to match the
+    already-frozen wording; no threshold, arm, seed, precedence or rule moved, and the verdict is
+    `DIRECTION-INCONSISTENT` under all four combinations. `scratch/check_m5_delta.py` failed 8 ways
+    pre-fix and passes 14 now; cell F1 recomputes one soil's Δ by hand and asserts the cluster
+    count at run time so neither can return silently.
+  - **The clustering correction also refuted a prediction in the contract**, and that is reported
+    as a fact rather than argued away: the contract claimed row resampling narrows every CI by
+    ~√2. Measured here, the soil-clustered intervals are **narrower** (CORAL width 8.81 vs 11.23;
+    CORAL_SOIL 8.35 vs 11.41). The narrowing *direction* depends on the sign of the within-cluster
+    correlation, which had been assumed. Row resampling is still invalid — two rows for one soil
+    are not two observations — so the fix stands.
+  - **CORRECTED CAMERA-PENALTY DECOMPOSITION — read this before prioritising any next model.**
+    Model 5 was justified by "+16.2 / +18.2 EMD camera penalty". That figure is M1's in-domain 43.02
+    against its **external** 61.24 — a composite bundling unseen-soil generalisation, the fixed
+    3-of-10 public subset, and camera transfer. Measured *alone*, inside the training distribution
+    (cross-camera mean minus same-camera in-domain control), **the camera costs only ~5.55 EMD**.
+    So the camera's share was overstated roughly threefold. **What this bullet originally claimed
+    next — "~12.7 EMD of that gap is unlabelled loss that has never been decomposed, the largest
+    known unexamined quantity" — is RETRACTED; see §11 CORRECTION 2.** That 12.7 was a 24-soil mean
+    minus a 3-soil mean, and a 3-soil mean of this error distribution has a 95% band of [21.7, 69.9],
+    which contains both of our best public scores. The measured camera term (+5.55 EMD) stands; the
+    inferred population term does not. Best external score remains **60.56167** (Model 2 E1's probe);
+    the Model 1 E3 configuration scored 61.23560.
+  - **What survives from Model 5 is the instrument, not the hypothesis.** (1) The same-marginal
+    placebo degraded *further* than CORAL in the failing direction (−27.58 vs −18.46), so the two
+    arms separate and the null is a real null. (2) **MEAN and CORAL_SELF are STRUCTURAL zeros**: a
+    constant shift commutes with the soil median and is then deleted by the frozen
+    `StandardScaler`, so a first-moment-only adaptation *cannot* move this head (verified to
+    6.9e-15). Read P3's CONFIRMED and X1's label as that identity, not as evidence about colour
+    offsets; G5 can only ever fire on a wiring fault. (3) Every nested alpha was INTERIOR (1–3) and
+    the oracle sat at the ceiling in 1 of 16 folds, so the failure is not a grid artefact — but the
+    eval-side grid spread averaged 56–101 EMD, i.e. cross-camera error here is **alpha-dominated**
+    and the fit-side rule systematically under-regularises for it.
+  - **Tasks 6 and 7 done.** No dataset, no zip, no Kaggle run: Model 5 read cached Model 1 E3 tile
+    features and the manifests, so `final_kaggle_upload_m2e2.zip` is untouched and no archive was
+    made. Verdict recorded in `Model 5/Model 5 Experiment 1/instructions.txt` (OUTCOME section),
+    the new model-level `Model 5/instructions.txt`, this brief, and project memory. Three
+    contract/artifact mismatches are listed in the experiment contract's "AS ACTUALLY EMITTED"
+    block — chiefly that `alignment_report.csv` was promised and no cell ever emitted it, and that
+    `placebo_report.csv` holds paired contrasts rather than the transform distances its description
+    names (those were printed: 241.08 at the full pool, 81.11 for fold A/0).
+  - **DO NOT** re-run Model 5 with a relaxed threshold, new seed, wider grid or different target
+    because the answer was unwelcome: that is a new pre-registered experiment needing explicit owner
+    approval. Model 5 is closed.
 
 - Git: `df3a4b7 model 2 experiment 2 REFUTED gates didnt open`, `19b30dc model 2 exp 1 completed`,
   `8a6f087 Experiment 4 completed colour was not hurting`, `c31b966 experiment 3 done succesfully`,
@@ -1052,7 +1178,19 @@ Scratch (local runners/builders, not shipped):
 Model 1/Model 1 Experiment 1..4/               closed ladder; read-only inputs to Model 2
 Model 2/Model 2 Experiment 1/                  backbones.py, check_backbones.py, executed run-2 notebook
 Model 2/Model 2 Experiment 2/                  crop_geometry.py + `kaggle run 1 files/` (authoritative)
-Model 2/Model 2 Experiment 3/                  fusion.py (new, torch-free) and an EMPTY embeddings/ dir
+Model 2/Model 2 Experiment 3/                  fusion.py + embedding_store.py, executed record,
+                                               gate.json, and embeddings/ holding the 79.6 MB of
+                                               30 arrays harvested from E2's Kaggle output
+Model 5/instructions.txt                       MODEL-LEVEL record: what M5 was, its result, and the
+                                               corrected camera-penalty decomposition (read first)
+Model 5/Model 5 Experiment 1/                  alignment.py, transfer_eval.py, their two check_*.py,
+                                               instructions.txt (contract + OUTCOME), spec, plan,
+                                               Model5_Experiment1.ipynb, Experiment1.txt, gate.json,
+                                               7 result CSVs. NO submission CSV - gate did not fire
+  scratch/build_m5e1.py  mk_run6.py  check_m5_gate_logic.py  check_m5_delta.py
+  scratch/check_m5_cells_dry.py  verify_m5_result.py  run_nb_m5e1.py  _m5_run{1,2,3,4}.log
+                                               generator, five verification suites, the four run logs
+                                               (run1 = aborted pre-fix attempt, kept as evidence)
 data/processed_meta/                           stage_*.csv, manifest_{images,samples,tiles}.csv,
                                                audit.md, golden_checks.json, run_state.json, target_ppm.json
 _look/                                         eyeball crops + exploratory logs/CSVs from preprocessing

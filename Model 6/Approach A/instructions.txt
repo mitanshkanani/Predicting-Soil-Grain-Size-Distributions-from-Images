@@ -1,0 +1,352 @@
+MODEL 6 / APPROACH A - ATTENUATION CORRECTION OF PREDICTED CURVES
+================================================================================
+Status: SPECIFICATION FOR OWNER REVIEW. No code exists. No experiment has been
+run. Nothing in this folder is evidence of a result.
+
+This is a NEW model. Models 1, 2 and 5 are read-only inputs. Their notebooks,
+CSVs, records, thresholds and verdicts are never edited by anything in this
+folder.
+
+
+WHAT APPROACH A IS
+--------------------------------------------------------------------------------
+Every model this project has run changed the INPUTS: hand features (M1), a
+pretrained backbone (M2), an input-distribution alignment (M5). Approach A
+changes exactly one thing downstream of the inputs: it rescales the predicted
+curve away from the training centroid,
+
+    y_hat' = y_bar + k * (y_hat - y_bar)
+
+where y_bar is the fitted training mean curve and k >= 1 is a single scalar
+estimated ONLY from inner folds. Features, head, ridge, alpha, rank-3 basis,
+preprocessing and the CDF projection all stay byte-frozen.
+
+The mechanism on offer is attenuation: a shrunk linear head systematically
+under-predicts how far a soil's curve sits from the training mean, and if the
+Kaggle soils sit further out than the training soils do, every prediction is
+pulled too far inward and EMD punishes that directly.
+
+k is estimated by a 1-D parsimony search over a frozen grid on inner folds, in
+the same spirit as the project's existing ridge-alpha parsimony rule. It is
+NEVER chosen by looking at the fold being scored, and NEVER chosen by looking
+at Kaggle.
+
+
+READ THIS BEFORE APPROVING IMPLEMENTATION - the premise test already ran
+--------------------------------------------------------------------------------
+Section 2.3 records pre-registration probes run on 2026-09-29 while writing this
+spec. Their direction is UNFAVOURABLE to Approach A, and three of them are
+decisive against the way I first got excited about it:
+
+  1. The probe that motivated this whole approach (expansion taking an
+     extrapolation score from 50.96 to 35.42) was an ORACLE-k result: one free
+     scalar fitted to the six points being scored. Measured against the correct
+     null - tuning any one-parameter family on six random soils - that gain sits
+     inside the chance band (median +3.82, p90 +11.71, max +40.18 EMD). It is
+     not evidence.
+  2. The asymmetry that made the mechanism look real does NOT survive a
+     deployment-shaped split. Expansion should help when scoring displaced soils
+     and hurt when scoring interior soils. Measured with displacement defined in
+     FEATURE space, both ends gain: +6.61 (most displaced) and +7.43 (least
+     displaced). A correction that helps in both directions is not correcting
+     displacement.
+  3. The +16.98 zero-skill external gap is real arithmetic, but it does NOT
+     establish range displacement. It is close to a tautology: a baseline
+     computed as the mean of the training soils must score worse on soils it was
+     not computed from. It cannot be used to infer where the test soils sit.
+
+What survives: the Kaggle test set IS displaced in feature space (35/90 colour
+and geometry cells outside the training envelope; 60% of test soils have a cell
+beyond 3 SD; displacement ratio 1.46x by the trustworthy Euclidean measure).
+But its predicted curves are 0.81x as far from the training mean as the
+training soils' own, in a direction the head maps with LOW gain. That is not
+the high-gain overshoot this correction assumes.
+
+OWNER CHOICE, and the reason this spec is written before code:
+  (a) Run Approach A anyway, as a CHEAP REGISTERED CLOSURE. The gate below is
+      designed so that a pass requires clearing the one-parameter null, and
+      every probe says it will not. Cost is one build plus a minutes-long CPU
+      run. Benefit: a documented, pre-registered, null-anchored refutation that
+      closes attenuation properly instead of on a vibe, and the null instrument
+      becomes reusable for every future model.
+  (b) Abandon Approach A now, before implementation, and move to M6-B (feature
+      containment) or M6-C (ensembling), neither of which has been measured
+      against a one-parameter null yet.
+  (c) Redefine the correction so it is not a single global scalar - the evidence
+      points at direction-dependent gain, which is a different and larger idea
+      and would need its own brainstorming pass.
+
+My recommendation is (a) if the run can stay under an hour of build effort,
+otherwise (b). It is not (a) because the hypothesis looks likely; it is (a)
+because the gate is now cheap, honest and reusable, and because a documented
+closure on the one term worth 16.98 EMD is worth more than an unregistered
+"we tried it in chat".
+
+
+THE OBJECTIVE, AND WHAT WOULD SATISFY IT
+--------------------------------------------------------------------------------
+Approach A exists to produce a legitimate Kaggle submission or nothing. Legiti-
+mate means: the decision to submit is made by a rule written in this file, from
+labelled training data only, before any Kaggle score is seen.
+
+  - At most ONE production submission from Approach A.
+  - Zero submissions if the gate fails. A failed gate is written up and closed;
+    it does not get a "just to see" upload.
+  - No threshold, no k, no arm and no grid may be changed after a Kaggle score
+    exists.
+
+
+THE FROZEN CONTRACT
+--------------------------------------------------------------------------------
+Inherited unchanged from Models 1, 2 and 5:
+  - data/Training, data/Test, data/processed_meta are read-only. No re-pre-
+    processing. config_hash must remain 010f44c36c74.
+  - 12 control features, tile -> image median -> soil median aggregation,
+    StandardScaler, rank-3 curve basis, closed-form ridge, the 16-value alpha
+    grid, monotone CDF projection, trapezoid EMD on log10 d.
+  - Camera identity, ppm, EXIF, ICC profile and sample id are not model inputs
+    and are never dispatch keys. They may be used to BUILD A VALIDATION SPLIT,
+    because a split is not a predictor, but never to transform a prediction.
+  - CAM+RES is ordinal-only: it may rank, it may never forecast.
+  - The public leaderboard is a fixed 3 of 10 test soils; final ranking is
+    0.30*public + 0.70*private. A public difference of a few EMD is not evidence.
+  - No model is ever selected by leaderboard movement.
+  - ASCII-only printed output. No mock mode. Every cell must print something.
+
+Changed by Approach A, and only this:
+  - One expansion step applied to the predicted curve, between the rank-3
+    reconstruction and the monotone projection.
+
+
+ARMS - FIVE, AND WHY EACH EXISTS
+--------------------------------------------------------------------------------
+  A0  k = 1.000            the frozen pipeline exactly. The identity control.
+                           Any difference from published M1/M2 numbers at k=1 is
+                           an implementation defect, not a result.
+  A1  k = k_hat (nested)   THE CANDIDATE. k_hat chosen by the frozen parsimony
+                           rule on inner folds of the scored configuration only.
+  A2  k = k_oracle         argmin over the grid on the scored fold itself. DIAG-
+                           NOSTIC ONLY, never submittable, never gate-relevant.
+                           Its only job is to be compared against the null in
+                           N4 below. Conflating A2 with A1 is the exact error
+                           that produced the false hope in section 2.3.
+  A3  best alpha, k = 1    the "it is just regularisation" control. Full grid
+                           sweep at k=1, best by the same inner-fold rule.
+  A4  direction placebo    expansion of the same magnitude along a random
+                           rank-3 direction instead of the prediction's own.
+                           Must be able to differ; if it matches A1, the gain is
+                           metric geometry and not attenuation.
+
+k grid, frozen: 1.00 1.05 1.10 1.15 1.20 1.30 1.40 1.50 1.60 1.80 2.00
+Parsimony rule, frozen: smallest k whose inner-fold mean EMD is within 2% of the
+inner-fold minimum. Same shape as the existing ridge rule, so it can be audited
+against a rule the project already trusts.
+
+
+VALIDATION - THREE RULERS, AND THE NULL THAT MAKES THEM MEANINGFUL
+--------------------------------------------------------------------------------
+N1  FEATURE-DISPLACEMENT HOLDOUT  (primary; deployment-shaped)
+    Rank the 24 labelled soils by label-free distance from the training feature
+    centroid. Score the most-displaced h, fit on the rest, estimate k_hat on
+    inner folds drawn from the fit set only. Repeat for h in {6, 8, 10} and over
+    multiple interior splits. This is the ruler that resembles deployment: the
+    scored soils are genuinely outside the fit set's feature support.
+    Note explicitly why this replaced the label-displacement split: soils with
+    extreme D50 turn out to be un-displaced in feature space (mean distance 3.35
+    vs 3.35 for the corpus), so extrapolating in LABEL space tests a condition
+    the Kaggle set does not exhibit.
+
+N2  FAMILY HOLDOUT  (secondary; the historical ruler)
+    The existing 16-fold CV-family leave-group-out. Reported for continuity with
+    Models 1-5 and to show how much the old ruler hides. It is INTERPOLATION and
+    is not sufficient to authorise a submission on its own.
+
+N3  REVERSE-DISPLACEMENT HOLDOUT  (falsification control)
+    N1 inverted: fit on the most-displaced soils, score the least-displaced.
+    If expansion helps here as much as in N1, the attenuation story is wrong and
+    the experiment must be reported as evidence AGAINST Approach A regardless of
+    what N1 says. The probes already show this happening (+6.61 vs +7.43), which
+    is the single most important number in this file.
+
+N4  ONE-PARAMETER NULL  (the gate's anchor; new to this project)
+    Distribution of the A2-style gain obtained by tuning any single scalar on h
+    random held-out soils, h in {6, 8, 10}, over >= 2000 draws. Every claimed
+    gain must be compared to this, not to zero. This instrument did not exist
+    when the earlier models were gated, and it is the reason the motivating
+    result evaporated.
+
+Uncertainty: paired per-soil differences, soil-clustered bootstrap, 4000 draws,
+seed fixed below, resampling unit = the soil. Never an unpaired comparison of
+means.
+
+Seeds, fixed now: EXPLORE_PROBE 20260939 (the section 2.3 probes, already run),
+M6A_SEED 20260940, M6A_BOOT 20260941, M6A_NULL 20260942, M6A_PLACEBO 20260943.
+Head and alpha use Model 2 E3's frozen pipeline, which is itself seed-pinned at
+20260930 by its cache filenames.
+
+
+GATE - CLAUSE BY CLAUSE, WITH THE THRESHOLDS AND WHERE THEY COME FROM
+--------------------------------------------------------------------------------
+G0  IDENTITY       A0 reproduces Model 2 E3's recorded 43.0217308796477 within
+                   0.05 EMD under N2. Read from E3's sweep_results.csv at run
+                   time, never typed. Failure means Approach A is not running on
+                   the frozen head and NOTHING else is evaluated.
+                   0.05 is the project's standing G0 tolerance from M5, kept
+                   identical so the two experiments' sanity bars are the same.
+G1  NESTED GAIN    A1's paired gain over A0 on N1 clears the N4 null: it must
+                   exceed the null's 97.5th percentile for the same h, and its
+                   own soil-clustered CI must exclude zero.
+                   There is deliberately no fixed EMD floor. Every previous
+                   floor in this project was anchored to a comparison against
+                   zero, and N4 shows the real comparison is against what
+                   free parameters buy at n=6.
+G2  NOT-REGULARISE A1's gain over A0 exceeds A3's gain over A0 by at least 1.00
+                   EMD on N1. 1.00 EMD is the project's standing smallest-signal
+                   unit: it is the margin used by M5's G2, it is well above the
+                   0.674 EMD public difference formally declared a tie, and below
+                   it two configurations are not distinguishable here.
+G3  PLACEBO        A1 beats A4 on N1 by at least 1.00 EMD with CI excluding zero.
+G4  SPECIFICITY    A1's N1 gain strictly exceeds A1's N3 gain. This is the
+                   attenuation direction test and it is a PASS/FAIL, not a
+                   diagnostic. It fails on current evidence.
+G5  STABILITY      k_hat's spread across N1 folds is reported, and at least 75%
+                   of folds select k_hat >= 1.10. A correction picked by half the
+                   folds is not a correction.
+G6  BOUNDARY       k_hat strictly inside the grid. If it lands on 1.00 the result
+                   is NO EFFECT, which is REFUTED, not a boundary hit. If it
+                   lands on 2.00 it is INCONCLUSIVE, because the useful range was
+                   truncated. Reported per ruler, never pooled - the M5 5a rule.
+G7  LABEL-BLIND    No test label exists or is read; k_hat touches inner training
+                   folds only; camera, ppm, EXIF, ICC and sample id never
+                   transform a prediction. Static and runtime assertions. Failure
+                   stops the run and is not a result.
+
+submit = G0 AND G1 AND G2 AND G3 AND G4 AND G5 AND G6 AND G7
+
+PRECEDENCE for verdict labels, fixed before the run so an overlap cannot be
+decided after the fact:
+  1  NOT(G0 and G7)                              INVALID-IMPLEMENTATION
+  2  G6 at the upper grid edge on any ruler      INCONCLUSIVE
+  3  G1 and G2 and G3 and G4 and G5              SUPPORTED
+  4  G1 and G2 and G3 and NOT G4                 REFUTED-DIRECTION-NONSPECIFIC
+  5  G1 and NOT G2                               EQUIVALENT-TO-REGULARISATION
+  6  NOT G1 and G3 and G5                        BELOW-BAND
+  7  NOT G5                                      UNSTABLE-k
+  8  anything else                               REFUTED
+
+Verdict meanings:
+  SUPPORTED                      one production submission, recipe in section
+                                 "SUBMISSION".
+  BELOW-BAND                     real but under the null-adjusted bar. No sub-
+                                 mission. Recorded, not dressed up.
+  REFUTED                        attenuation correction does not survive honest
+                                 validation. Approach A closes. No submission.
+  REFUTED-DIRECTION-NONSPECIFIC  expansion helps displaced and interior soils
+                                 alike: the gain is metric geometry, not atten-
+                                 uation. Closes, and is the expected outcome.
+  EQUIVALENT-TO-REGULARISATION   a different alpha does the same job. Approach A
+                                 closes; the finding transfers to the selection
+                                 question and is reported there.
+  UNSTABLE-k                     the correction is not identifiable at n=24.
+                                 Closes; a larger labelled corpus would be the
+                                 only remedy and does not exist.
+  INCONCLUSIVE                   grid truncation. NOT a refutation, and does not
+                                 license a submission either. Amending the grid
+                                 is a separate owner decision, never applied
+                                 inside a run.
+  INVALID-IMPLEMENTATION         no scientific conclusion in either direction.
+                                 Fix the code, rerun, gate unchanged.
+
+
+SUBMISSION RULE - EXACT, CONDITIONAL, AT MOST ONE
+--------------------------------------------------------------------------------
+Only on SUPPORTED.
+  File  Submission_Model6_A.csv, written by the notebook under that name, never
+        renamed, never edited afterwards.
+  Recipe  the frozen M1 E3 configuration - 12 features, rank-3, alpha selected by
+        the existing nested rule on all 24 labelled soils - plus the single
+        expansion step with k = k_hat, where k_hat is produced by the identical
+        inner-fold parsimony rule validated above and NOT re-fitted on the test
+        set. y_bar is the training mean curve of the fitting set.
+  The eight structural validation gates run first and must pass.
+  DECLARED DIFFERENCE: the submitted configuration is fitted on all 24 soils and
+  its k_hat is estimated from training folds only; neither the 10 test soils nor
+  their absent labels enter the estimate. This is stated in the record because it
+  is the one place where the validated procedure and the shipped procedure could
+  diverge.
+  A Kaggle score is then recorded against the band below and NOTHING is changed
+  in response to it. Any follow-up is a new pre-registered experiment.
+
+
+EXTERNAL BAND - WRITTEN BEFORE THE SCORE EXISTS
+--------------------------------------------------------------------------------
+Only defined if a submission happens, since it is the score's only honest reader.
+Anchor: the current best external scores are 60.56167 (M2 E1 D, a declared probe)
+and 61.23560 (M1 E3). Approach A does not change what the model sees, so it
+cannot plausibly buy more than the measured spread of predictions it rescales.
+The N1 gains observed under ORACLE-k - the ceiling for this intervention - were
++4.2 to +11.15 EMD in-domain; nested gains were smaller and sometimes negative.
+A k-expansion also degrades symmetrically if the test curves are on the other
+side of the mean, which N3 says is live.
+
+  predicted band  55.5 .. 66.0
+    below 55.5  -> the correction is stronger than anything measured in-domain;
+                   suspect a bug in the projection order before believing it.
+    55.5 .. 60.5 -> SUPPORTED direction confirmed with useful magnitude.
+    60.5 .. 61.2 -> improvement over 60.56167 is under the tie threshold; the
+                    correction is real but not competition-relevant.
+    61.2 .. 66.0 -> within noise of the incumbent; no claim either way.
+    above 66.0   -> the displacement inference was wrong in sign. Approach A
+                    closes and the null-anchored gate did its job.
+
+The band is written now, at spec time, with no score in hand, and will be quoted
+unchanged afterwards.
+
+
+DATA SUFFICIENCY - ANSWERED BEFORE ANY DOWNLOAD
+--------------------------------------------------------------------------------
+No new dataset, no Kaggle dataset, no zip, no GPU, no torch. Approach A needs:
+  - cached tile features: Model 1 Experiment 3/.cache/tile_features_256_010f44c36c74.csv
+  - manifests: data/processed_meta/manifest_{images,samples,tiles}.csv
+  - the CV family assignment: Model 2/Model 2 Experiment 3/cv_families.csv
+  - the frozen head and EMD, reused from Model 2 E3 byte-for-byte where possible
+All are present on disk and were read during the probes without error. The whole
+experiment is CPU arithmetic on 24 rows and 12 columns. If any of those four
+inputs turns out to be insufficient, the run STOPS and reports what is missing
+rather than improvising a substitute or fetching anything.
+
+
+ORGANISATION
+--------------------------------------------------------------------------------
+Model 6/
+  Approach A/           everything for this approach, and nothing for any other
+    instructions.txt    this file
+    model_spec_m6a.md   the full specification
+    model_plan_m6a.md   written only after the spec is approved
+    scratch/            builder and verification scripts; NOT evidence
+    data/               only if genuinely required; currently not required
+    results/            Experiment1.txt, gate.json, per-fold tables, CSVs
+                        generated by the registered run
+
+  A future M6-B gets Model 6/Approach B/, M6-C gets Model 6/Approach C/. Nothing
+  from one approach is ever filed under another, and no M6-A file is ever placed
+  directly in Model 6/.
+
+  Scratch is quarantined on purpose. The section 2.3 probes live in scratch and
+  are labelled exploratory; a scratch number may never be cited as experiment
+  evidence, and the registered run does not read anything scratch wrote.
+
+
+WHAT IS FORBIDDEN
+--------------------------------------------------------------------------------
+  - Choosing k, a threshold, an arm or a grid from Kaggle feedback.
+  - A second submission from Approach A for any reason, including to check a
+    hypothesis the first one raised.
+  - Citing A2 (oracle-k) as the result. That is the error this spec exists to
+    prevent.
+  - Editing Models 1, 2 or 5, their records, contracts, thresholds or verdicts.
+  - Reinterpreting the +16.98 zero-skill gap as evidence of range displacement.
+    It is not; see 2.3.
+  - Retrying Approach A with a per-soil k, a per-direction k or a matrix of
+    gains after a refutation. That is a different hypothesis and needs its own
+    pass.

@@ -1,0 +1,148 @@
+MODEL 5 - LABEL-FREE DOMAIN ADAPTATION FOR THE CAMERA SHIFT
+================================================================================
+
+STATUS: CLOSED AT ONE EXPERIMENT, 2026-09-29. Verdict DIRECTION-INCONSISTENT, H5 REFUTED,
+        submit=False, no submission produced. Nothing here may be reopened without an explicit
+        owner decision.
+
+
+WHAT THIS MODEL REPRESENTED
+--------------------------------------------------------------------------------
+Model 5 asked one question that no earlier experiment had made its primary variable: can the
+camera shift be removed WITHOUT labels, by mapping the fitting camera's feature distribution onto
+the unlabeled test images and then predicting?
+
+Models 1 and 2 had both closed having never treated the shift itself as the target. Model 5 attacked
+it with closed-form CORAL alignment at image level - the cheapest, most assumption-free member of
+the family - and gated the claim on SPECIFICITY rather than on a production analogue: fit camera A,
+align toward the iPhone test images, score camera B, a camera that was neither fitted on nor the
+alignment target. That is the one construction that cannot be accused of fitting the answer.
+
+
+WHAT WAS ESTABLISHED, AND THE MEASUREMENT THAT PICKED THIS MODEL
+--------------------------------------------------------------------------------
+The model was chosen by measuring each remaining loss rather than by taste:
+
+  output parameterisation (rank-3 -> rank-5 basis)   ~4.9 EMD total available   -> Model 3 dropped
+  prediction-level curve fusion                      ~0.9 EMD, unregistered
+                                                     spike, indistinguishable   -> closed
+  camera transfer                                    the largest, untouched      -> Model 5
+
+The camera figure used to justify that ordering was +16.2 / +18.2 EMD. See the correction below:
+that number was a composite, and the camera-only component is about a third of it.
+
+
+RESULT
+--------------------------------------------------------------------------------
+H5 REFUTED. Aligning toward the unlabeled test images made cross-camera transfer WORSE on the
+pooled 45 rows and inconsistent across the two measurable directions.
+
+  gain(CORAL) over the unaligned control, soil-clustered 95% CI (positive = better):
+      pooled  -8.748  [-12.776, -3.967]
+      A       -18.464  [-24.843, -12.187]   Motorola fitted -> Samsung scored: a collapse
+      B        +0.546  [ -6.482,  +8.222]   Samsung fitted -> Motorola scored: flat
+
+  gate: G0 PASS (control reproduced E3's 43.0217308796477 exactly)  G1 FAIL  G2 FAIL  G3 FAIL
+        G4 FAIL  G5 PASS  G6 PASS (no direction alpha-clipped)  G7 PASS
+        -> DIRECTION-INCONSISTENT, and treated as refuted for decisions per spec section 6.
+  closure: gain(CORAL) missed G1 with NO boundary caveat, which is exactly section 10's stated
+        condition, so MODEL 5 CLOSES AT ONE EXPERIMENT.
+
+  The other arms, pooled gain: MEAN -0.000, CORAL_SELF -0.000, CORAL_TILE -0.391,
+  CORAL_SOIL -7.784, CORAL_INDEP -13.446.
+
+WHAT SURVIVES FROM THIS, WHICH IS NOT THE HYPOTHESIS
+  1. The specificity instrument WORKED. The same-marginal placebo (CORAL_INDEP, which preserves
+     every per-feature mean, variance and marginal of the real target and destroys only the joint
+     structure) degraded even further than CORAL did in the failing direction, -27.582 against
+     -18.464. The two arms separate, in the direction the design was built to detect. A null from a
+     ruler that cannot distinguish its own arms would have been worthless; this one is not.
+  2. MEAN and CORAL_SELF turned out to be STRUCTURAL zeros, not measured ones. The MEAN arm is a
+     constant shift; the soil median commutes with it; the frozen StandardScaler deletes it. So
+     MEAN is identical to NONE to 6.9e-15, and any pre-registered reading of "the mean shift
+     carries most of it" (P3) is the identity talking. In a pipeline whose head standardises its
+     inputs, a first-moment-only adaptation CANNOT do anything. That is a transferable fact about
+     this pipeline, and any future adaptation must therefore be evaluated on its second-moment
+     content or on features the head does not rescale.
+  3. Alpha-boundary reporting earned its place: every nested alpha was INTERIOR (1 to 3), and the
+     oracle sat at the grid ceiling in only 1 of 16 folds, so the failure cannot be blamed on the
+     grid. But the eval-side grid spread averaged 56 to 101 EMD per fold, which says cross-camera
+     error in this design is dominated by regularisation strength, and the fit-side nested rule
+     systematically under-regularises for it.
+  4. Transductive use of the 35 unlabeled test images was allowed by the owner and is now a tested
+     idea with a negative result. It did not need labels and did not help.
+
+
+THE CORRECTED CAMERA-PENALTY DECOMPOSITION - IMPORTANT FOR ANY FUTURE DECISION
+--------------------------------------------------------------------------------
+Model 5's own measurement (cross-camera mean error minus the same-camera in-domain control, inside
+the training distribution, 45 rows) is:
+
+      base mean A 51.784, B 45.366; in-domain control 43.022   ->  PENALTY = 5.55 EMD
+
+The +18.2 figure that justified prioritising this model is NOT the same quantity. It is Model 1 E3's
+nested in-domain 43.02 against its EXTERNAL leaderboard 61.24, a gap that bundles at least three
+different things:
+
+      in-domain CV -> external LB gap            +18.22   (composite, previously labelled "camera")
+        of which camera transfer, measured here   ~ 5.6
+        remainder, not yet decomposed             ~12.7   unseen-soil generalisation, plus the
+                                                          fixed 3-of-10 public subset, plus any
+                                                          residual preprocessing/photographic
+                                                          difference between the sets
+
+The prior attribution therefore overstated the camera's share by roughly a factor of three, and
+Model 5 spent its budget on about a third of what it believed it was attacking. Anyone choosing a
+next model from "the camera costs 18 EMD" is working from a number this project has now measured
+against. The ~12.7 EMD remainder is the larger unlabelled loss and has never been decomposed.
+
+CORRECTION, added 2026-09-29 after the M6 candidate review - the text above is left verbatim as
+history. The final sentence and the "remainder ~12.7" line are WITHDRAWN.
+
+  What is wrong: treating a 24-soil in-domain mean minus a 3-soil public mean as a measured
+  quantity. The per-soil honest CV errors of the shipped model have mean 43.02 and SD 22.75, so a
+  3-soil mean drawn from that distribution has null SD 12.28 and a 95% band of [21.7, 69.9]. Both
+  observed public scores - M1 E3 at 61.24 and M2 E1 D at 60.56 - fall INSIDE that band. The
+  zero-skill probe fails the same test: the constant train-mean curve scores 85.39 in-domain, its
+  3-soil null band is [56.6, 110.2], and the observed 102.37 carries p = 0.09. So the "population
+  shift" of +16.98 and the "unexplained ~12.7" are not measurements of the test population; they
+  are consistent with the sampling noise of averaging three soils.
+
+  What still stands, unchanged: the camera term is genuinely measured at +5.55 EMD, inside the
+  training distribution on 45 fold-honest rows, and the model-specific external residual is 0 to
+  +3.1 EMD. Those came from labelled data with n=24 and n=45, not from a 3-point mean.
+
+  Consequence for any future model here: differences below about 25 EMD cannot be measured on the
+  public set at all. Decisions must be made on the honest 24-soil CV mean with a confidence
+  interval, and a submission should be expected to be unverifiable publicly until the private
+  10-soil result arrives.
+
+
+ARTIFACTS
+--------------------------------------------------------------------------------
+  Model 5 Experiment 1/instructions.txt        the frozen contract, plus the OUTCOME section added
+                                               after the run with no rule altered
+  Model 5 Experiment 1/model_spec_m5e1.md      H5, arms, gate, boundary rule, precedence, closure
+  Model 5 Experiment 1/model_plan_m5e1.md      the 7-task implementation plan
+  Model 5 Experiment 1/Experiment1.txt         the record, generated from live objects; section 16
+                                               is the defect disclosure, 17 the penalty correction,
+                                               18 the two over-interpretations to avoid
+  Model 5 Experiment 1/gate.json               every clause, measured value and threshold
+  Model 5 Experiment 1/{transfer_results,per_soil_transfer,alpha_by_fold,
+                       predictions_transfer,placebo_report,placebo_permutation,predictions}.csv
+  Model 5 Experiment 1/{alignment,transfer_eval}.py            the two modules
+  Model 5 Experiment 1/check_{alignment,transfer_eval}.py      32 and 63 assertions
+  scratch/build_m5e1.py                        notebook generator, 6 of 21 cells Model 2 E3's text
+  scratch/{mk_run6,check_m5_gate_logic,check_m5_delta,check_m5_cells_dry,verify_m5_result}.py
+  scratch/_m5_run{1,2,3,4}.log                 aborted pre-fix attempt, two clean runs, final run
+
+
+WHAT IS FORBIDDEN NOW
+  - Selecting or re-tuning anything by public-leaderboard performance.
+  - Re-running Model 5 with a relaxed threshold, a different seed, a wider alpha grid or a
+    different alignment target because the answer was unwelcome. Any of those is a NEW pre-
+    registered experiment requiring an explicit owner decision, not an edit.
+  - Reading MEAN's or CORAL_SELF's zero as a measured null: they are structural.
+  - Quoting +18.2 EMD as the cost of the camera without the decomposition above, and quoting
+    the +16.98 'population shift' or the ~12.7 'remainder' as measured quantities at all.
+    Both are 24-soil-mean-minus-3-soil-mean artefacts; see the CORRECTION above.

@@ -302,6 +302,25 @@ OUTPUTS
   Model5_Experiment1.ipynb the notebook that produced all of the above
   Submission_Model5_E1.csv ONLY if the verdict is exactly SUPPORTED
 
+AS ACTUALLY EMITTED (2026-09-29 run). Three differences from the list above, recorded rather than
+quietly reconciled, none of them a gate input and none affecting the verdict:
+  - alignment_report.csv was NOT PRODUCED. No cell was ever written that emits it; the per-feature
+    moments and shrinkage weights exist only in the run log and inside cell E2's transforms. The
+    contract promised a file the notebook does not make. Recoverable deterministically if Model 5
+    is ever reopened; not retrofitted after the result.
+  - placebo_report.csv contains the PAIRED CONTRASTS of CORAL against each other arm (mean, CI, per
+    direction), not the transform distances its description names. Those distances were computed
+    and printed instead: placebo-vs-real max entrywise 241.08 at the full pool (cell E1's line
+    "placebo covariance differs", scratch/_m5_run4.log) and 81.11 for the first direction-A fold
+    (scratch/check_m5_cells_dry.py). So the specificity evidence exists and is auditable, but it
+    lives in a log, not the artifact this list advertised.
+  - per_soil_transfer.csv carries the soil identity in sample_id; there is no separate cluster-id
+    column. The id IS the cluster key cell F1 uses, so the substance holds and the wording was
+    loose.
+  - Two files the list omits were emitted and matter: alpha_by_fold.csv (all 224 fold records:
+    nested alpha, status, oracle alpha, oracle status, both grid spreads) and
+    predictions_transfer.csv (all 315 predicted curves, so every stored EMD is re-derivable).
+
 
 HOW AND WHERE IT RUNS
 --------------------------------------------------------------------------------
@@ -317,3 +336,67 @@ Two camera directions and 45 evaluation rows is the entire measurable universe o
 SUPPORTED verdict rests on two domain pairs; a REFUTED verdict is weaker than it looks for the same
 reason. The specificity design is the strongest thing available with this data, not a guarantee, and
 the record will say so in those words.
+
+
+OUTCOME - RECORDED 2026-09-29, AFTER THE RUN, WITH NOTHING IN THIS CONTRACT ALTERED
+--------------------------------------------------------------------------------
+VERDICT  DIRECTION-INCONSISTENT        submit = False        SUBMISSION NOT PRODUCED
+H5       REFUTED. P1, the main pre-registered prediction, came back CONFIRMED. Under spec section 6
+         a G2 failure is "treated as refuted for decision purposes", so the label and the
+         interpretation agree.
+CLOSURE  THE SECTION 10 CLOSURE RULE FIRES. Its own stated condition is met on both halves:
+         gain(CORAL) = -8.748 misses G1's 3.00 floor, and neither direction is at an alpha boundary
+         (A INTERIOR, B INTERIOR, symmetric_boundary False for both), so there is NO boundary
+         caveat. MODEL 5 CLOSES AT ONE EXPERIMENT. No alignment variant is scheduled.
+         Note one wording gap: Experiment1.txt section 12 has no branch for this label and printed
+         the generic "see spec section 6" fallback, so the closure is stated here and in
+         Model 5/instructions.txt rather than inside the generated record. Not retrofitted.
+
+CLAUSES  G0 PASS (gap 0.00e+00 vs E3's 43.0217308796477)  G1 FAIL (-8.748 vs >= 3.00)
+         G2 FAIL (A -18.464 [-24.843,-12.187]; B +0.546 [-6.482,+8.222])
+         G3 FAIL (pooled CI [-12.776,-3.967], lower bound not > 0)
+         G4 FAIL (CORAL - placebo +4.698, CI [-4.281,+13.968]: CI includes 0)
+         G5 PASS (canary -0.0000)  G6 PASS (0 of 2 directions clipped)  G7 PASS
+
+ARM MEANS, cross-camera EMD (lower is better)
+   direction A  Motorola fitted -> Samsung scored: NONE 51.784  CORAL 70.248  MEAN 51.784
+                CORAL_INDEP 79.366  CORAL_SELF 51.784  CORAL_TILE 52.091  CORAL_SOIL 66.131
+   direction B  Samsung fitted -> Motorola scored: NONE 45.366  CORAL 44.820  MEAN 45.366
+                CORAL_INDEP 45.291  CORAL_SELF 45.366  CORAL_TILE 45.836  CORAL_SOIL 46.873
+
+WHAT THE CONTROLS DID, which is the part worth keeping
+   The instrument separated the arms. The same-marginal placebo degraded FURTHER than CORAL in the
+   direction that failed (-27.582 vs -18.464 in A), so CORAL and CORAL_INDEP are distinguishable
+   and the design detected the effect it was built to detect - in the harmful direction.
+   MEAN and CORAL_SELF are EXACT zeros of a different kind: the MEAN arm is a constant shift, the
+   soil median commutes with it, and the frozen StandardScaler removes it, so MEAN is structurally
+   identical to NONE (verified to 6.9e-15). CORAL_SELF is the identity to 3.7e-15. Consequence:
+   P3's CONFIRMED and X1's label are that identity talking, NOT evidence about first moments, and
+   G5 is a wiring canary that cannot fire on anything but a wiring fault. The correct reading of
+   the covariance half here is that it COST 8.75 EMD.
+
+TWO IMPLEMENTATION DEFECTS FOUND AND FIXED BEFORE ANY GATE WAS EVALUATED - see Experiment1.txt
+   section 16 for the full account. The first attempt aborted on cell F1's own n_clusters
+   assertion. (1) Delta was computed with the sign inverted against this contract, which would have
+   reported an 8.75 EMD degradation as an improvement and could have produced SUPPORTED on a
+   harmful model. (2) Pooled bootstrap keys were direction-prefixed, so 45 rows became 45 clusters
+   and the soil-clustered bootstrap silently became the row bootstrap. Both were corrected to match
+   the wording already frozen above; no threshold, arm, seed, precedence, clause or rule moved, and
+   the verdict is DIRECTION-INCONSISTENT under all four combinations.
+   Correction (2) also REFUTED A PREDICTION IN THIS CONTRACT. It claimed row resampling narrows
+   every CI by roughly sqrt(2). Measured on this data the soil-clustered intervals are NARROWER
+   (CORAL width 8.81 vs 11.23; CORAL_SOIL 8.35 vs 11.41). The narrowing direction depends on the
+   sign of the within-cluster correlation, which was assumed. Row resampling remains invalid here -
+   two rows for one soil are not two observations - so the fix stands, but the stated expectation
+   about which way it moves the number was wrong.
+
+RUN CONDITION  local CPU, exit 0, 21/21 cells printed, no NaN or infinity in any artifact, all 315
+   stored EMDs re-derived from the stored predicted curves to 2.8e-14, and 10/10 artifacts
+   byte-identical across independent runs. scratch/_m5_run1.log is the aborted pre-fix attempt;
+   run2/run3 are the clean determinism pair; run4 regenerated only Experiment1.txt after the
+   disclosure was added, with the 9 numeric artifacts unchanged.
+
+TASK 6 - DATASET AND UPLOAD DECISION
+   No Kaggle session, no dataset, no zip. Model 5 consumed cached tile features from
+   Model 1 Experiment 3 and the sample manifests, all already on disk; it imports no torch and
+   embeds nothing. final_kaggle_upload_m2e2.zip is untouched and no new archive was made.
