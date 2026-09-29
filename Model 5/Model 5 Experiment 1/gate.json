@@ -1,0 +1,218 @@
+{
+  "submit": false,
+  "verdict": "DIRECTION-INCONSISTENT",
+  "gated_arm": "CORAL",
+  "clauses": [
+    {
+      "clause": "G0 control reproduces E3 within 0.05 EMD",
+      "passed": true,
+      "detail": "gap 0.00e+00"
+    },
+    {
+      "clause": "G1 pooled gain over NONE >= 3.0 EMD",
+      "passed": false,
+      "detail": "-8.748"
+    },
+    {
+      "clause": "G2 gain >= 1.0 EMD in both directions and neither significantly worse",
+      "passed": false,
+      "detail": "A -18.464 [-24.843,-12.187]  B +0.546 [-6.482,+8.222]"
+    },
+    {
+      "clause": "G3 pooled clustered CI excludes zero",
+      "passed": false,
+      "detail": "[-12.776, -3.967]"
+    },
+    {
+      "clause": "G4 beats the same-marginal placebo by >= 1.5 EMD with CI excluding zero",
+      "passed": false,
+      "detail": "+4.698 CI [-4.281, +13.968]"
+    },
+    {
+      "clause": "G5 self-alignment canary inside 0.5 EMD",
+      "passed": true,
+      "detail": "pooled -0.0000  A -0.0000  B -0.0000"
+    },
+    {
+      "clause": "G6 fewer than two directions at an alpha boundary",
+      "passed": true,
+      "detail": "per-direction status ['INTERIOR', 'INTERIOR']  (never pooled across directions)"
+    },
+    {
+      "clause": "G7 alignment is label-free and the target is disjoint",
+      "passed": true,
+      "detail": "asserted in A3/D1/E1/E2"
+    }
+  ],
+  "gains": {
+    "NONE": {
+      "arm": "NONE",
+      "pooled_gain": 0.0,
+      "pooled_lo": 0.0,
+      "pooled_hi": 0.0,
+      "gain_A": 0.0,
+      "lo_A": 0.0,
+      "hi_A": 0.0,
+      "gain_B": 0.0,
+      "lo_B": 0.0,
+      "hi_B": 0.0,
+      "n_rows": 45,
+      "n_clusters": 24
+    },
+    "CORAL": {
+      "arm": "CORAL",
+      "pooled_gain": -8.747898384501454,
+      "pooled_lo": -12.775913242489148,
+      "pooled_hi": -3.9666772533311097,
+      "gain_A": -18.463898200245243,
+      "lo_A": -24.842639712404534,
+      "hi_A": -12.186976924289512,
+      "gain_B": 0.5456666566447762,
+      "lo_B": -6.481751996357598,
+      "hi_B": 8.221619435759466,
+      "n_rows": 45,
+      "n_clusters": 24
+    },
+    "MEAN": {
+      "arm": "MEAN",
+      "pooled_gain": -4.788268547094453e-14,
+      "pooled_lo": -1.2476087816125925e-13,
+      "pooled_hi": 2.2866604853383594e-14,
+      "gain_A": -8.478066733501195e-14,
+      "lo_A": -2.4715583115473483e-13,
+      "hi_A": 7.01681137436274e-14,
+      "gain_B": -1.2588963687923515e-14,
+      "lo_B": -2.6027489342516714e-14,
+      "hi_B": 3.8616453030440226e-16,
+      "n_rows": 45,
+      "n_clusters": 24
+    },
+    "CORAL_INDEP": {
+      "arm": "CORAL_INDEP",
+      "pooled_gain": -13.44598302145921,
+      "pooled_lo": -24.248968951937233,
+      "pooled_hi": -2.9469421576598513,
+      "gain_A": -27.581847882666214,
+      "lo_A": -45.67894642048361,
+      "hi_A": -10.766794074005153,
+      "gain_B": 0.07527901969531416,
+      "lo_B": -11.385758069896523,
+      "hi_B": 10.724144476361904,
+      "n_rows": 45,
+      "n_clusters": 24
+    },
+    "CORAL_SELF": {
+      "arm": "CORAL_SELF",
+      "pooled_gain": -8.021237994802909e-14,
+      "pooled_lo": -2.601257271050038e-13,
+      "pooled_hi": 7.546330710076055e-14,
+      "gain_A": -1.566423758380221e-13,
+      "lo_A": -5.03480085905556e-13,
+      "hi_A": 1.2276240630109744e-13,
+      "gain_B": -7.105427357601002e-15,
+      "lo_B": -1.2419823623650187e-13,
+      "hi_B": 9.515866355761084e-14,
+      "n_rows": 45,
+      "n_clusters": 24
+    },
+    "CORAL_TILE": {
+      "arm": "CORAL_TILE",
+      "pooled_gain": -0.3905051919866542,
+      "pooled_lo": -3.663962273765343,
+      "pooled_hi": 3.078104161086384,
+      "gain_A": -0.3072934097021422,
+      "lo_A": -4.392071253735856,
+      "hi_A": 3.872243679749865,
+      "gain_B": -0.47009907069357854,
+      "lo_B": -4.932776146699414,
+      "hi_B": 4.050310386345128,
+      "n_rows": 45,
+      "n_clusters": 24
+    },
+    "CORAL_SOIL": {
+      "arm": "CORAL_SOIL",
+      "pooled_gain": -7.784231564917553,
+      "pooled_lo": -11.692766548309546,
+      "pooled_hi": -3.344105000848191,
+      "gain_A": -14.346882675332534,
+      "lo_A": -20.939771091299345,
+      "hi_A": -7.903235000779158,
+      "gain_B": -1.5069131114771348,
+      "lo_B": -9.662252724208892,
+      "hi_B": 7.007611392268677,
+      "n_rows": 45,
+      "n_clusters": 24
+    }
+  },
+  "coral_minus_placebo": {
+    "arm_a": "CORAL",
+    "mean": 4.69808463695776,
+    "lo": -4.281317107334874,
+    "hi": 13.967801183006232,
+    "mean_A": 9.117949682420978,
+    "lo_A": -8.770430852405013,
+    "hi_A": 28.09995957477107,
+    "mean_B": 0.47038763694946256,
+    "lo_B": -7.439219530989086,
+    "hi_B": 8.215273347715522
+  },
+  "boundary_status_per_direction": {
+    "A": "INTERIOR",
+    "B": "INTERIOR"
+  },
+  "baseline_status_per_direction": {
+    "A": "INTERIOR",
+    "B": "INTERIOR"
+  },
+  "symmetric_boundary": {
+    "A": false,
+    "B": false
+  },
+  "any_fold_at_edge": {
+    "A|NONE": true,
+    "A|CORAL": false,
+    "A|MEAN": true,
+    "A|CORAL_INDEP": false,
+    "A|CORAL_SELF": true,
+    "A|CORAL_TILE": false,
+    "A|CORAL_SOIL": false,
+    "B|NONE": false,
+    "B|CORAL": false,
+    "B|MEAN": false,
+    "B|CORAL_INDEP": false,
+    "B|CORAL_SELF": false,
+    "B|CORAL_TILE": false,
+    "B|CORAL_SOIL": false
+  },
+  "boundary_inclusive_thresholds": true,
+  "verdict_precedence": [
+    "validity (G0,G5,G7)",
+    "both-directions-inconclusive",
+    "full pass",
+    "regularisation",
+    "direction-inconsistent",
+    "below-band",
+    "not-resolved",
+    "refuted"
+  ],
+  "thresholds": {
+    "G0": 0.05,
+    "G1": 3.0,
+    "G2": 1.0,
+    "G3": 0.0,
+    "G4": 1.5,
+    "G5": 0.5
+  },
+  "n_rows": 45,
+  "n_clusters": 24,
+  "penalty_emd": 5.553175429272677,
+  "base_mean_emd": {
+    "A": 51.78381649054638,
+    "B": 45.365996127294366
+  },
+  "g0": {
+    "reference": 43.0217308796477,
+    "measured": 43.0217308796477,
+    "gap": 0.0
+  }
+}

@@ -805,6 +805,53 @@ pre-existing Model 1 Kaggle state to preserve.
     crop follow-up as a *new* pre-registered experiment. SHUF beats M1 → instrument leaking,
     nothing else is read. Alpha at grid edge → INCONCLUSIVE, **not** a refutation.
 
+- **Model 5: E1 BUILT AND VERIFIED, NOT YET RUN.** Tasks 1-4 are complete; the experiment has
+  **not** been scored and the Model 5 folder holds no result artifact.
+  - Spec `Model 5/Model 5 Experiment 1/model_spec_m5e1.md`, plan `model_plan_m5e1.md`, contract
+    `instructions.txt`. H5: label-free transductive CORAL alignment of the fitting camera's
+    **image-level** features onto the 35 unlabeled test images, judged on a camera that was
+    neither fitted on nor the alignment target. **P1 predicts H5 is refuted.**
+  - Modules: `alignment.py` (CORAL + the same-marginal placebo) with `check_alignment.py`
+    (32 assertions), `transfer_eval.py` (image assembly, folds, the frozen head, nested alpha,
+    oracle sweep, soil-clustered bootstrap) with `check_transfer_eval.py` (63 assertions).
+    `scratch/build_m5e1.py` → `Model5_Experiment1.ipynb` (29 cells, 21 code, **6 of them Model 2
+    E3's text byte-for-byte**). Run with `scratch/run_nb_m5e1.py`. No torch, no GPU, no Kaggle.
+  - **Gate G0 is the load-bearing check:** the unaligned no-holdout control must reproduce E3's
+    recorded **43.0217308796477** ±0.05, and it reproduces it to **0.00e+00**. The reference is
+    read from E3's `sweep_results.csv` at run time, never typed.
+  - Three defects found by dry runs before any score existed, all disclosed rather than buried:
+    **(1)** seven notebook cells were closed with `"""` instead of `'''`, which made the builder
+    itself unparseable — the fix is a pinned ordered cell list, so a swallowed cell now fails the
+    build. **(2)** the verdict ladder could never emit `SUPPORTED-BELOW-BAND`, one of the ten
+    outcomes the spec names. **(3)** `BASE[d].values()` on a pandas Series and a missing `io`
+    import, both caught by an order-aware free-name scan (`scratch/mk_run6.py`) that resolves every
+    loaded name against the namespace the *preceding* cells build.
+  - **Contract correction, approved by the owner on 2026-09-29 before Task 5.** Spec section 5
+    defined `submit = G0 AND ... AND G7`, but G6 only fails when *both* directions are
+    alpha-clipped, so that formula read alone let the one-direction caveat case submit — which
+    sections 5a and 7 forbid. The written contract now states the rule the code implements:
+    **`SUBMIT = TRUE` iff `VERDICT == "SUPPORTED"`**; `SUPPORTED-WITH-BOUNDARY-CAVEAT`,
+    `REFUTED-WITH-BOUNDARY-CAVEAT`, `INCONCLUSIVE` and every other verdict → no submission. Cell G1
+    computes the conjunction, folds in the caveat, and asserts
+    `SUBMIT == (VERDICT == "SUPPORTED")`. **Section 6a** now fixes the one precedence the table left
+    ambiguous (a one-direction caveat combined with a failing G2): validity > both-directions >
+    full pass > placebo > direction > below-band > unresolved > refuted, with the caveat label
+    applied only to a full pass and a plain refutation. Ordering assigns labels only — **no
+    threshold, arm, clause test, CI or submission outcome moved.** Mirrored in `instructions.txt`
+    (gate block, boundary section, outcome table, submission rule) and in spec sections 5, 5a, 6a, 7.
+  - Verification scripts, all passing: `scratch/mk_run6.py` (per-cell compile, flattened compile,
+    banned-pattern scan, gate-implementation scan, free-name scan, and a **contract-agreement
+    check** whose literal markers are verified to fail under two mutations — dropping the caveat
+    from `SUBMIT`, and rewording the spec's iff — both of which also trip the shipped assert),
+    `scratch/check_m5_gate_logic.py` (42 checks: the shipped ladder through all 10 verdicts on
+    invented inputs, submit-iff per verdict, five threshold mutations each shown to move the
+    answer), `scratch/check_m5_cells_dry.py` (20 checks: A1-C1 + E1-E2 on the real manifests and
+    fold structure while scoring nothing and writing only into `scratch/_m5_dry/`), plus
+    `check_alignment.py` (32) and `check_transfer_eval.py` (63, including the new `oracle_sweep`).
+  - **Next: Task 5**, the real local run, on owner approval. Then Task 6 (no dataset/zip decision)
+    and Task 7 (record the verdict here, in `Model 5/instructions.txt`, and in memory). A
+    submission file may exist only if the verdict is exactly `SUPPORTED`.
+
 - Git: `df3a4b7 model 2 experiment 2 REFUTED gates didnt open`, `19b30dc model 2 exp 1 completed`,
   `8a6f087 Experiment 4 completed colour was not hurting`, `c31b966 experiment 3 done succesfully`,
   `ba0bd43 experiment 2 succesfull`, `b8be3a5 experiment 1 model 1`,

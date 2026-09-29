@@ -1,0 +1,319 @@
+MODEL 5 / EXPERIMENT 1 - LABEL-FREE CAMERA ALIGNMENT, TESTED FOR SPECIFICITY
+================================================================================
+STATUS: contract, written and approved BEFORE any run. The gate below is executed as code, not
+interpreted as prose. Nothing in this file may be changed after the run except (a) to correct code
+that disagrees with it, disclosed in the record, or (b) by an owner-approved revision made before a
+rerun.
+Spec: Model 5/Model 5 Experiment 1/model_spec_m5e1.md
+Plan: Model 5/Model 5 Experiment 1/model_plan_m5e1.md
+
+
+H5 - THE HYPOTHESIS UNDER TEST
+--------------------------------------------------------------------------------
+Aligning the fitting camera's image-level feature distribution onto the unlabeled iPhone
+test-image distribution, by a closed-form CORAL transform, reduces mean EMD on a camera that was
+neither fitted on nor used as the alignment target, relative to the identical unaligned pipeline.
+
+H5 IS NOT ASSUMED TRUE. P1 predicts it is REFUTED. Stated in advance: Model 2 showed the
+informative structure of these images is not expressible as a linear re-mapping of these features;
+the camera shift includes resolution and texture changes a feature-space affine transform cannot
+undo once features are aggregated to image medians; and Model 1's E7 found cheap invariance fixes
+were either circular or dependent on device identity.
+
+A pass would mean the mechanism is real on the two measurable camera pairs. It would NOT forecast a
+Kaggle score: the production target is iPhone and iPhone is never scored locally, CAM+RES is
+ordinal-only by Model 1 E4's ruling, and the public leaderboard is a fixed 3 of 10 soils while the
+final ranking is 0.30*public + 0.70*private.
+
+
+MEASURED FACTS THE DESIGN STANDS ON
+--------------------------------------------------------------------------------
+  labelled training soils                        24
+  Motorola-family soils                         23
+  Samsung-family soils                          22
+  soils photographed by both cameras            21
+  test soils / images / tiles                    10 / 35 / 435
+  direction A  fit Motorola 23 -> score Samsung  22 evaluation soils
+  direction B  fit Samsung 22 -> score Motorola  23 evaluation soils
+  pooled evaluation rows                        45   (22 + 23)
+  bootstrap clusters                            24   (21 shared soils + 2 Motorola-only + 1
+                                                      Samsung-only)
+  measured camera transfer penalty              +16.2 EMD (DINOv2) / +18.2 EMD (hand features)
+  best external score held                       60.56 (Model 2 E1's declared probe)
+
+Consequence: Model 5 needs no new artifact, no torch, no GPU, no Kaggle run, no dataset and no zip.
+
+
+THE ONE VARIABLE
+--------------------------------------------------------------------------------
+A transform inserted between image-median aggregation and soil aggregation:
+
+    tiles -> image median -> ALIGN -> soil median -> frozen head
+
+The transform acts on the 12 hand features at IMAGE level and is applied identically to the fitting
+camera and the scoring camera, so a model trained in target space is scored in target space. The
+baseline arm is the identity applied to both.
+
+FROZEN AND UNTOUCHED: everything under data/; the 12 control features
+  (e4, e8, e16, lum_sd, grad_mean, R, G, B, sat, lum_p10, lum_p50, lum_p90); tile->image->soil
+  median aggregation; StandardScaler; rank-3 curve basis; closed-form ridge; the alpha grid
+  0.03 ... 1000000.0; monotone projection (clip -> cummax -> force 100 at 200 mm); trapezoid EMD on
+  log10 d over the 11 ISO supports; the 16 curve-distance CV families; nested alpha selection; the
+  Model 1 E4 parsimony rule; config_hash 010f44c36c74.
+
+PROHIBITED, BY RULE AND BY ASSERTION: camera name or family, device make or model, ppm, EXIF, ICC
+  profile, site and sample id - never as features, conditioning variables or lookup keys the
+  transform can dispatch on. Test labels do not exist and are never referenced. The alignment
+  function's only arguments are feature matrices; a static test and a runtime test both assert it.
+
+FOLD-LEVEL LEAKAGE RULE (spec section 14): no soil is ever scored by a model that was fitted
+on it. Each direction is split into CV folds; a fold drops one family from the fitting camera,
+estimates alignment from the surviving fitting-camera images plus the 35 test images, and
+scores that family's evaluation-camera images. The contracted 22 + 23 = 45 rows and 24 clusters
+are unchanged; what changes is that all 45 rows come from models that never saw their soil.
+
+THE ALIGNMENT TARGET IS THE 35 iPHONE TEST IMAGES ONLY. A runtime assertion requires the target
+  image set disjoint from every training-camera image. That disjointness is what keeps the
+  evaluation non-circular by construction.
+
+
+ARMS - SEVEN, AND ONLY ONE CARRIES THE GATE
+--------------------------------------------------------------------------------
+  1  NONE          identity                                    the baseline every difference uses
+  2  CORAL         mean + Ledoit-Wolf-shrunk covariance        THE GATED ARM - H5 itself
+  3  MEAN          mean shift only, covariance untouched       mechanistic decomposition.
+                                                                 REPORT-ONLY: CORAL does not have
+                                                                 to beat it to pass
+  4  CORAL_INDEP   CORAL toward a target whose 12 columns are  attribution control, INSIDE THE
+                  each shuffled independently: every per-      GATE. Shares CORAL's first-moment
+                  feature mean, variance and marginal distri-  correction exactly and differs only
+                  bution of the real test set preserved,      in whether the matched covariance
+                  cross-feature covariance destroyed           structure is the real one
+  5  CORAL_SELF    CORAL toward the fitting camera's own       implementation canary; mathemati-
+                  image features                                cally near-identity
+  6  CORAL_TILE    CORAL estimated at tile level               sensitivity only, cannot fire gate
+  7  CORAL_SOIL    CORAL estimated at soil level               sensitivity only, cannot fire gate
+
+CORAL vs CORAL_INDEP reads: the gain must come from matching the test set's actual correlation
+structure, not from applying any large same-marginal linear map. A gain CORAL_INDEP also achieves is
+variance rescaling, i.e. regularisation.
+
+THE ROW-PERMUTATION PLACEBO THAT WAS REPLACED (spec section 13, kept so it cannot return)
+--------------------------------------------------------------------------------
+The first approved placebo permuted the target's ROWS. That is provably inert: CORAL reads the
+target only through its mean vector and covariance matrix, and both are invariant to row order -
+measured on a correlated 12-column table, permuting rows changed the mean by 1.1e-16 and the
+covariance by 4.4e-16. The difference CORAL - CORAL_PERM would have been exactly 0.00 in every run,
+G4 could never have passed, and the verdict would have read REGULARISATION-ARTEFACT regardless of
+the data. E3's identical-looking control was valid there because its shuffled block fed a
+predictive model, where the row-to-label pairing is the signal being destroyed; an adaptation target
+supplies only moments, and moments have no pairing to destroy. check_alignment.py pins the
+row-permutation invariance as a test so this cannot be reintroduced.
+
+
+THE DECISION GATE - FIXED BEFORE THE RUN, EXECUTED AS CODE
+--------------------------------------------------------------------------------
+  G0  SANITY        the full 24-soil, unaligned, no-holdout configuration reproduces Model 2 E3's
+                    recorded control score 43.0217308796477 (arm M1, nested_in_domain,
+                    Model 2/Model 2 Experiment 3/sweep_results.csv) within 0.05 EMD.
+  G1  MAGNITUDE    pooled gain >= 3.00 EMD                    (over the 45 evaluation rows)
+  G2  DIRECTION    gain >= 1.00 EMD in EACH direction, and neither direction's clustered 95% CI
+                   lies entirely below 0 (no direction may be significantly worse)
+  G3  SIGNIFICANCE pooled clustered 95% CI lower bound > 0.
+                   Per-direction significance is deliberately NOT required.
+  G4  SPECIFICITY  gain(CORAL) - gain(CORAL_INDEP) >= 1.50 EMD AND that difference's clustered CI
+                   excludes 0, AND gain(CORAL_INDEP) <= gain(CORAL).
+  G5  CANARY      |gain(CORAL_SELF)| <= 0.50 EMD pooled AND <= 0.50 in each direction. Violation =>
+                   INVALID-IMPLEMENTATION and NO CONCLUSION AT ALL, including no refutation.
+  G6  BOUNDARY    see the boundary rule below - reported per DIRECTION, never pooled, never hidden
+                   by the other direction.
+  G7  LABEL-BLIND the static and runtime assertions above. Failure stops the run; it is not a
+                   result.
+
+  clause test:  G0 AND G1 AND G2 AND G3 AND G4 AND G5 AND G6 AND G7   (all eight must hold)
+
+  SUBMIT = TRUE IF AND ONLY IF VERDICT == SUPPORTED
+
+  The clause conjunction is what the VERDICT is derived from; it is not by itself the submission
+  test. G6 fails only when BOTH directions are alpha-clipped, so the conjunction read alone would
+  let the one-direction caveat case submit, which the boundary rule and the submission rule below
+  both forbid. The statements are therefore ordered: clauses -> verdict -> submit. The notebook
+  computes the conjunction, folds in the single-direction caveat, and then asserts
+  "SUBMIT == (VERDICT == SUPPORTED)" at run time, so the contract cannot drift from the code in
+  silence. Stated explicitly:
+
+    SUPPORTED                      -> submission permitted, provided the 8 structural gates pass
+    SUPPORTED-WITH-BOUNDARY-CAVEAT -> NO submission
+    REFUTED-WITH-BOUNDARY-CAVEAT   -> NO submission, and no permanent closure
+    INCONCLUSIVE                   -> NO submission
+    every other verdict            -> NO submission
+
+BOUNDARY-CONVENTION: every threshold above is INCLUSIVE - a value exactly equal to it passes. All
+CIs are two-sided percentile intervals from the same 4000 bootstrap draws, resampling UNIT = SOIL
+IDENTITY (a soil appearing in both directions moves as one cluster), seed 20260934. Row-level
+resampling would treat correlated errors as independent and narrow every CI by roughly sqrt(2),
+which is exactly how a null becomes a discovery here.
+
+WHERE THE NUMBERS COME FROM - not invented round figures:
+  3.00 EMD is (i) about 18% of the +16 to +18 EMD camera penalty that is the explicit target of the
+  intervention; (ii) more than three times the 0.9 EMD information-specific effect the curve-ensemble
+  spike measured on 2026-09-29 and correctly treated as noise; (iii) larger than any arm difference
+  this project has resolved externally - the E1 probe's 0.674 EMD gap was declared a tie, and the
+  D-vs-M1 gaps were 0.3 to 1.9 EMD. It is deliberately far below Model 1's 15.0 ORDINAL_FLOOR, which
+  was calibrated for ranking ridge alphas over 24 in-domain soils, not for a paired per-soil
+  difference with 45 rows.
+  1.50 EMD is exactly half the G1 floor, so an arm sitting on the floor cannot be explained by a
+  placebo also sitting on the floor.
+
+THE ALPHA-BOUNDARY RULE, PER DIRECTION (spec 5a)
+--------------------------------------------------------------------------------
+Reported for every arm and both directions: the selected alpha, its status FLOOR | INTERIOR |
+CEILING, that alpha's own LOGO error, and the grid spread. There is no pooled boundary status. A
+symmetric_boundary diagnostic flags when NONE and CORAL hit the same edge; it changes no verdict.
+
+  BOTH directions at a boundary  => INCONCLUSIVE. Neither SUPPORTED nor REFUTED. No submission, and
+      no closure claim of any kind: the measured difference is between a transform and a truncation.
+  EXACTLY ONE direction at a boundary => the measured verdict stands but is caveated, and
+      - SUPPORTED-WITH-BOUNDARY-CAVEAT: NO SUBMISSION. A gate that passed while the grid clipped one
+        of its two halves did not pass cleanly. It earns a documented reason to reopen instead.
+      - REFUTED-WITH-BOUNDARY-CAVEAT: the permanent closure rule below DOES NOT FIRE, because a
+        clipped direction is one where the arm may have been handicapped. Absence of evidence there
+        is not evidence of absence.
+  Neither caveat can ever produce a submission: SUBMIT is true for SUPPORTED alone, so the caveat
+  removes the privilege structurally rather than by convention. Where a caveat and a specific
+  failure diagnosis both apply, the precedence block below decides which label is written.
+A grid amendment is never applied inside a run. Extending the alpha bounds changes the frozen head
+shared with Models 1 and 2 and is a separate owner decision before any rerun.
+
+
+WHAT EACH OUTCOME MEANS
+--------------------------------------------------------------------------------
+  all clauses pass, no direction clipped           SUPPORTED                SUBMISSION PERMITTED
+  G1 fails, G4 passes                              SUPPORTED-BELOW-BAND    no submission; mechanism
+                                                                            real but under the floor;
+                                                                            not dressed up as a win
+  G1 passes, G4 fails                              REGULARISATION-ARTEFACT no submission
+  G2 fails                                         DIRECTION-INCONSISTENT  no submission; treated
+                                                                            as refuted for decisions
+  G3 fails while G1 passes                         NOT-RESOLVED            no submission
+  G5 fails                                         INVALID-IMPLEMENTATION  no conclusion either way;
+                                                                            fix code, rerun, gate
+                                                                            unchanged
+  boundary in both directions                      INCONCLUSIVE            no claim, no submission
+  all clauses pass, ONE direction clipped          SUPPORTED-WITH-BOUNDARY no submission despite the
+                                                 -CAVEAT                   pass; earns a documented
+                                                                            reason to reopen
+  plain G1 miss, ONE direction clipped             REFUTED-WITH-BOUNDARY   no submission, and the
+                                                 -CAVEAT                   closure rule does NOT fire
+  G1 fails outright, no boundary caveat            REFUTED                 MODEL 5 CLOSES
+
+
+VERDICT PRECEDENCE - THE TABLE OVERLAPS, SO THE ORDER IS PART OF THE CONTRACT
+--------------------------------------------------------------------------------
+Two of the rows above can describe the same measurement: a run with exactly one direction
+alpha-clipped AND a failing G2 matches both "G2 fails -> DIRECTION-INCONSISTENT" and "one direction
+at a boundary with the gate otherwise failing -> REFUTED-WITH-BOUNDARY-CAVEAT". A tie-break is
+therefore required, not optional, and it is fixed here before any score exists. The ladder runs top
+to bottom and stops at the first match:
+
+  1  NOT (G0 AND G5 AND G7)                 INVALID-IMPLEMENTATION
+  2  boundary in BOTH directions            INCONCLUSIVE
+  3  G1 AND G2 AND G3 AND G4                SUPPORTED, or SUPPORTED-WITH-BOUNDARY-CAVEAT when
+                                            exactly one direction is clipped
+  4  G1 AND G2 AND G3 AND NOT G4            REGULARISATION-ARTEFACT
+  5  NOT G2                                 DIRECTION-INCONSISTENT
+  6  NOT G1 AND G4                          SUPPORTED-BELOW-BAND
+  7  G1 AND NOT G3                          NOT-RESOLVED
+  8  anything else                          REFUTED, or REFUTED-WITH-BOUNDARY-CAVEAT when exactly
+                                            one direction is clipped
+
+Why this order: the spec attaches the caveat label to exactly two outcomes, a PASS with a caveat
+(row 3) and a PLAIN REFUTATION with a caveat (row 8), so it is applied only there; a specific
+diagnosis (rows 4 to 7) carries more information than a caveat does and is named instead. Validity
+precedes every scientific reading, because a broken instrument cannot support any conclusion; and
+both-directions clipping precedes all of them, because a grid truncated at both ends makes the
+direction and significance tests themselves uninterpretable.
+
+This ordering assigns LABELS only. It moves no threshold, no arm, no clause test and no submission
+outcome: SUBMIT remains true for SUPPORTED alone, which row 3 can produce only when nothing is
+clipped.
+
+
+PRE-REGISTERED PREDICTIONS (blind = written before the run, never revised after)
+--------------------------------------------------------------------------------
+  P1 [BLIND, THE MAIN ONE] H5 is refuted: gain(CORAL) < 3.00 EMD, or its CI includes 0.
+  P2 [BLIND] gain(CORAL_INDEP) is within +/-1.0 EMD of gain(CORAL); most of any gain is variance
+      rescaling rather than matching the real joint structure.
+  P3 [BLIND] gain(MEAN) >= gain(CORAL) - 1.0: if anything works, the mean shift carries most of it,
+      because a colour/gain offset is the largest and most linear part of the measured shift.
+  P4 [BLIND] |gain(CORAL_SELF)| < 0.10 EMD. This is a prediction about MAGNITUDE and is not the
+      same thing as G5, which is a VALIDITY bound: drift between 0.10 and 0.50 refutes P4 while
+      leaving the run valid, and that is the intended reading, not a contradiction.
+  P5 [BLIND] no arm reduces the camera penalty by more than 25% of the NONE arm's gap to same-camera
+      in-domain error; a full fix needs a representation change, not a re-mapping.
+  P6 [BLIND] CORAL_TILE and CORAL_SOIL disagree with the gated arm in magnitude but not in sign. If
+      the SIGN flips with the estimation unit, the result is an artefact of that unit and must be
+      reported as uninterpretable.
+
+
+SUBMISSION RULE - EXACT AND CONDITIONAL
+--------------------------------------------------------------------------------
+SUBMIT = TRUE IF AND ONLY IF VERDICT == SUPPORTED. This is the single submission test; the clause
+conjunction gates the VERDICT, and this rule gates the FILE. SUPPORTED-WITH-BOUNDARY-CAVEAT does NOT
+qualify, nor does REFUTED-WITH-BOUNDARY-CAVEAT, INCONCLUSIVE, or any other verdict. The notebook
+asserts the identity rather than relying on the reader to hold two rules straight, so a future edit
+that lets SUBMIT be true alongside any other verdict fails the run instead of shipping a file.
+
+  arm CORAL; file Submission_Model5_E1.csv written by the notebook itself under that name, never
+  renamed. Configuration is the PRODUCTION recipe, deliberately not the tested one: fit on all 24
+  labelled training soils from both cameras, align those 24 soils' image features onto the 35 iPhone
+  test-image features with the same CORAL transform, predict the 10 test soils. Alpha comes from the
+  same nested procedure on the 24 soils; no alpha may be chosen by looking at the submission. The
+  eight structural validation gates run first and must pass.
+
+  DECLARED DIFFERENCE: the submitted model was never itself evaluated by the gate - it uses two more
+  fitting soils than either direction, and its alignment target is the same set it predicts. That is
+  the legitimate application of a validated recipe, not a measurement, and the record must say so in
+  those words.
+
+  THERE IS NO PROBE IN THIS EXPERIMENT. Any other verdict writes no file and names the failed clause.
+
+
+CLOSURE RULE, FIXED IN ADVANCE
+--------------------------------------------------------------------------------
+If gain(CORAL) misses G1 with NO boundary caveat, Model 5 closes at one experiment and no follow-up
+alignment variant is scheduled: the cheap, closed-form, label-free form of domain adaptation will
+have been tested on the only two measurable camera directions that exist, against a same-marginal
+placebo, and found insufficient. Remaining competition time goes to making the current best
+submission robust rather than to a fourth way of asking the same question.
+
+
+OUTPUTS
+--------------------------------------------------------------------------------
+  Experiment1.txt          record generated from live objects, including this gate verbatim, the
+                           boundary table, the placebo correction and the scope-of-verification
+  transfer_results.csv     per arm x direction: mean EMD, gain, CI, alpha, boundary status, wins
+  per_soil_transfer.csv    all 45 rows with their soil-cluster ids
+  alignment_report.csv     per feature: source and target mean/sd before and after, shrinkage weight
+  placebo_report.csv       transform distance CORAL vs CORAL_INDEP and vs CORAL_SELF
+  canary.json              G0 and G5 outcomes
+  predictions.csv          P1-P6 evaluated mechanically
+  gate.json                clause, measured value, threshold, pass, verdict
+  Model5_Experiment1.ipynb the notebook that produced all of the above
+  Submission_Model5_E1.csv ONLY if the verdict is exactly SUPPORTED
+
+
+HOW AND WHERE IT RUNS
+--------------------------------------------------------------------------------
+Local CPU only. Model 5 imports no torch and needs no GPU, no Kaggle run, no dataset upload and no
+zip; final_kaggle_upload_m2e2.zip is untouched. There is no mock mode: missing inputs raise and list
+every missing item, because Model 2 E1 and E2 both showed a mock path is where untested branches
+hide. Every cell must print something. Determinism is checked by byte-comparing two full runs.
+
+
+LIMITATION STATED IN ADVANCE
+--------------------------------------------------------------------------------
+Two camera directions and 45 evaluation rows is the entire measurable universe of this problem. A
+SUPPORTED verdict rests on two domain pairs; a REFUTED verdict is weaker than it looks for the same
+reason. The specificity design is the strongest thing available with this data, not a guarantee, and
+the record will say so in those words.

@@ -1,0 +1,10 @@
+{
+  "G0_ok": true,
+  "G0_reference": 43.0217308796477,
+  "G0_measured": 43.0217308796477,
+  "G0_gap": 0.0,
+  "G0_tolerance": 0.05,
+  "contract_suites": "both passed",
+  "alignment_target_rows": 35,
+  "target_soils": 10
+}

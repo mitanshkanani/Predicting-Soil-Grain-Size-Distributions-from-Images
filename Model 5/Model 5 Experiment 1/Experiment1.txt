@@ -1,0 +1,208 @@
+==============================================================================
+Model5 / E1  Model 5 / Experiment 1 - transductive feature alignment, specificity-gated
+==============================================================================
+run context      : local  (no torch, no GPU, no Kaggle run, no dataset, no zip)
+seeds            : SEED=20260935  bootstrap=20260934  placebo shuffle=20260936
+config_hash      : 010f44c36c74   pipeline 1.0.0
+arms             : ['NONE', 'CORAL', 'MEAN', 'CORAL_INDEP', 'CORAL_SELF', 'CORAL_TILE', 'CORAL_SOIL']   gated: CORAL
+verdict          : DIRECTION-INCONSISTENT   submit=False
+see section 16   : two implementation defects were corrected during this run, BEFORE any gate
+                   was evaluated. Read it before interpreting any number below.
+
+1. HYPOTHESIS, AND WHY IT IS THE LAST LARGE LOSS ANYONE HAS ATTACKED
+   H5: aligning the fitting camera's image features onto the 35 unlabeled test images
+   lowers EMD on a camera that was neither fitted on nor the alignment target.
+   Model 1: replacement refuted. Model 2: scale refuted, then concatenation refuted.
+   Camera penalty measured earlier: +16.2 EMD (D) and +18.2 (hand). Output basis ceiling:
+   4.9 EMD. Curve-space blending: 0.9 EMD of information-specific gain. This is the
+   remaining large loss, and P1 predicted H5 would still be refuted.
+
+2. THE ONE VARIABLE, AND WHAT IS FROZEN
+   Inserted: image median -> ALIGN -> soil median. Frozen: features, aggregation,
+   StandardScaler, rank-3 basis, closed-form ridge, alpha grid, monotone projection,
+   16 CV families, trapezoid EMD, parsimony rule, config_hash.
+   Cells reused byte-for-byte from Model 2 E3: A2, A4, B1, B2, B3, P2
+
+3. GATE G0 - THE PIPELINE PROOF
+   no-holdout unaligned control: 43.0217308796477  vs E3 artifact 43.0217308796477
+   gap 0.000e+00 against tolerance 0.05  ->  PASS
+   The reference is read from Model 2 E3's sweep_results.csv at run time, never typed.
+
+4. FOLD STRUCTURE (spec 14) - NO SOIL IS SCORED BY A MODEL THAT SAW IT
+   direction A: 16 folds, 22 rows, fit pools from 19 to 23 soils
+   direction B: 16 folds, 23 rows, fit pools from 19 to 22 soils
+   21 soils sit on both sides of the camera split, so a set-level holdout would still have
+   leaked them; folds are what makes the 45 rows honest without changing any threshold.
+
+5. PRIMARY RESULT - mean cross-camera EMD by arm (lower is better)
+   direction A (Motorola fitted -> Samsung scored):
+      NONE           51.784
+      CORAL          70.248
+      MEAN           51.784
+      CORAL_INDEP    79.366
+      CORAL_SELF     51.784
+      CORAL_TILE     52.091
+      CORAL_SOIL     66.131
+   direction B (Samsung fitted -> Motorola scored):
+      NONE           45.366
+      CORAL          44.820
+      MEAN           45.366
+      CORAL_INDEP    45.291
+      CORAL_SELF     45.366
+      CORAL_TILE     45.836
+      CORAL_SOIL     46.873
+
+6. PAIRED GAINS OVER NONE, SOIL-CLUSTERED 95% CI (45 rows, 24 clusters)
+   NONE         pooled  +0.000 CI [ +0.000,  +0.000]   A +0.000  B +0.000
+   CORAL        pooled  -8.748 CI [-12.776,  -3.967]   A -18.464  B +0.546
+   MEAN         pooled  -0.000 CI [ -0.000,  +0.000]   A -0.000  B -0.000
+   CORAL_INDEP  pooled -13.446 CI [-24.249,  -2.947]   A -27.582  B +0.075
+   CORAL_SELF   pooled  -0.000 CI [ -0.000,  +0.000]   A -0.000  B -0.000
+   CORAL_TILE   pooled  -0.391 CI [ -3.664,  +3.078]   A -0.307  B -0.470
+   CORAL_SOIL   pooled  -7.784 CI [-11.693,  -3.344]   A -14.347  B -1.507
+
+7. CONTRAST AGAINST THE SAME-MARGINAL PLACEBO (clause G4)
+   CORAL - CORAL_INDEP +4.698 CI [-4.281, +13.968]
+   CORAL_INDEP preserves every per-feature mean, variance and marginal of the real target
+   and destroys only the joint structure. A gain it also achieves is variance rescaling.
+   Row permutation is NOT used as a placebo here: a mean and a covariance are invariant to
+   row order, so it is bit-identical to the real arm (spec 13).
+
+8. ALPHA BOUNDARY, PER DIRECTION (spec 5a)
+   A: gated arm INTERIOR; baseline NONE INTERIOR; per-fold alphas 1 3 1 3 3 3 1 3 3 3 3 3 3 3 1 1
+   B: gated arm INTERIOR; baseline NONE INTERIOR; per-fold alphas 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+   directions at a boundary: []   caveat=False
+   symmetric_boundary diagnostic: {'A': False, 'B': False}
+   Majority-of-folds defines the direction status; every fold's own status, oracle alpha and
+   grid spread are in alpha_by_fold.csv so the rule can be audited rather than trusted.
+
+9. DECISION GATE
+   [PASS] G0 control reproduces E3 within 0.05 EMD   gap 0.00e+00
+   [FAIL] G1 pooled gain over NONE >= 3.0 EMD   -8.748
+   [FAIL] G2 gain >= 1.0 EMD in both directions and neither significantly worse   A -18.464 [-24.843,-12.187]  B +0.546 [-6.482,+8.222]
+   [FAIL] G3 pooled clustered CI excludes zero   [-12.776, -3.967]
+   [FAIL] G4 beats the same-marginal placebo by >= 1.5 EMD with CI excluding zero   +4.698 CI [-4.281, +13.968]
+   [PASS] G5 self-alignment canary inside 0.5 EMD   pooled -0.0000  A -0.0000  B -0.0000
+   [PASS] G6 fewer than two directions at an alpha boundary   per-direction status ['INTERIOR', 'INTERIOR']  (never pooled across directions)
+   [PASS] G7 alignment is label-free and the target is disjoint   asserted in A3/D1/E1/E2
+   verdict DIRECTION-INCONSISTENT   submit False
+   submit is true if and only if the verdict is SUPPORTED (spec section 5); the notebook asserts
+   that identity, so a boundary caveat can never license a file. Where two spec rows overlap,
+   spec section 6a fixes the order: validity > both-directions > full pass > placebo > direction
+   > below-band > unresolved > refuted. Ordering assigns labels only; no threshold moved.
+
+10. SUBMISSION
+   NO SUBMISSION WAS PRODUCED. submit is False and probe_arm is None: Model 5 pre-
+   authorises no probe. The eight structural gates still ran, as a labelled plumbing
+   check, so the submission machinery is not untested code.
+
+11. PRE-REGISTERED PREDICTIONS
+   P1 [blind] H5 is refuted: pooled gain below 3.0 EMD, or its CI includes zero
+        -> CONFIRMED - H5 refuted: gain -8.748 CI [-12.776, -3.967]
+   P2 [blind] placebo gain within +/-1.0 EMD of CORAL's (it is variance rescaling)
+        -> REFUTED: placebo -13.446 vs CORAL -8.748, paired delta +4.698 CI [-4.281, +13.968]
+   P3 [blind] MEAN carries most of it: gain(MEAN) >= gain(CORAL) - 1.0
+        -> CONFIRMED: MEAN -0.000 vs CORAL -8.748
+   P4 [blind] |gain(CORAL_SELF)| < 0.1 EMD (a magnitude prediction, not the G5 bound)
+        -> CONFIRMED: -0.00000 EMD; the G5 validity band is 0.5 so the run stays valid
+   P5 [blind] no arm closes more than 25% of the camera penalty
+        -> CONFIRMED: best arm NONE +0.00 vs penalty 5.55 EMD (0.0% closed)
+   P6 [blind] sensitivity units agree in SIGN with the gated arm, differ in magnitude
+        -> CONFIRMED: CORAL -8.75 | CORAL_TILE -0.39 | CORAL_SOIL -7.78
+   X1 [blind] MEAN vs CORAL is a finding about the shift, not a gate clause (spec section 5)
+        -> covariance half adds nothing measurable: CORAL - MEAN = -8.748 EMD
+
+12. WHAT THIS DECIDES
+   See spec section 6 for the meaning of DIRECTION-INCONSISTENT and the action it licenses.
+
+13. LIMITATION, STATED IN ADVANCE
+   Two camera pairs and 45 rows is the entire measurable universe here. A pass rests on two
+   domain pairs; a refutation is weaker than it looks for the same reason. iPhone itself is
+   never scored locally, CAM+RES is ordinal-only, and the public leaderboard is 3 of 10
+   soils while the final ranking is 0.30*public + 0.70*private.
+
+14. SCOPE OF VERIFICATION
+   No mock mode: this run executed every cell on the real cached features. Both contract
+   suites passed in-subprocess before any score was computed, G0 held to 0.00e+00,
+   every arm produced exactly 45 soil rows over 24 clusters,
+   and the fold-leakage and placebo-distinctness assertions are live code, not prose.
+   What this run does NOT verify: it cannot verify transfer to a third camera, and the
+   submitted configuration is a declared extrapolation beyond the tested one.
+
+15. ENVIRONMENT
+   python       3.14.6
+   platform     Windows-11-10.0.26200-SP0
+   numpy        2.5.2
+   pandas       2.3.3
+   scipy        1.18.0
+   sklearn      1.9.0
+   matplotlib   3.11.1
+   Pillow       12.3.0
+
+16. DISCLOSURE - TWO IMPLEMENTATION DEFECTS CORRECTED DURING THIS RUN
+   A first attempt at this run aborted in cell F1 on its own n_clusters assertion, before the
+   gate was evaluated and before any score was written. The assertion was right and the code
+   was wrong. Two defects were found, both in the difference-and-bootstrap helpers (F1, F2),
+   both corrected to match the contract as ALREADY WRITTEN in instructions.txt and spec
+   section 3 - no threshold, arm, seed, precedence, clause or interpretation rule changed:
+     (1) SIGN. Delta was computed as err_arm - err_NONE. The contract defines
+         Delta(s) = err_NONE(s) - err_arm(s), positive meaning the arm is better. The inverted
+         form would have reported an 8.75 EMD DEGRADATION as an 8.75 EMD IMPROVEMENT, and had
+         G2 been satisfied it would have produced SUPPORTED and written a submission file on a
+         result that harms the model.
+     (2) CLUSTER UNIT. Pooled bootstrap keys were prefixed with the direction ('A:S07'), so 45
+         rows became 45 clusters and the soil-clustered bootstrap silently degenerated to the
+         row bootstrap it was specified to replace. Keys are now the bare soil identity: 45
+         rows, 24 clusters, 21 of them spanning both directions.
+   WHAT WAS OBSERVED BEFORE THE FIX, and it is reported here rather than hidden: the per-arm
+   means and per-fold alphas were already on screen and are UNAFFECTED by either defect (they
+   come from cells upstream of F1). Direction A arm means 51.784 / 70.248 / 79.366 for
+   NONE / CORAL / CORAL_INDEP, direction B 45.366 / 44.820 / 45.291, are the same numbers this
+   record prints in section 5. Only the CIs and the sign of every Delta changed.
+   MEASURED EFFECT OF DEFECT (2), reported because it contradicts a prediction in the contract:
+   for THIS data the soil-clustered intervals are NARROWER than the row-level ones, not wider
+   (CORAL: soil [-12.78,-3.97] width 8.81 vs row [-14.34,-3.10] width 11.23; CORAL_SOIL 8.35
+   vs 11.41). The sqrt(2)-narrowing argument is about within-cluster correlation and its
+   DIRECTION depends on the sign of that correlation, which the contract assumed rather than
+   measured. Row resampling is still invalid here - two rows for one soil are not two
+   observations - so the correction stands, but the contract's stated expectation about which
+   way it moves the interval was wrong and is corrected as a fact, not argued away.
+   Neither defect changes the verdict: with the sign fixed and the old clustering the verdict
+   is still DIRECTION-INCONSISTENT, and with the old sign the same label is reached by
+   accident. The sign fix is what turns G3 from a spurious pass into a fail.
+   A regression test now pins both properties by executing the shipped F1 helpers against a
+   synthetic mirror of the design: scratch/check_m5_delta.py. It failed 8 ways on the pre-fix
+   code and passes 14 on this one, and cell F1 recomputes one soil's Delta by hand and asserts
+   the cluster count at run time so the notebook can no longer produce an inverted or
+   row-level number silently. G0 was 43.0217308796477 (gap 0.00e+00) in both attempts, and the
+   emitted CSVs are byte-identical across independent runs of the corrected notebook.
+
+17. WHAT THE CAMERA PENALTY ACTUALLY MEASURED, AND A PREMISE CORRECTED
+   The penalty defined and measured here (cross-camera mean minus same-camera in-domain
+   control) is 5.55 EMD, not the +18.2 quoted in Model 2 E1's record. The two are not
+   the same quantity: +18.2 is M1's nested in-domain 43.02 against its EXTERNAL leaderboard
+   61.24, a gap that bundles unseen-soil generalisation, camera transfer and the fixed 3-of-10
+   public subset. The camera-only component, measured inside the training distribution on 45
+   rows, is roughly a third of it. Model 5 therefore attacked a target whose size had been
+   overstated by conflating two gaps, and P5's 'no arm closes more than 25%' was evaluated
+   against 5.55. Any future decision about where the remaining loss lives should
+   start from this decomposition rather than from 18.2.
+
+18. TWO READINGS THAT MUST NOT BE OVER-INTERPRETED
+   P3 came back CONFIRMED and X1 'covariance adds nothing measurable', but both are artifacts
+   of an identity, not evidence: the MEAN arm is a constant shift, the soil median commutes
+   with it, and the frozen StandardScaler then removes it, so MEAN is EXACTLY NONE by
+   construction (proved in scratch/verify_m5_result.py: max scaled-feature difference 6.9e-15).
+   CORAL_SELF is likewise the identity to 3.7e-15, so G5 is a real canary that can only fire on
+   a wiring fault. X1's label is worded for the case where MEAN carries a gain; here MEAN
+   carries nothing at all, and the correct reading is that the covariance half COST 8.75 EMD.
+   The honest positive result is that the instrument worked: the placebo degraded even more
+   than CORAL did (-27.58 vs -18.46 in direction A), so the two arms separate in the
+   direction the design was built to detect.
+
+19. WHERE THE RAW EVIDENCE LIVES
+   attempt 1 (aborted at F1, pre-fix, no gate): scratch/_m5_run1.log
+   attempt 2 (this record's numbers):              scratch/_m5_run2.log
+   attempt 3 (determinism, 10/10 artifacts byte-identical): scratch/_m5_run3.log
+   post-run verification: scratch/verify_m5_result.py (27 checks)
+   sign/cluster regression: scratch/check_m5_delta.py (14 checks; 8 failures pre-fix)

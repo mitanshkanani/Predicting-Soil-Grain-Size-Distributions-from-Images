@@ -1,0 +1,8 @@
+id,prediction,blind,status,evidence
+P1,"H5 is refuted: pooled gain below 3.0 EMD, or its CI includes zero",yes,CONFIRMED - H5 refuted,"gain -8.748 CI [-12.776, -3.967]"
+P2,placebo gain within +/-1.0 EMD of CORAL's (it is variance rescaling),yes,REFUTED,"placebo -13.446 vs CORAL -8.748, paired delta +4.698 CI [-4.281, +13.968]"
+P3,MEAN carries most of it: gain(MEAN) >= gain(CORAL) - 1.0,yes,CONFIRMED,MEAN -0.000 vs CORAL -8.748
+P4,"|gain(CORAL_SELF)| < 0.1 EMD (a magnitude prediction, not the G5 bound)",yes,CONFIRMED,-0.00000 EMD; the G5 validity band is 0.5 so the run stays valid
+P5,no arm closes more than 25% of the camera penalty,yes,CONFIRMED,best arm NONE +0.00 vs penalty 5.55 EMD (0.0% closed)
+P6,"sensitivity units agree in SIGN with the gated arm, differ in magnitude",yes,CONFIRMED,CORAL -8.75 | CORAL_TILE -0.39 | CORAL_SOIL -7.78
+X1,"MEAN vs CORAL is a finding about the shift, not a gate clause (spec section 5)",yes,covariance half adds nothing measurable,CORAL - MEAN = -8.748 EMD
