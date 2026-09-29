@@ -105,6 +105,88 @@ R has the same dimensionality, the same receptive field, the same aggregation an
 head. **An experiment in this model is not interpretable unless all three are present**,
 and the notebook refuses to evaluate its own decision gate when any is missing.
 
+EXPERIMENT OUTCOMES SO FAR - E1 AND E2 BOTH REFUTED
+--------------------------------------------------------------------------------
+E1  TESTED: do 384 frozen DINOv2 tile embeddings beat the 12 hand features under the
+    identical head and CV.  REFUTED.  In-domain LOGO-CV: D 44.33 vs M1 43.02.
+    Established, in addition to the refutation:
+      - R (random-init weights, same architecture) scored 39.78 and APPEARED to win. That
+        is the capacity trap, not a result: R selected the grid-floor alpha (0.03), had the
+        worst cross-camera transfer of any arm (CAM+RES 78.55), and sat at soil_distance
+        0.0000. R is the reason E1's arm table cannot be read on in-domain score alone.
+      - D is roughly 5x more camera-stable (camera/soil 0.209 vs M1 1.105) and 28x more
+        blur-stable (blur/soil 0.029 vs 0.818) and was still LESS accurate. Robustness and
+        informativeness are independent. This is E1's durable finding.
+      - Declared probe submitted anyway: Submission_Model2_E1.csv scored 60.56167 on the
+        public LB, 0.674 EMD better than E3's 61.24 on 3 of 10 soils, i.e. a near tie.
+        Recorded as a PROBE, not a gate pass.
+    Declared confound: E1 recorded PATCH_MM = 3.0752 mm, omitting the 256 -> 224 resize.
+
+E2  TESTED: does E1's refutation survive correcting that confound and sweeping patch
+    magnification eightfold (crop 256/128/64/32 -> patch 3.5145 / 1.7573 / 0.8786 /
+    0.4393 mm) for both D and R.  REFUTED.  No submission was produced; the gate failed all
+    three clauses.
+      - D lost to R at EVERY crop. Best case +0.96 EMD at crop 128; no CI came near
+        excluding zero. (256: +4.55, 128: +0.96, 64: +3.14, 32: +6.24.)
+      - No trend. Spearman rho = -0.40, p = 0.60 for D, and the opposite sign for R.
+      - The 256 -> 32 change was NOT concentrated in the patch-limited fines (fines -0.68,
+        mid -2.88, coarse +2.13). A systematic gain in the fines would have meant the crop
+        was smuggling label information; it did not.
+      - The whole sweep resolves only 2 more of the 24 soils (12 -> 14) while using 1.6% of
+        the tile area. The 10 fines are physically unreachable: resolving them needs a
+        sub-24 px window upsampled to 224, which contains no grain information.
+    WHAT E2'S RUN DOES LICENCE, AND WHAT IT DOES NOT. E2's own regression checks passed -
+    crop 256 reproduced E1's M1 mean to 0.0017 EMD and the control matrix matched Model 1
+    E3's to 2.8e-14 - so its MACHINERY is valid and reusable. What is refuted is the
+    HYPOTHESIS. Nothing in E3 may inherit any belief that magnification helped, and crop
+    128 is not carried forward as a preference despite being D's best crop in E2.
+
+THE ONE QUESTION NEITHER EXPERIMENT ASKED
+--------------------------------------------------------------------------------
+E1 refuted replacement. E2 refuted rescue by scale. Neither tested whether D's 384 columns
+carry information the 12 hand features lack - which is the only reading of E1's invariance
+finding that leaves it mattering at all. E3 tests exactly that, by concatenation, against a
+label-blind permuted embedding block.
+
+E3  TESTED: complementarity. Fusing the 12 hand features with the 384-dim DINOv2 embedding
+    (396 columns, same frozen ridge head, same CV, crop 256) against the hand features alone,
+    gated on beating M1, beating a row-permuted noise block, and beating D alone.  REFUTED.
+    Ran locally 2026-09-29, CPU only, no Kaggle session. No submission was produced.
+      - FUSE@256 43.43 against M1 43.02: fusion is 0.41 EMD WORSE, paired CI
+        [-6.69, +7.46], 11 of 24 soils improved. G1 FAILED.
+      - SHUF@256 (12 + row-permuted D block) 52.93, i.e. 9.90 EMD worse than M1: the
+        instrument is healthy and the permutation control behaved as predicted. P2 CONFIRMED.
+        G2 also failed: FUSE - SHUF -9.50, CI [-23.56, +4.82], not significant.
+      - Sensitivity crops fuse@c128 43.65, @64 44.01, @32 44.76 - all worse than M1, so no
+        magnification rescues fusion either. P7 CONFIRMED.
+      - The most instructive number: FR@256 (hand + RANDOM-INIT ViT block) scores 39.26, the
+        best in-domain result in the whole experiment, while its CAM+RES is 83.94 - the worst
+        transfer of any fused arm. E1's capacity trap reproduced in fused form: in-domain CV
+        rewards untrained random projections more than pretrained features. P6 REFUTED in the
+        direction that hurts the hypothesis - the random block helped, the pretrained block did
+        not.
+      - Fusion kept D's ABSOLUTE camera shift (0.64 vs D's 0.62, M1's 1.21) but its
+        camera/soil RATIO, 1.1044, is indistinguishable from M1's 1.1048. E1's invariance
+        finding does not transfer into the fused model in the units that affect ranking.
+      - Gate: G1 FAIL, G2 FAIL, G3 PASS, PROVISO PASS (alpha 300 interior), VALID PASS,
+        COMPLETE PASS -> verdict REFUTED, submit False.
+      - Integrity note, disclosed in Experiment3.txt section 12b: two defects in the gate code
+        were found from run 1's own output (VALID coded with an inverted sign; the FUSE-SHUF
+        contrast bound to None). Both were corrected to match the clause text frozen in this
+        file BEFORE the run. No clause, threshold or comparator changed, and the verdict is
+        identical under both versions of the code because G1 fails either way.
+      - 15 of 35 code cells were imported byte-for-byte from E2's notebook, so "the head, CV
+        and metric are unchanged" is a fact about the text rather than a claim. All three base
+        arms reproduced E2's per-soil vectors within 0.05 EMD, and the emitted data files are
+        byte-identical across repeated runs.
+
+MODEL 2 IS CLOSED AT THREE EXPERIMENTS
+--------------------------------------------------------------------------------
+Replacement (E1), magnification (E2) and complementarity (E3) are the three ways a frozen
+backbone could help this target, and all three are refuted. Per the closure rule written into
+model_plan_m2e3.md section 17 before E3 ran, no E4 is scheduled. Remaining budget goes to the
+Model 1 line, which produced every real gain on the leaderboard.
+
 PROMOTION TEST
 --------------------------------------------------------------------------------
   Model 3  a changed output parameterisation or a changed task framing

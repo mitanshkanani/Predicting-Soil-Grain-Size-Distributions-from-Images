@@ -1,0 +1,10 @@
+arm,n_feat,kind,gated
+M1,12,control,False
+dinov2@c256,384,backbone,False
+vit_random@c256,384,backbone,False
+fuse@c256,396,fusion,True
+shuf@c256,396,permuted control,False
+fr@c256,396,capacity control,False
+fuse@c128,396,fusion,False
+fuse@c64,396,fusion,False
+fuse@c32,396,fusion,False

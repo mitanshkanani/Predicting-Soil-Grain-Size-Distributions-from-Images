@@ -1,0 +1,205 @@
+MODEL 2 - EXPERIMENT 3 - DOES THE EMBEDDING ADD INFORMATION, OR ONLY COLUMNS?
+================================================================================
+
+HYPOTHESIS UNDER TEST - H3
+--------------------------------------------------------------------------------
+Concatenating the 12 hand-built features with the 384-dimensional frozen DINOv2 tile
+embedding yields a LOWER nested in-domain EMD than the 12 hand features alone, by more than
+the same concatenation with a label-blind row-permuted embedding block, at Model 2 E1's
+frozen magnification.
+
+We do not assume H3 is true. P3 below predicts it is REFUTED. E3 exists to find out which,
+with controls that make a positive result attributable to information rather than to
+capacity.
+
+
+WHAT E1 AND E2 ACTUALLY ESTABLISHED - READ THIS BEFORE INTERPRETING E3
+--------------------------------------------------------------------------------
+E1 tested REPLACEMENT: do 384 DINOv2 features beat 12 hand features? REFUTED. In-domain
+LOGO-CV 44.33 against 43.02. Its durable finding is that D is about 5x more camera-stable
+(camera/soil 0.209 against M1's 1.105) and about 28x more blur-stable (blur/soil 0.029
+against 0.818) while being LESS accurate: robustness and informativeness are independent.
+E1 also recorded PATCH_MM = 3.0752 mm, which omits the 256 -> 224 resize.
+
+E2 tested RESCUE BY SCALE: does E1's refutation survive correcting that number and sweeping
+patch magnification eightfold (crop 256/128/64/32, patch 3.5145 down to 0.4393 mm)?
+REFUTED. D lost to its own random-init twin R at every one of the four crops, with no trend
+(rho = -0.40, p = 0.60) and no gain located in the patch-limited fines. No submission was
+produced; the gate failed all its clauses.
+
+E2's MACHINERY passed its own regression checks (crop 256 reproduced E1's M1 mean to 0.0017
+EMD; the control matrix matched Model 1 E3's to 2.8e-14). What is refuted is the
+HYPOTHESIS. E3 inherits the machinery and the frozen configuration. E3 inherits NO belief
+that magnification helped, and crop 128 is not carried forward as a preference despite being
+D's best crop in E2.
+
+THE QUESTION NEITHER ASKED: do D's columns carry information the hand features lack? That
+is complementarity, and it is the only reading left under which a frozen backbone matters
+to this target at all.
+
+
+THE ONE VARIABLE
+--------------------------------------------------------------------------------
+The feature matrix composition: 12 columns become 12 + 384 = 396.
+
+FROZEN AND UNTOUCHED: every preprocessing artifact and everything under data/; tile size
+256 px; the soil-fraction filter at 0.50; the tile -> image -> soil median aggregation; the
+StandardScaler treatment exactly as E1/E2 applied it; the rank-3 curve basis; closed-form
+ridge; the monotone projection (clip -> cummax -> force 100 at 200 mm); the 16 CV families
+over the same 24 soils; the alpha grid 0.03 ... 1e6; the E4 parsimony rule (largest alpha
+within 15.0 EMD of the grid optimum, final fit only); trapezoid EMD; n_boot 4000; n_perm
+200; config_hash 010f44c36c74; embed_seed 20260930 (the harvested cache filenames contain
+it - changing it does not merely re-key the cache, it silently invalidates E3 entirely).
+
+NOT EDITED, BY RULE: backbones.py, check_backbones.py, crop_geometry.py,
+check_crop_geometry.py. E3 does not import torch or timm at all, and imports
+crop_geometry only for the printed geometry table.
+
+DELIBERATELY OUT OF SCOPE: a curve-space blend head, PCA of the 384, feature selection
+inside the block, per-block alpha, fine-tuning, any other backbone, re-tiling,
+label-adaptive anything, and camera / ppm / EXIF / site / sample id as model inputs.
+
+
+ARMS - NINE, AND ONLY ONE CARRIES THE GATE
+--------------------------------------------------------------------------------
+  1  M1          12       the external anchor; must reproduce 43.0217
+  2  D@256       384      the embedding alone; must reproduce 44.3302 - this is also the
+                          proof the harvested arrays really are E2's
+  3  R@256       384      the random-init twin alone; must reproduce 39.7769. Required by
+                          Model 2's standing capacity-control rule (instructions line 98):
+                          M1, R and D must all be present or the gate may not evaluate
+  4  FUSE@256    396      THE GATED ARM - H3 itself
+  5  SHUF@256    396      12 + the D block with its soil-to-embedding pairing destroyed by a
+                          seed-pinned ROW permutation. Same column count, same per-column
+                          scaling, same covariance; no correspondence to the soil. This is
+                          what separates "more columns" from "more information"
+  6  FR@256      396      12 + the R block. Is any gain pretraining-specific, or would any
+                          ViT-shaped block do?
+  7  FUSE@128    396      sensitivity only, cannot fire the gate
+  8  FUSE@64     396      sensitivity only, cannot fire the gate
+  9  FUSE@32     396      sensitivity only, cannot fire the gate
+
+The permutation is applied to the 24 soil rows of the embedding table, never to the hand
+block, never informed by the targets, generated from permutation_seed 20260933, and its
+vector is written to cv_per_soil.csv so the control is reconstructable by hand.
+
+
+THE DECISION GATE - FIXED BEFORE THE RUN, EXECUTED AS CODE IN CELL O1
+--------------------------------------------------------------------------------
+    G1  in_domain(FUSE@256) <  in_domain(M1)      AND paired soil-bootstrap CI of
+                                                  (M1 - FUSE) excludes zero, FUSE better
+    G2  in_domain(FUSE@256) <  in_domain(SHUF@256) AND paired CI of (SHUF - FUSE)
+                                                  excludes zero
+    G3  in_domain(FUSE@256) <  in_domain(D@256)   [dominance; no CI required]
+
+    PROVISO  0.03 < oracle_alpha(FUSE@256) < 1e6   else verdict = INCONCLUSIVE
+    VALID    in_domain(SHUF@256) >  in_domain(M1)   else verdict = INSTRUMENT INVALID
+    COMPLETE {M1, D@256, R@256} all present         else evaluable = False
+
+    submit = G1 AND G2 AND G3 AND PROVISO AND VALID AND COMPLETE
+
+Thresholds, set before any number existed: comparators 43.02173087964769 (M1),
+44.330245615450906 (D@256), 39.77693008453303 (R@256); reproduction tolerance 0.05 EMD per
+control arm; bootstrap 4000 soil resamples, percentile CI, significance = interval excludes
+0.0; practically-meaningful band 15.0 EMD (E4's ORDINAL_FLOOR).
+
+G3 is implied by G1 given E2's measured values and is kept explicit anyway, because the
+claim under test is that fusion beats EITHER family alone, and because the reproduction in
+H3 could move D@256.
+
+Verdict is one of: SUBMIT, REFUTED, CAPACITY-NOT-INFORMATION, INCONCLUSIVE,
+INSTRUMENT INVALID.
+
+
+WHEN A SUBMISSION MAY BE WRITTEN
+--------------------------------------------------------------------------------
+Only if submit is True. Then the arm fitted is FUSE@256 - always FUSE@256, never the best of
+the four fused crops - and the file is written by the notebook itself as
+Submission_Model2_E3.csv, after the eight validation gates, and is never renamed afterwards.
+
+If any clause fails, NOTHING IS WRITTEN and the notebook says why. That is the expected
+outcome (P3) and it is a complete answer, not an unfinished run.
+
+THERE IS NO PROBE IN THIS EXPERIMENT. probe_arm = None. E1's probe was a separate decision
+made after its gate failed, explicitly approved, and is recorded as a probe rather than a
+gate pass. E3 does not pre-authorise a repeat of that.
+
+
+PRE-REGISTERED PREDICTIONS
+--------------------------------------------------------------------------------
+  P1  [not blind] M1, D@256 and R@256 reproduce 43.0217, 44.3302 and 39.7769 to within
+      0.05 EMD each. Plumbing and provenance; failure aborts the notebook.
+  P2  [BLIND] SHUF@256 is WORSE than M1. Three hundred and eighty-four standardised noise
+      columns on 24 soils should cost accuracy. If SHUF beats M1, the CV is rewarding
+      capacity and nothing else in this report is read.
+  P3  [BLIND, THE MAIN ONE] FUSE@256 does NOT beat M1 with a CI excluding zero. H3 is
+      refuted. Rationale stated in advance: E1 and E2 both found D no more informative than
+      its own random-init twin, which is not the signature of a block carrying extra
+      information. A REFUTED P3 is the interesting result.
+  P4  [BLIND] If FUSE does beat M1, the gain is under about 2 EMD - an order of magnitude
+      below the 15.0 band. The D-versus-M1 gap measured in E1/E2 was 0.3 to 1.9 EMD.
+  P5  [BLIND] FUSE's camera/soil ratio lands between D's 0.209 and M1's 1.105. Mechanism,
+      reported only, never gating.
+  P6  [BLIND] FR@256 behaves like FUSE@256, so any gain is "more ViT-shaped columns" rather
+      than pretraining.
+  P7  [BLIND] No fused sensitivity crop (128/64/32) beats the fused gate crop.
+
+
+WHAT EACH OUTCOME MEANS
+--------------------------------------------------------------------------------
+  G1 fails                complementarity refuted. MODEL 2 CLOSES PERMANENTLY at three
+                          experiments: replacement (E1), scale (E2), complementarity (E3)
+                          are the three ways a frozen backbone could help this target.
+  G1 passes, G2 fails     the apparent gain is capacity noise. Model 2 closes; the SHUF
+                          control is what prevented a false positive.
+  all pass, gain < 15     real but not competition-relevant. Submit, and do not describe it
+                          as an improvement the leaderboard will care about.
+  all pass, gain >= 15    Model 2 has a genuine contribution. Submit. A follow-up on the
+                          other crops is then warranted as a NEW pre-registered experiment.
+  SHUF beats M1           the instrument is broken. E3 reports no conclusion about D.
+  alpha at the grid edge  INCONCLUSIVE, explicitly not a refutation.
+
+
+HOW E3 RUNS - AND WHY THAT IS DIFFERENT FROM E1 AND E2
+--------------------------------------------------------------------------------
+Local CPU only. E3 imports no torch, needs no GPU and needs no Kaggle run. Decided with the
+user on 2026-09-29: no dataset upload, no zip, and the existing
+final_kaggle_upload_m2e2.zip is untouched.
+
+E3 reads the tile embeddings E2 already produced. Required inputs, 30 files, 79.6 MB:
+  embeddings/embed_<backend>_c<crop>_256_010f44c36c74_20260930<view>.npy  (+ each
+  .paths.npy sibling) for dinov2 at crops 256/128/64/32 and vit_random at crop 256, each in
+  views real, _res14, _res16. Real-view arrays are (1976, 384) float64, res arrays
+  (1541, 384).
+
+E3 HAS NO MOCK MODE. This is a deliberate structural change from E1 and E2. Their
+BACKEND=mock path is the mechanism that let E1's ndarray.median crash survive to Kaggle and
+that emptied whole sections during E2's dry run. Here the only input is the real arrays; a
+missing file raises and lists every one that is absent. There is no branch that runs locally
+and a different branch remotely, so there is no untested branch.
+
+Consequence, stated plainly: for E3 the local run IS the real experiment. The answer to H3
+is known before anything is submitted anywhere.
+
+
+OUTPUTS
+--------------------------------------------------------------------------------
+  Experiment3.txt                the record, written from live objects
+  sweep_results.csv              per-arm in-domain, median, worst, oracle and parsimony
+                                 alpha, grid spread
+  fusion_effects.csv             FUSE-M1, FUSE-SHUF, FUSE-D, FR-M1 with paired CIs and
+                                 per-soil win counts
+  cv_per_soil.csv                per-soil nested errors for all nine arms + the permutation
+                                 vector
+  cv_per_fold.csv, cv_families.csv
+  paired_effects.csv, mechanism_table.csv, camres_report_only.csv,
+  embedding_separation.csv
+  arms_config.csv, features_soil_M1_control.csv
+  gate.json                      clauses, details, verdict, proviso outcome
+  predictions.csv                P1-P7 evaluated mechanically
+  Submission_Model2_E3.csv       ONLY IF submit is True
+  Model2_Experiment3.ipynb       the notebook that produced all of the above
+
+CAM+RES is reported for every arm at its own parsimony alpha and is NEVER used to select.
+Model 1's E4 demoted it to ordinal-only; E2's best CAM+RES number (51.33 at crop 128) was
+used to reject an arm, not to choose one, and the same discipline applies here.

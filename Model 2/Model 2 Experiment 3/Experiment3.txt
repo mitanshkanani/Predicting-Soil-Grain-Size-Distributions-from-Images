@@ -1,0 +1,155 @@
+==============================================================================
+Model2 / E3  Model 2 / Experiment 3 - hand features + DINOv2 block, information or capacity
+==============================================================================
+run context      : local  (E3 is local-only: no torch, no GPU, no Kaggle run)
+seed             : 20260932   permutation seed: 20260933
+embed seed       : 20260930 (pinned by E2's cache filenames)
+config_hash      : 010f44c36c74   pipeline 1.0.0
+gated arm        : fuse@c256   probe_arm: None
+arms executed    : ['M1', 'dinov2@c256', 'vit_random@c256', 'fuse@c256', 'shuf@c256', 'fr@c256', 'fuse@c128', 'fuse@c64', 'fuse@c32']
+outputs          : Model 2\Model 2 Experiment 3
+platform         : Windows-11-10.0.26200-SP0
+
+1. HYPOTHESIS H3, AND WHY IT IS THE LAST ONE STANDING
+   E1 refuted replacement (D 44.33 vs M1 43.02). E2 refuted rescue by magnification
+   (D lost to R at all four crops, rho -0.40 p 0.60, no gain located in the fines).
+   Neither tested complementarity: does the 384-dim block add information to the 12
+   hand features? E1's durable finding motivates it - D is ~5x camera-stable and ~28x
+   blur-stable yet less accurate, so the two families may be making different errors.
+   PREDICTED OUTCOME BEFORE THE RUN (P3): H3 is REFUTED.
+
+2. THE ONE VARIABLE, AND WHAT IS FROZEN
+   Changed: feature matrix composition, 12 -> 12 + 384 = 396 columns.
+   Frozen: tiles, soil-fraction filter, tile->image->soil median, StandardScaler
+   treatment, rank-3 basis, closed-form ridge, alpha grid, monotone projection, the
+   16 CV families over 24 soils, trapezoid EMD, the E4 parsimony rule, backbones.py
+   untouched and un-imported, crop_geometry.py untouched.
+   Cells reused BYTE-FOR-BYTE from E2's notebook: @@VERBATIM_CELLS@@
+
+3. PROVENANCE OF THE EMBEDDINGS (E3 reads E2's arrays rather than computing them)
+   15 arrays + equal path files, 79.6 MB, 15 distinct sha256
+   rows per view: {'real': 1976, 'res14': 1541, 'res16': 1541}
+   regression check level: per-soil vectors (24 soils) from kaggle run 1 files
+
+4. THE REGRESSION CHECK - THE GATE BEFORE THE GATE
+   control vs Model 1 E3 matrix: asserted in G2 to < 1e-6
+   base arms vs E2: asserted in H3 within 0.05 EMD; failure stops here
+   per-soil vectors (24 soils) from kaggle run 1 files
+
+5. PRIMARY RESULT - nested in-domain LOGO-CV
+   FR        fr@c256          n_feat  396  nested   39.26  oracle alpha 0.03
+   R         vit_random@c256  n_feat  384  nested   39.78  oracle alpha 0.03
+   M1        M1               n_feat   12  nested   43.02  oracle alpha 3
+   FUSE      fuse@c256        n_feat  396  nested   43.43  oracle alpha 300
+   FUSE@128  fuse@c128        n_feat  396  nested   43.65  oracle alpha 100
+   FUSE@64   fuse@c64         n_feat  396  nested   44.01  oracle alpha 300
+   D         dinov2@c256      n_feat  384  nested   44.33  oracle alpha 300
+   FUSE@32   fuse@c32         n_feat  396  nested   44.76  oracle alpha 100
+   SHUF      shuf@c256        n_feat  396  nested   52.93  oracle alpha 0.03
+   no-image floor 82.62 | rank-3 ceiling 7.35 | control M1 43.02
+
+6. PAIRED CONTRASTS (negative estimate = first arm better)
+   FUSE - M1          +0.41 CI [   -6.69,    +7.46] ns      wins 11/24
+   SHUF - M1          +9.90 CI [   -2.98,   +22.68] ns      wins 9/24
+   FUSE - SHUF        -9.50 CI [  -23.56,    +4.82] ns      wins 14/24
+   FUSE - D           -0.90 CI [   -3.48,    +0.64] ns      wins 12/24
+   FR - M1            -3.76 CI [  -11.13,    +3.75] ns      wins 14/24
+   FUSE - R           +3.65 CI [   -8.19,   +15.20] ns      wins 12/24
+
+7. BY D50 GROUP (diagnostic, not a gate clause)
+   M1        overall   43.02  fines   42.33 (n=10)  mid   76.65  coarse   38.00
+   FUSE      overall   43.43  fines   48.56 (n=10)  mid   70.23  coarse   34.69
+   SHUF      overall   52.93  fines   42.44 (n=10)  mid   56.52  coarse   61.06
+   D         overall   44.33  fines   51.31 (n=10)  mid   70.47  coarse   34.16
+   FR        overall   39.26  fines   36.38 (n=10)  mid   70.14  coarse   36.51
+
+8. MECHANISM AND THE REPORT-ONLY RULER
+   M1                 camera/soil 1.105  blur/soil 0.818
+   dinov2@c256        camera/soil 0.209  blur/soil 0.029
+   vit_random@c256    camera/soil nan  blur/soil nan
+   fuse@c256          camera/soil 1.104  blur/soil 0.818
+   shuf@c256          camera/soil 1.105  blur/soil 0.818
+   fr@c256            camera/soil 1.105  blur/soil 0.818
+   fuse@c128          camera/soil 1.104  blur/soil 0.818
+   fuse@c64           camera/soil 1.104  blur/soil 0.818
+   fuse@c32           camera/soil 1.105  blur/soil 0.818
+   CAM+RES is REPORTED, NOT USED TO SELECT (Model 1 E4's demotion).
+   M1                 CAM+RES   54.98
+   dinov2@c256        CAM+RES   54.01
+   vit_random@c256    CAM+RES   91.89
+   fuse@c256          CAM+RES   53.55
+   shuf@c256          CAM+RES   79.07
+   fr@c256            CAM+RES   83.94
+   fuse@c128          CAM+RES   51.02
+   fuse@c64           CAM+RES   53.09
+   fuse@c32           CAM+RES   58.04
+
+9. DECISION GATE
+   submit: False   verdict: REFUTED (fusion does not beat the hand features)
+   [FAIL] G1 in_domain(FUSE@256) < in_domain(M1) with CI excluding zero   estimate +0.41 CI [-6.69, +7.46]
+   [FAIL] G2 FUSE beats SHUF with CI excluding zero (gain exceeds what noise columns achieve)   estimate -9.50 CI [-23.56, +4.82]
+   [PASS] G3 FUSE beats D alone (fusion beats either family alone)   estimate -0.90
+   [PASS] PROVISO FUSE's oracle alpha is strictly inside the grid   alpha 300 on a grid of 16
+   [PASS] VALID SHUF does not beat M1 (the CV is not simply rewarding capacity)   SHUF - M1 +9.90
+   [PASS] COMPLETE M1, D and R all present (Model 2 capacity-control rule)   arms: ['M1', 'dinov2@c256', 'fr@c256', 'fuse@c128', 'fuse@c256', 'fuse@c32', 'fuse@c64', 'shuf@c256', 'vit_random@c256']
+   fusion gain over M1: -0.41 EMD against a 15.0 EMD band
+
+10. SUBMISSION
+   NO SUBMISSION WAS PRODUCED BY THIS RUN. gate.submit = False; probe_arm = None,
+   and E3 pre-authorises no probe.
+
+11. PRE-REGISTERED PREDICTIONS
+   P1  [no     ] M1, D@256 and R@256 reproduce E2's per-soil vectors within 0.05 EMD
+        -> CONFIRMED: asserted in cell H3; the notebook would have stopped otherwise
+   P2  [blind] SHUF@256 is WORSE than M1 (384 noise columns cost accuracy at n=24)
+        -> CONFIRMED: SHUF - M1 +9.90 CI [-2.98, +22.68]
+   P3  [blind] FUSE@256 does NOT beat M1 with a CI excluding zero (H3 refuted)
+        -> CONFIRMED - H3 refuted: FUSE - M1 +0.41 CI [-6.69, +7.46]
+   P4  [blind] if FUSE beats M1, the gain is under ~2 EMD (far below the 15.0 band)
+        -> n/a - no gain: gain -0.41 EMD
+   P5  [blind] FUSE's camera/soil ratio lands between D's 0.209 and M1's 1.105
+        -> CONFIRMED: fuse camera/soil 1.1043916264550433
+   P6  [blind] FR@256 behaves like FUSE@256, so any gain is columns rather than pretraining
+        -> REFUTED: FR - M1 -3.76 vs FUSE - M1 +0.41
+   P7  [blind] no fused sensitivity crop beats the gated fusion at crop 256
+        -> CONFIRMED: fuse@c256 43.43 vs best other fuse@c128 43.65
+
+12. WHAT THIS DECIDES
+   G1 failed: complementarity is refuted. MODEL 2 CLOSES at three experiments -
+   replacement (E1), magnification (E2), complementarity (E3) are the three ways a
+   frozen backbone could help this target. Remaining budget goes to the Model 1 line.
+
+12b. CORRECTIONS APPLIED TO THE GATE CODE AFTER RUN 1 - DISCLOSED, NOT BACKED INTO
+   Two defects were found in cell O1 by reading run 1's own output. Both made the code
+   disagree with the clause text already frozen in instructions.txt; neither changed a
+   clause, a threshold or a comparator, and neither changed the verdict.
+     (a) VALID was coded as (SHUF - M1) < 0, the inverse of the spec 'VALID:
+         in_domain(SHUF@256) > in_domain(M1)'. Measured SHUF - M1 = +9.90, so run 1
+         mislabelled a healthy instrument as INSTRUMENT INVALID.
+     (b) The FUSE - SHUF contrast was bound to None, so G2 evaluated nothing and printed
+         'contrast unavailable'. The real value is -9.50, CI [-23.56, +4.82], not
+         significant, so G2 fails either way.
+   G1 fails (+0.41, CI excludes nothing) regardless, so the verdict is REFUTED under both
+   the run-1 and run-2 code. Nothing downstream of these two lines was re-tuned.
+   ALSO FLAGGED: P5 is marked CONFIRMED but is near-vacuous. FUSE's camera/soil ratio is
+   1.1044 against M1's 1.1048 - it lands inside the interval only because it is
+   indistinguishable from M1, i.e. fusion did NOT retain D's invariance in ratio units.
+   The absolute camera shift did stay near D's (0.64 vs 0.62 vs M1's 1.21).
+
+13. SCOPE OF VERIFICATION
+   E3 has no mock mode: this run executed every cell on real arrays. Nothing in the
+   report is unread-but-assumed. The embeddings were produced by E2 on Kaggle and are
+   consumed here as fixed inputs, provenanced by sha256 and by reproducing E2's arms.
+   Determinism: the emitted data files are byte-identical across repeated runs, and every
+   cell printed output (no silent skip).
+   Executed on this machine, CPU only, no GPU and no Kaggle session.
+
+14. ENVIRONMENT
+   python       3.14.6
+   platform     Windows-11-10.0.26200-SP0
+   numpy        2.5.2
+   pandas       2.3.3
+   scipy        1.18.0
+   sklearn      1.9.0
+   matplotlib   3.11.1
+   Pillow       12.3.0

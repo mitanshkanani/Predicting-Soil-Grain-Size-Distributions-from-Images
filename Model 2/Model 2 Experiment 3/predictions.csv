@@ -1,0 +1,8 @@
+id,prediction,blind,status,evidence
+P1,"M1, D@256 and R@256 reproduce E2's per-soil vectors within 0.05 EMD",no,CONFIRMED,asserted in cell H3; the notebook would have stopped otherwise
+P2,SHUF@256 is WORSE than M1 (384 noise columns cost accuracy at n=24),yes,CONFIRMED,"SHUF - M1 +9.90 CI [-2.98, +22.68]"
+P3,FUSE@256 does NOT beat M1 with a CI excluding zero (H3 refuted),yes,CONFIRMED - H3 refuted,"FUSE - M1 +0.41 CI [-6.69, +7.46]"
+P4,"if FUSE beats M1, the gain is under ~2 EMD (far below the 15.0 band)",yes,n/a - no gain,gain -0.41 EMD
+P5,FUSE's camera/soil ratio lands between D's 0.209 and M1's 1.105,yes,CONFIRMED,fuse camera/soil 1.1043916264550433
+P6,"FR@256 behaves like FUSE@256, so any gain is columns rather than pretraining",yes,REFUTED,FR - M1 -3.76 vs FUSE - M1 +0.41
+P7,no fused sensitivity crop beats the gated fusion at crop 256,yes,CONFIRMED,fuse@c256 43.43 vs best other fuse@c128 43.65

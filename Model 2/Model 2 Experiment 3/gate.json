@@ -1,0 +1,56 @@
+{
+  "submit": false,
+  "verdict": "REFUTED (fusion does not beat the hand features)",
+  "evaluable": true,
+  "gated_arm": "fuse@c256",
+  "clauses": [
+    {
+      "clause": "G1 in_domain(FUSE@256) < in_domain(M1) with CI excluding zero",
+      "passed": false,
+      "detail": "estimate +0.41 CI [-6.69, +7.46]"
+    },
+    {
+      "clause": "G2 FUSE beats SHUF with CI excluding zero (gain exceeds what noise columns achieve)",
+      "passed": false,
+      "detail": "estimate -9.50 CI [-23.56, +4.82]"
+    },
+    {
+      "clause": "G3 FUSE beats D alone (fusion beats either family alone)",
+      "passed": true,
+      "detail": "estimate -0.90"
+    },
+    {
+      "clause": "PROVISO FUSE's oracle alpha is strictly inside the grid",
+      "passed": true,
+      "detail": "alpha 300 on a grid of 16"
+    },
+    {
+      "clause": "VALID SHUF does not beat M1 (the CV is not simply rewarding capacity)",
+      "passed": true,
+      "detail": "SHUF - M1 +9.90"
+    },
+    {
+      "clause": "COMPLETE M1, D and R all present (Model 2 capacity-control rule)",
+      "passed": true,
+      "detail": "arms: ['M1', 'dinov2@c256', 'fr@c256', 'fuse@c128', 'fuse@c256', 'fuse@c32', 'fuse@c64', 'shuf@c256', 'vit_random@c256']"
+    }
+  ],
+  "in_domain": {
+    "M1": 43.0217308796477,
+    "dinov2@c256": 44.330245615450906,
+    "vit_random@c256": 39.77693008453283,
+    "fuse@c256": 43.43135275124271,
+    "shuf@c256": 52.926537051153865,
+    "fr@c256": 39.259132490606795,
+    "fuse@c128": 43.647573373117645,
+    "fuse@c64": 44.00642783096635,
+    "fuse@c32": 44.76470321227299
+  },
+  "fusion_gain_vs_M1": -0.40962187159501556,
+  "practically_meaningful_band": 15.0,
+  "oracle_alpha_fuse": 300.0,
+  "proviso": true,
+  "valid": true,
+  "regression_level": "per-soil vectors (24 soils) from kaggle run 1 files",
+  "trend_note": "E3 has no crop trend; the gated arm is fixed at crop 256"
+}

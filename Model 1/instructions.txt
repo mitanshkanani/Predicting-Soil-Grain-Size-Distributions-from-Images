@@ -160,6 +160,20 @@ TWO CANCELLED HYPOTHESES - CHECK HERE BEFORE PROPOSING A NEW EXPERIMENT
   n=24 labelled soils.
   Also dead earlier: aliasing as the explanation of the texture shift (E2's P3), and
   particle counting (preprocessing).
+  Two more, killed by Model 2 rather than Model 1, recorded here because this is where a new
+  experiment is checked against them. Cancelled by M2 E2: MAKING THE BACKBONE PATCH SMALLER
+  to rescue a pretrained representation. Sweeping crop 256/128/64/32 (patch 3.5145 ->
+  0.4393 mm) left D losing to its own random-init twin at every scale, with no trend (rho
+  -0.40, p 0.60) and only 2 of 24 soils newly resolvable. Cancelled by M2 E2 as well:
+  CHOOSING A CROP OR ANY ARM USING CAM+RES. D's best E2 crop happened to coincide with its
+  best CAM+RES score (51.33 at crop 128); that ruler is ordinal-only and was used to reject
+  the arm, not to select it, and E4's demotion is what licenses the coincidence being
+  ignored rather than followed. Cancelled by M2 E3: FUSING the hand features with the DINOv2
+  embedding to recover the gain by complementarity. 396 columns scored 43.43 against the 12
+  features' 43.02 (CI [-6.69, +7.46]), and every sensitivity crop was worse too. The permuted
+  noise block cost 9.90 EMD, so the instrument was healthy and simply had nothing to add. Most
+  telling: the hand-plus-RANDOM-ViT arm scored best in-domain at 39.26 while having the worst
+  transfer of any fused arm at 83.94 - the capacity trap again, in fused clothing.
 
 THE TRAINING-DISTRIBUTION CIRCULARITY RULE
 --------------------------------------------------------------------------------
