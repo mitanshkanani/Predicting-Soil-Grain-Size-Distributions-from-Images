@@ -1,0 +1,426 @@
+PASS   blobs A1 bit-identical to the pre-ruling module | want -0.019575082103750408 got -0.019575082103750408
+PASS   blobs A3 bit-identical to the pre-ruling module | want 0.39843750000000006 got 0.39843750000000006
+PASS   stripe_x A1 bit-identical to the pre-ruling module | want -33.761250002966008 got -33.761250002966008
+PASS   stripe_x A3 bit-identical to the pre-ruling module | want 0.015625 got 0.015625
+PASS   noise A1 bit-identical to the pre-ruling module | want -0.0051420228279089111 got -0.0051420228279089111
+PASS   noise A3 bit-identical to the pre-ruling module | want 0.0078125 got 0.0078125
+PASS   coarse16 A1 bit-identical to the pre-ruling module | want -0.086919499717704601 got -0.086919499717704601
+PASS   coarse16 A3 bit-identical to the pre-ruling module | want 0.109375 got 0.109375
+PASS   blobs A1 within max(5%, 0.02) of golden | want -0.019575 got -0.019575 tol 0.020000
+PASS   blobs A2 within max(5%, 0.02) of golden | want 0.274521 got 0.274521 tol 0.020000
+PASS   blobs A3 within max(5%, 0.02) of golden | want 0.398438 got 0.398438 tol 0.020000
+PASS   blobs A4 within max(5%, 0.02) of golden | want -0.004123 got -0.004123 tol 0.020000
+PASS   stripe_x A1 within max(5%, 0.02) of golden | want -33.761250 got -33.761250 tol 1.688063
+PASS   stripe_x A2 within max(5%, 0.02) of golden | want 35.271945 got 35.271945 tol 1.763597
+PASS   stripe_x A3 within max(5%, 0.02) of golden | want 0.015625 got 0.015625 tol 0.020000
+PASS   stripe_x A4 within max(5%, 0.02) of golden | want -0.083333 got -0.083333 tol 0.020000
+PASS   noise A1 within max(5%, 0.02) of golden | want -0.005142 got -0.005142 tol 0.020000
+PASS   noise A2 within max(5%, 0.02) of golden | want 1.008989 got 1.008989 tol 0.050449
+PASS   noise A3 within max(5%, 0.02) of golden | want 0.007812 got 0.007812 tol 0.020000
+PASS   noise A4 within max(5%, 0.02) of golden | want -0.001059 got -0.001059 tol 0.020000
+PASS   coarse16 A1 within max(5%, 0.02) of golden | want -0.086919 got -0.086919 tol 0.020000
+PASS   coarse16 A2 within max(5%, 0.02) of golden | want 0.455907 got 0.455907 tol 0.022795
+PASS   coarse16 A3 within max(5%, 0.02) of golden | want 0.109375 got 0.109375 tol 0.020000
+PASS   coarse16 A4 within max(5%, 0.02) of golden | want -0.006563 got -0.006563 tol 0.020000
+PASS   frozen table constant A3_REFERENCE_LAG == 0.5 | 0.5
+PASS   frozen table constant A3_SILL_FRACTION == 0.9 | 0.9
+PASS   frozen table constant A3_SILL_WINDOW == 0.1 | 0.1
+PASS   frozen table constant A4_LAG_MM == 1.0 | 1.0
+PASS   frozen table constant ACF_MAX_LAG_FRACTION == 0.5 | 0.5
+PASS   frozen table constant EPS == 1e-12 | 1e-12
+PASS   frozen table constant MIN_MASK_PIXELS == 16 | 16
+PASS   frozen table constant MIN_PAIRS_PER_DIRECTION == 8 | 8
+PASS   frozen table constant MIN_PAIRS_PER_LAG == 8 | 8
+PASS   frozen table constant MIN_PROFILE_LINES == 4 | 4
+PASS   A4_DIAG_PX is the 3 px per-axis offset the owner ruled | 3
+PASS   SPATIAL is the frozen A1-A4 tuple | ('A1', 'A2', 'A3', 'A4')
+PASS   TileDegenerate is defined and subclasses Exception
+PASS   TileDegenerate is not a ValueError subclass, so degeneracy cannot be logged as a bug
+PASS   ValueError is not a TileDegenerate subclass, so a bug cannot be logged as degeneracy
+PASS   TileDegenerate is not an AssertionError subclass (Task 3 must catch it by name)
+PASS   flat tile raises TileDegenerate on the degenerate mask | TileDegenerate
+PASS   degenerate-mask message names the pixel count | degenerate mask: only 0 pixels survive the 12th pct, need 16
+PASS   tile_spatial propagates the degenerate-mask raise | TileDegenerate
+PASS   a 9 pixel mask raises TileDegenerate naming 9 | degenerate mask: only 9 pixels survive the 12th pct, need 16
+PASS   a mask of exactly MIN_MASK_PIXELS pixels is a tile, not a degeneracy | None
+PASS   a 16 pixel mask tile returns with NaN where it cannot measure | None
+PASS   2D tile raises ValueError | ValueError
+PASS   2D tile message names HxWx3 | expected an HxWx3 tile, got shape (32, 32)
+PASS   2D tile is not catchable as TileDegenerate
+PASS   4D tile raises ValueError | ValueError
+PASS   4D tile message names HxWx3 | expected an HxWx3 tile, got shape (8, 8, 3, 1)
+PASS   4D tile is not catchable as TileDegenerate
+PASS   2-channel tile raises ValueError | ValueError
+PASS   2-channel tile message names HxWx3 | expected an HxWx3 tile, got shape (32, 32, 2)
+PASS   2-channel tile is not catchable as TileDegenerate
+PASS   ppm 0.0 raises ValueError | ValueError
+PASS   ppm 0.0 message names ppm | ppm must be positive and finite, got 0.0
+PASS   ppm 0.0 is not catchable as TileDegenerate
+PASS   ppm -1.0 raises ValueError | ValueError
+PASS   ppm -1.0 message names ppm | ppm must be positive and finite, got -1.0
+PASS   ppm -1.0 is not catchable as TileDegenerate
+PASS   ppm nan raises ValueError | ValueError
+PASS   ppm nan message names ppm | ppm must be positive and finite, got nan
+PASS   ppm nan is not catchable as TileDegenerate
+PASS   ppm inf raises ValueError | ValueError
+PASS   ppm inf message names ppm | ppm must be positive and finite, got inf
+PASS   ppm inf is not catchable as TileDegenerate
+PASS   a NaN pixel raises ValueError, not TileDegenerate | ValueError | tile carries 1 non-finite pixels; a tile may not contain NaN
+PASS   an infinite pixel raises ValueError, not TileDegenerate | ValueError
+PASS   missing ppm (None) raises ValueError | ValueError
+PASS   speck tile: tile_spatial returns instead of raising | None
+PASS   speck tile: no warning while computing
+PASS   speck tile: the NaN keys are exactly A3 and A4 | ('A3', 'A4')
+PASS   speck tile: A3 is NaN, not the max-lag fallback 127/128 | nan
+PASS   speck tile: A4 is NaN, not a 0.0 exceedance fraction | nan
+PASS   speck tile: A1 and A2 are finite | A1=0.000000 A2=0.986255
+PASS   speck tile: no old fallback number survives | {'A1': 0.0, 'A2': 0.9862552807612387, 'A3': nan, 'A4': nan}
+PASS   thin band: tile_spatial returns instead of raising | None
+PASS   thin band: no warning while computing
+PASS   thin band: A2 is NaN (3 valid lines < MIN_PROFILE_LINES) | nan
+PASS   thin band: the NaN keys are exactly A2, A3 and A4 | ('A2', 'A3', 'A4')
+PASS   thin band: A1 is finite | -2.590267
+PASS   thin band: the 90 deg direction raises TileDegenerate internally | TileDegenerate | direction 90 deg has 3 valid profile lines, need 4
+PASS   thin band: the 0 deg direction still measures (40 valid lines) | None
+PASS   speck: a direction with too few pairs raises TileDegenerate | TileDegenerate | direction at offset (0, 5) has 0 masked pairs, need 8
+PASS   speck: a lag that does have pairs is measured, not refused | None
+PASS   speck: a variogram with no measurable sill raises TileDegenerate | TileDegenerate | variogram sill window has 12 unmeasured lag(s) of its 12, so
+PASS   A2 on stripes along x is greater than 1 (0 deg decorrelates more slowly) | 35.271945
+PASS   A2 on stripes along y is between 0 and 1 (90 deg decorrelates more slowly) | 0.028351
+PASS   A2 inverts under transpose: the product is 1, not the sum being 0 | 1.000000000000
+PASS   A2 is strictly positive on every measurable tile (a ratio, never a signed log) | 0.274521 1.008989 0.455907 1.133884 0.845233 35.271945
+PASS   A2's reciprocal is not its own negative: the log form is gone | 35.271945 + 0.028351 = 35.300296
+PASS   A2 on blobs matches the independent line-by-line reference | ref=0.274520692 module=0.274520692
+PASS   A2 on coarse16 matches the independent line-by-line reference | ref=0.455907210 module=0.455907210
+PASS   striped 0 deg: every empty line is NaN, never 0.0 | empty lines=0 NaN entries=0
+PASS   striped 0 deg: the valid line count is the number of finite profile entries | lines=256 finite entries=256
+PASS   striped 90 deg: every empty line is NaN, never 0.0 | empty lines=32 NaN entries=32
+PASS   striped 90 deg: the valid line count is the number of finite profile entries | lines=224 finite entries=224
+PASS   blobs 0 deg: every empty line is NaN, never 0.0 | empty lines=5 NaN entries=5
+PASS   blobs 0 deg: the valid line count is the number of finite profile entries | lines=251 finite entries=251
+PASS   blobs 90 deg: every empty line is NaN, never 0.0 | empty lines=1 NaN entries=1
+PASS   blobs 90 deg: the valid line count is the number of finite profile entries | lines=255 finite entries=255
+PASS   ramp 0 deg: every empty line is NaN, never 0.0 | empty lines=31 NaN entries=31
+PASS   ramp 0 deg: the valid line count is the number of finite profile entries | lines=225 finite entries=225
+PASS   ramp 90 deg: every empty line is NaN, never 0.0 | empty lines=0 NaN entries=0
+PASS   ramp 90 deg: the valid line count is the number of finite profile entries | lines=256 finite entries=256
+PASS   noise 0 deg: every empty line is NaN, never 0.0 | empty lines=0 NaN entries=0
+PASS   noise 0 deg: the valid line count is the number of finite profile entries | lines=256 finite entries=256
+PASS   noise 90 deg: every empty line is NaN, never 0.0 | empty lines=0 NaN entries=0
+PASS   noise 90 deg: the valid line count is the number of finite profile entries | lines=256 finite entries=256
+PASS   A2 on the 32-empty-row striped tile emits no warning
+PASS   A2 on the 32-empty-row striped tile does not raise | None
+PASS   A2 on the 5-empty-column blobs tile emits no warning
+PASS   A4 on blobs matches the independent reference | ref=-0.004123098761 module=-0.004123098761
+INFO   A4 terms | 0 deg=0.025399 45 deg=0.023225 90 deg=0.014929 135 deg=0.012855
+PASS   A4's four direction terms are all present and distinct from a 0 deg only omni | C0=0.025399 C90=0.014929
+PASS   A4 equals omni minus C(45 deg) | -0.004123098761
+PASS   A4 is not omni minus C(0 deg), which the pre-ruling code effectively computed | minus C0 would be -0.006297193151
+PASS   A4 on stripe_x matches the independent reference | ref=-0.083333333333 module=-0.083333333333
+PASS   A4 on noise matches the independent reference | ref=-0.001059489266 module=-0.001059489266
+PASS   A4 on coarse16 matches the independent reference | ref=-0.006562978878 module=-0.006562978878
+PASS   A4 equals the 3 px diagonal construction | 3px=-0.004123098761 module=-0.004123098761
+PASS   A4 differs from the 5 px diagonal construction it replaced | 5px=-0.015637832456 3px=-0.004123098761
+PASS   3 px per axis is the closest integer to the exact diagonal offset (3.2191 px) | exact=3.2191 d3=3.0000 d4=4.0000
+PASS   the 3 px diagonal pair sits at 0.9319 mm, nearer the registered 1.0 mm lag than 4 px | 3px=0.9319 mm off 0.0681, 4px=1.2426 mm off 0.2426
+PASS   the axis/diagonal residual mismatch is 0.166 mm and is stated, not hidden | axis=1.0983 mm diag=0.9319 mm mismatch=0.1664 mm
+PASS   blobs: A3 is a multiple of 1/(0.5*256) = 0.0078125, so it is a lag over half the extent | 0.398437500
+PASS   stripe_x: A3 is a multiple of 1/(0.5*256) = 0.0078125, so it is a lag over half the extent | 0.015625000
+PASS   noise: A3 is a multiple of 1/(0.5*256) = 0.0078125, so it is a lag over half the extent | 0.007812500
+PASS   coarse16: A3 is a multiple of 1/(0.5*256) = 0.0078125, so it is a lag over half the extent | 0.109375000
+PASS   A3 = range_mm / (A3_REFERENCE_LAG * extent_mm) exactly | range_mm=11.202597
+PASS   A3's range is in mm and its denominator is in mm, so ppm cancels
+PASS   a healthy tile's variogram has no NaN lag | 0 NaN lags of 127
+PASS   the band tile's lags 1 and 2 are measured over both directions | counts at lag 3: [0, 111]
+PASS   the band tile's lag 3 is NaN because one direction has run out of pairs | counts at lag 3: [0, 111]
+PASS   the band tile's late lags are NaN, not copies of the last measured lag | NaN from index 2 to the end
+PASS   a carried-forward sill would have produced a number where A3 is now NaN
+PASS   the speck tile's A3 is NaN rather than the 127/128 maximum-lag range
+PASS   no code path can answer an unmet crossing with the maximum lag | one return path, and the unmet-crossing raise still tests `reached`
+PASS   hand-built lag 5: one direction at 7 pairs, the other above the floor | [7, 29]
+PASS   lag with ONE direction below the floor is NaN, not that direction's value | counts=[7, 29] gam=np.float64(nan)
+PASS   and the refusal is silent: NaN is written explicitly, not warned about | []
+PASS   hand-built lag 5: one direction at 8 pairs, the other above the floor | [8, 31]
+PASS   lag with BOTH directions at or above the floor is measured | gam[4] = np.float64(6.578731097961868)
+PASS   thin band: every lag's NaN status matches the all-or-nothing floor | 0 lag(s) reported as measured on one direction; 35 of 127 lags have a short direction
+PASS   thin band: the lags that are reported are measured over both directions | 2 finite lag(s)
+PASS   sill window probe: its trailing 12 lags are 8 short of measurable | 8 of 12
+PASS   a sill window with an unmeasured lag raises rather than averaging the survivors | TileDegenerate | variogram sill window has 8 unmeasured lag(s) of its 12, so the traili
+PASS   the raise names the unmeasured lags in the window | variogram sill window has 8 unmeasured lag(s) of its 12, so the trailing 0.1 fraction of
+PASS   crossing probe: unmeasured lags sit in front of the window's sill | unmeasured lag indices [0, 2, 4, 6], last lag 9.2800
+PASS   an unmeasured lag before the crossing raises, it is not skipped | TileDegenerate | variogram has 4 unmeasured lag(s) before the crossing at lag 8, so lag
+PASS   the raise says the first lag that reaches the sill cannot be located | variogram has 4 unmeasured lag(s) before the crossing at lag 8, so lag 8 is not the firs
+PASS   and the module never answers either refusal with a number | the window rule and the crossing rule both fire, never a max-lag stand-in
+PASS   a mask of 15 pixels is a degeneracy | TileDegenerate | degenerate mask: only 15 pixels survive the 12th pct, need 1
+PASS   a mask of 15 pixels: the count is in the message and matches the tile | degenerate mask: only 15 pixels survive the 12th pct, need 16
+PASS   a mask of 16 pixels is a tile | NoneType | None
+PASS   a mask of 16 pixels: the count is in the message and matches the tile | None
+PASS   MIN_MASK_PIXELS: exactly 16 mask pixels gives a finite A1, 15 never gets that far | -0.468467
+PASS   MIN_PROFILE_LINES: 3 masked rows give 3 valid 90 deg lines | 3
+PASS   MIN_PROFILE_LINES: the 3-row tile's other direction has profile variance | 90deg=20.48 0deg=172.967
+PASS   MIN_PROFILE_LINES: 3 lines is undefined | TileDegenerate | direction 90 deg has 3 valid profile lines, need 4
+PASS   MIN_PROFILE_LINES: A2 on the 3-row tile is NaN | nan
+PASS   MIN_PROFILE_LINES: 4 masked rows give 4 valid 90 deg lines | 4
+PASS   MIN_PROFILE_LINES: the 4-row tile's other direction has profile variance | 90deg=51.2 0deg=172.967
+PASS   MIN_PROFILE_LINES: 4 lines is measured | NoneType | None
+PASS   MIN_PROFILE_LINES: A2 on the 4-row tile is a number | 5.160507232256277
+PASS   MIN_PAIRS_PER_DIRECTION: run 10 puts the diagonals at 9 pairs | {0: 15, 90: 10, 45: 7, 135: 7}
+PASS   MIN_PAIRS_PER_DIRECTION: A4 on run 10 (diagonals at 7 pairs) is NaN | A4=nan counts={0: 15, 90: 10, 45: 7, 135: 7}
+PASS   MIN_PAIRS_PER_DIRECTION: run 11 puts the diagonals at 8 pairs | {0: 18, 90: 11, 45: 8, 135: 8}
+PASS   MIN_PAIRS_PER_DIRECTION: A4 on run 11 (diagonals at 8 pairs) is a number | A4=-0.25 counts={0: 18, 90: 11, 45: 8, 135: 8}
+PASS   _direction_contrast at 7 pairs in the offset direction (counts [7, 19]) is undefined | [7, 19] | direction at offset (5, 0) has 7 masked pairs, need 8
+PASS   _direction_contrast at 8 pairs in the offset direction (counts [8, 21]) is measured | [8, 21] | None
+PASS   MIN_PAIRS_PER_LAG: trimmed block has 7 pairs at lag 9 one way, 9 the other | [7, 9]
+PASS   MIN_PAIRS_PER_LAG: lag 9 with a 7-pair direction is NaN | gam[8]=np.float64(nan)
+PASS   MIN_PAIRS_PER_LAG: A3 is NaN when one direction of the sill lag is at 7 pairs | A3=nan
+PASS   MIN_PAIRS_PER_LAG: trimmed block has 8 pairs at lag 9 one way, 9 the other | [8, 9]
+PASS   MIN_PAIRS_PER_LAG: lag 9 with a 8-pair direction is measured | gam[8]=np.float64(199.8695249999998)
+PASS   MIN_PAIRS_PER_LAG: A3 is a number when one direction of the sill lag is at 8 pairs | A3=0.9
+PASS   MIN_PAIRS_PER_LAG: the untrimmed block clears every lag and A3 is a number | A3=0.900000
+PASS   the reviewer's zero-energy probe no longer answers 1.0 | got None (was 1.0)
+PASS   the zero-energy probe raises TileDegenerate, which tile_spatial turns into NaN | TileDegenerate | direction 0 deg has a zero-variance masked profile over 64 finite 
+PASS   the zero-energy probe emits no warning
+PASS   a zero-variance direction raises TileDegenerate, not ValueError | TileDegenerate | direction 0 deg has a zero-variance masked profile over 64 f
+PASS   and the message says the profile has no variance to correlate | direction 0 deg has a zero-variance masked profile over 64 finite lines: nothing correla
+PASS   a constant non-zero field is the same degeneracy, not a ratio of two floors | TileDegenerate | direction 0 deg has a zero-variance masked profile over 64 finite line
+PASS   and it is not an invalid call wearing the degeneracy's type | TileDegenerate
+PASS   flat 6-row band: both directions has exactly zero profile variance | lines/energy per direction: [(64, 0.0), (6, 0.0)]
+PASS   flat 6-row band: tile_spatial returns, it does not raise | None
+PASS   flat 6-row band: A2 is NaN, not the isotropic-looking number | A2 was nan
+PASS   flat 6-row band: the other statistics are untouched | A1=-35.640163
+PASS   flat 6-row band: no warning while A2 goes undefined
+PASS   flat 8-row band: one direction only has exactly zero profile variance | lines/energy per direction: [(64, 0.0), (8, 0.004348488105324231)]
+PASS   flat 8-row band: tile_spatial returns, it does not raise | None
+PASS   flat 8-row band: A2 is NaN, not the isotropic-looking number | A2 was nan
+PASS   flat 8-row band: the other statistics are untouched | A1=-35.352481
+PASS   flat 8-row band: no warning while A2 goes undefined
+PASS   a 1e-15 profile variance is non-zero, so that direction is measured | energy=2.184e-26
+PASS   the exactly-constant direction of the same shaped field is the one that refuses | energy=0
+PASS   A2 over tiny-but-non-zero variance is a number: no value cutoff was introduced | 1.0
+PASS   a genuinely isotropic tile still returns A2 within 2 percent of 1.0 | 1.008989
+PASS   so 1.0 is no longer reachable by a tile that measured nothing | 1.008989 vs NaN
+PASS   image_block over A1 = inf raises ValueError | ValueError | image_block: A1 has 2 non-finite value(s) of 2 rows (inf); only NaN is
+PASS   image_block over A1 = inf is not reported as an all-NaN column | image_block: A1 has 2 non-finite value(s) of 2 rows (inf); only NaN is a legal missing v
+PASS   image_block over A1 = inf names the statistic and the bad value | image_block: A1 has 2 non-finite value(s) of 2 rows (inf); only NaN is a legal missing v
+PASS   image_block over A1 = inf emits no warning on the invalid path | []
+PASS   soil_block over A1 = inf raises the same way | ValueError
+PASS   image_block over A1 = -inf raises ValueError | ValueError | image_block: A1 has 2 non-finite value(s) of 2 rows (-inf); only NaN i
+PASS   image_block over A1 = -inf is not reported as an all-NaN column | image_block: A1 has 2 non-finite value(s) of 2 rows (-inf); only NaN is a legal missing 
+PASS   image_block over A1 = -inf names the statistic and the bad value | image_block: A1 has 2 non-finite value(s) of 2 rows (-inf); only NaN is a legal missing 
+PASS   image_block over A1 = -inf emits no warning on the invalid path | []
+PASS   soil_block over A1 = -inf raises the same way | ValueError
+PASS   a column with ONE inf and one finite value raises instead of returning inf | ValueError | image_block: A1 has 1 non-finite value(s) of 2 rows (inf); only NaN is
+PASS   and the returned table is never allowed to carry an inf | image_block: A1 has 1 non-finite value(s) of 2 rows (inf); only NaN is a legal missing v
+PASS   inf mixed with NaN in the same column is still the invalid case | ValueError
+PASS   an all-NaN column is still answered with NaN and one notice | {'A1': nan, 'A2': 4.0, 'A3': 5.0, 'A4': 6.0} | ['RuntimeWarning: image_block: A1 is NaN in every one of 2 rows, so its median is NaN']
+PASS   the notice still names A1 and never claims an inf | ['RuntimeWarning: image_block: A1 is NaN in every one of 2 rows, so its median is NaN']
+PASS   a column with NaN and a finite value stays a plain median | plain median
+PASS   no finite column is disturbed by another column's inf raise message | image_block: A1 has 1 non-finite value(s) of 2 rows (inf); only NaN is a legal missing v
+PASS   _efold does not cross at a value exactly on 1/e (the test is strict <) | 1.000000000000
+PASS   _efold interpolates the crossing at 1/e, not at any other fraction | got 1.264241117657 want 1.264241117657
+PASS   _efold crosses inside the first interval when lag 1 is already below 1/e | got 0.903029369755 want 0.903029369755
+PASS   _efold of a non-decaying ACF is the maximum lag, an unmeasured range elsewhere | 5.0
+PASS   _efold of an all-zero ACF is zero samples | 0.0
+PASS   A3's crossing is the first lag at 0.9 of the sill read from the constant | module lag 51, independent lag 51
+PASS   A3's crossing is the first lag at 0.5 of the sill read from the constant | module lag 8, independent lag 8
+PASS   a lower registered fraction cannot put the range later | 8 vs 51
+PASS   A3_SILL_FRACTION is restored to its frozen value | 0.9
+PASS   and the range is back to what the frozen fraction gives | restored
+PASS   A4 asks for exactly the four registered directions | [(0, 5), (5, 0), (3, 3), (3, -3)]
+PASS   A4's MAD is computed once per tile and passed to every direction | 4 calls, mads=[1e-12]
+PASS   the spy did not change the statistic | -0.004123098761
+PASS   A1 on the rank-1 ramp sits on EPS, so the log floor is EPS and not a smaller number | A1=-27.631021116 floor=-27.631021116
+PASS   A4 on a tile whose MAD is exactly zero returns a finite fraction, not NaN | A4=0.0
+PASS   a zero-sill variogram raises instead of dividing by the floor | TileDegenerate | variogram sill is 0, no range can be located on it
+PASS   MIN_MASK_PIXELS still has its frozen value after the gating tests | 16
+PASS   MIN_PAIRS_PER_LAG still has its frozen value after the gating tests | 8
+PASS   MIN_PAIRS_PER_DIRECTION still has its frozen value after the gating tests | 8
+PASS   MIN_PROFILE_LINES still has its frozen value after the gating tests | 4
+PASS   the gating tiles are the ones designed, not accidental near-misses | mask size
+PASS   returns exactly A1-A4 | ('A1', 'A2', 'A3', 'A4')
+PASS   all four are finite floats on a healthy tile
+PASS   every value is a Python float, never a numpy scalar or None | ['float', 'float', 'float', 'float']
+PASS   A1 is invariant under transposing the tile | -33.761250 vs -33.761250
+PASS   A1 separates a striped tile from a near-isotropic one | -33.7613 vs -0.0196
+PASS   A2 inverts under transpose, because it is a directional ratio | 35.2719 vs 0.0284
+PASS   blobs: grey field equals the channel mean
+PASS   blobs: mask equals g > percentile(g, 12) | 11781 of 65536 px
+PASS   blobs: residual equals the frozen illumination residual
+PASS   blobs: residual is zero outside the mask
+PASS   blobs: mask_and_field neither warns nor raises |  | None
+PASS   noise: grey field equals the channel mean
+PASS   noise: mask equals g > percentile(g, 12) | 57671 of 65536 px
+PASS   noise: residual equals the frozen illumination residual
+PASS   noise: residual is zero outside the mask
+PASS   noise: mask_and_field neither warns nor raises |  | None
+PASS   coarse16: grey field equals the channel mean
+PASS   coarse16: mask equals g > percentile(g, 12) | 57600 of 65536 px
+PASS   coarse16: residual equals the frozen illumination residual
+PASS   coarse16: residual is zero outside the mask
+PASS   coarse16: mask_and_field neither warns nor raises |  | None
+PASS   BASE_SIGMA_MM is the frozen 12 mm | 12.0
+PASS   the illumination base is imported, not re-derived here
+PASS   ramp: A1 is finite (the l2 floor held) | -27.631021
+PASS   ramp: A1 sits on the eps floor, within 5 log units of -27.63 | -27.631021
+PASS   ramp: A1 is at least as anisotropic as -20 | -27.631021
+PASS   ppm=0.4 raises | ValueError
+PASS   ppm=0.4 raises ValueError naming the lag | ValueError | ppm=0.4 puts the 1 mm lag under one pixel (lag_px=0): the tile's recor
+PASS   ppm=0.4 is not catchable as tile degeneracy
+PASS   ppm=0.6 (lag_px rounds to 1) runs cleanly | None
+PASS   ppm=1.0 (lag_px exactly 1) runs cleanly | None
+PASS   blobs: A3 identical across three ppm values | 0.398438 0.398438 0.398438
+PASS   coarse16: A3 identical across three ppm values | 0.109375 0.109375 0.109375
+PASS   stripe: A3 identical across three ppm values | 0.015625 0.015625 0.015625
+PASS   blobs: A4 does move across the same three ppm values | -0.010100 -0.004123 0.004713
+PASS   blobs: A2 moves across the same three ppm values (accepted, not corrected) | 0.435667 0.274521 0.407760
+INFO   A2 vs ppm | 0.435667 0.274521 0.407760
+INFO   A4 vs ppm | -0.010100 -0.004123 0.004713
+PASS   blobs: repeat call is bit-identical | {'A1': -0.019575082103750408, 'A2': 0.2745206920717868, 'A3': 0.39843750000000006, 'A4': -0.004123098760535949}
+PASS   striped: repeat call is bit-identical | {'A1': -33.76125000296601, 'A2': 35.271944936420425, 'A3': 0.015625, 'A4': -0.08333333333333331}
+PASS   coarse: repeat call is bit-identical | {'A1': -0.0869194997177046, 'A2': 0.4559072102201212, 'A3': 0.109375, 'A4': -0.006562978878119824}
+PASS   noise: repeat call is bit-identical | {'A1': -0.005142022827908911, 'A2': 1.0089893192060135, 'A3': 0.0078125, 'A4': -0.0010594892656631272}
+PASS   speck: repeat call is bit-identical | {'A1': 0.0, 'A2': 0.9862552807612387, 'A3': nan, 'A4': nan}
+PASS   band: repeat call is bit-identical | {'A1': -2.590267165445826, 'A2': nan, 'A3': nan, 'A4': nan}
+PASS   tile_spatial does not mutate its input tile
+PASS   the internal helpers do not mutate the grey field or the mask
+PASS   A2's multiplicative spread across five texture regimes exceeds exp(0.05) | max/min ratio 128.485560 over 1.051271 (exp(0.05)) on 5 tiles
+PASS   A2 on a striped tile is more than 5%% away from A2 on white noise | stripe 35.271945 vs noise 1.008989
+INFO   A2 | stripe_x=35.271945; blobs=0.274521; noise=1.008989; coarse16=0.455907; fine3=1.133884
+PASS   A3 moves across five texture regimes | spread 0.390625
+PASS   A3 separates the 16 px mosaic from white noise | coarse 0.109375 vs noise 0.007812
+PASS   A3 separates the 16 px mosaic from the 3 px mosaic | coarse 0.109375 vs fine 0.023529
+INFO   A3 | stripe_x=0.015625; blobs=0.398438; noise=0.007812; coarse16=0.109375; fine3=0.023529
+PASS   A4 moves across the measurable texture regimes | spread 0.090205 over 6 tiles
+PASS   A4 separates stripes from white noise | stripe -0.083333 vs noise -0.001059
+PASS   A4 on the two stripe orientations is equal, by the omni construction | -0.083333 vs -0.083333
+INFO   A4 | stripe_x=-0.083333; stripe_y=-0.083333; noise=-0.001059; coarse16=-0.006563; fine3=0.006871; blobs=-0.004123
+PASS   scramble keeps the pixel multiset (marginals exact) | compared with array_equal, so the equality is exact and not an rtol
+PASS   scramble keeps the pixel multiset on every channel
+PASS   scramble keeps the mean exactly, which is the DC term | 130.969848633 vs 130.969848633
+PASS   scramble is not a no-op
+PASS   scramble returns the same shape, as a float array | float64
+PASS   phase_scrambled does not mutate its input
+PASS   blobs: both radial readings are finite and inside [0, 1] | with DC=7.157023e-04, without DC=0.746782
+INFO   P-RAND spectrum | blobs     brief rp() rtol=1e-6 FAIL | rel L1 with DC 7.157023e-04 | without DC 0.746782
+PASS   coarse16: both radial readings are finite and inside [0, 1] | with DC=1.380915e-03, without DC=0.675056
+INFO   P-RAND spectrum | coarse16  brief rp() rtol=1e-6 FAIL | rel L1 with DC 1.380915e-03 | without DC 0.675056
+PASS   fine3: both radial readings are finite and inside [0, 1] | with DC=2.374137e-04, without DC=0.656105
+INFO   P-RAND spectrum | fine3     brief rp() rtol=1e-6 FAIL | rel L1 with DC 2.374137e-04 | without DC 0.656105
+PASS   noise: both radial readings are finite and inside [0, 1] | with DC=2.380469e-06, without DC=0.152135
+INFO   P-RAND spectrum | noise     brief rp() rtol=1e-6 FAIL | rel L1 with DC 2.380469e-06 | without DC 0.152135
+PASS   stripe_x: both radial readings are finite and inside [0, 1] | with DC=0.000000e+00, without DC=0.000000
+INFO   P-RAND spectrum | stripe_x  brief rp() rtol=1e-6 PASS | rel L1 with DC 0.000000e+00 | without DC 0.000000
+PASS   the spectrum is NOT preserved on the four tiles whose scramble breaks the structure | ['blobs', 'coarse16', 'fine3', 'noise']
+PASS   the striped tile is the measured exception: its scramble is still row constant | ['stripe_x']
+PASS   so the pre-registration's 'entire power spectrum' wording is false as a guarantee | 4 of 5 tiles lose their spectrum
+PASS   while the pixel multiset is exact on all five, so the other half of the claim holds
+PASS   and the brief's rp() device agrees with the radial measure on all five tiles | rp() passes exactly on the tiles the radial measure calls preserved
+PASS   same seed gives a bit-identical scramble
+PASS   a different seed gives a different scramble
+PASS   same seed gives a bit-identical column shuffle
+PASS   a different seed gives a different column shuffle
+PASS   same seed gives bit-identical linear combinations
+PASS   shuffled columns have identical per-column values
+PASS   the planted correlation is destroyed | corr=0.135176
+PASS   the permutation vectors reconstruct the shuffle
+PASS   every returned vector is a permutation of the row indices | vecs (4, 20) for a (20, 4) matrix: one row index vector per column
+PASS   the shuffle is per-column, not one shared row permutation
+PASS   shuffle_columns does not mutate its input matrix
+PASS   the per-column median, which is what the pipeline takes, is inert to the shuffle
+PASS   a 1-D matrix is an invalid call | ValueError
+PASS   image_block medians over tiles | {'A1': 3.0, 'A2': 4.0, 'A3': 5.0, 'A4': 6.0}
+PASS   soil_block medians over images | {'A1': 3.0, 'A2': 4.0, 'A3': 5.0, 'A4': 6.0}
+PASS   both aggregations return exactly the A1-A4 column set, in order | ('A1', 'A2', 'A3', 'A4')
+PASS   an odd-length median is the middle value, not a mean of two | {'A1': 5.0, 'A2': 6.0, 'A3': 7.0, 'A4': 8.0}
+PASS   the aggregation is a MEDIAN, not a mean: a skewed column gives the middle value | image_block 2.000 (median 2.0, mean would be 34.333)
+PASS   and it survives an outlier in the same direction a median must | four rows 1, 2, 100 and 1e6: median 51.0
+PASS   the aggregation is order-free, as a median must be
+PASS   one NaN tile does not poison its column | {'A1': 1.0, 'A2': 6.0, 'A3': 7.0, 'A4': 8.0}
+PASS   a partial NaN column emits no warning | []
+PASS   an all-NaN column aggregates to NaN, never to a fallback number | {'A1': nan, 'A2': 4.0, 'A3': 5.0, 'A4': 6.0}
+PASS   that all-NaN column is REPORTED at the one site that produces it | ['RuntimeWarning: image_block: A1 is NaN in every one of 2 rows, so its median is NaN']
+PASS   the notice names only the dead column | ['RuntimeWarning: image_block: A1 is NaN in every one of 2 rows, so its median is NaN']
+PASS   soil_block reports an all-NaN column the same way | ['RuntimeWarning: soil_block: A1 is NaN in every one of 2 rows, so its median is NaN']
+PASS   no notice is emitted when no column is all-NaN | []
+PASS   aggregating zero rows is an invalid call, not an empty median | ValueError | image_block: no rows to aggregate
+PASS   P-COLS returns 4 columns | (24, 4)
+PASS   every P-COLS column lies in the span of the original 12
+PASS   P-COLS is reproducible from its seed
+PASS   a different seed gives a different mixture
+PASS   the recovered mixture weights have unit norm, so the four columns are comparable | [1. 1. 1. 1.]
+PASS   P-COLS is not a copy of four existing columns
+PASS   linear_combinations does not mutate its input
+PASS   a 1-D matrix is an invalid call | ValueError
+INFO   P-RAND probe | real      A1=-0.019575 A2=0.274521 A3=0.398438 A4=-0.004123
+INFO   P-RAND probe | scrambled A1=-0.006563 A2=0.905326 A3=0.046875 A4=0.004714
+PASS   the scrambled tile is computable and gives no all-NaN row | {'A1': -0.00656256698012881, 'A2': 0.9053263685559907, 'A3': 0.046875, 'A4': 0.004713718254848842}
+PASS   the scramble moves A1, A2 and A4, as the plan predicts | dA1=0.013013 dA2=0.630806 dA4=0.008837
+PASS   A3 does NOT stay close, contrary to the plan: recorded as a deviation, not smoothed | real 0.398438 scrambled 0.046875 = 45.0 quantisation steps
+PASS   the scrambled vector differs from the real one
+PASS   a second scramble seed gives a different placebo row, so P-RAND is a real arm | {'A1': -0.014280997411479895, 'A2': 0.9826219324445103, 'A3': 0.0625, 'A4': 0.008336947365187475}
+PASS   tile_spatial on band neither warns nor raises |  | None
+PASS   tile_spatial on band returns the four keys, with A1 finite | {'A1': -2.590267165445826, 'A2': nan, 'A3': nan, 'A4': nan}
+PASS   tile_spatial on band3 neither warns nor raises |  | None
+PASS   tile_spatial on band3 returns the four keys, with A1 finite | {'A1': -10.36141877876432, 'A2': nan, 'A3': nan, 'A4': nan}
+PASS   tile_spatial on blobs neither warns nor raises |  | None
+PASS   tile_spatial on blobs returns the four keys, with A1 finite | {'A1': -0.019575082103750408, 'A2': 0.2745206920717868, 'A3': 0.39
+PASS   tile_spatial on coarse16 neither warns nor raises |  | None
+PASS   tile_spatial on coarse16 returns the four keys, with A1 finite | {'A1': -0.0869194997177046, 'A2': 0.4559072102201212, 'A3': 0.1093
+PASS   tile_spatial on fine3 neither warns nor raises |  | None
+PASS   tile_spatial on fine3 returns the four keys, with A1 finite | {'A1': -0.011955689711212214, 'A2': 1.1338835779214116, 'A3': 0.02
+PASS   tile_spatial on flat6 neither warns nor raises |  | None
+PASS   tile_spatial on flat6 returns the four keys, with A1 finite | {'A1': -35.64016261046152, 'A2': nan, 'A3': nan, 'A4': 0.0}
+PASS   tile_spatial on noise neither warns nor raises |  | None
+PASS   tile_spatial on noise returns the four keys, with A1 finite | {'A1': -0.005142022827908911, 'A2': 1.0089893192060135, 'A3': 0.00
+PASS   tile_spatial on ramp neither warns nor raises |  | None
+PASS   tile_spatial on ramp returns the four keys, with A1 finite | {'A1': -27.63102111592955, 'A2': 0.8452330209940531, 'A3': 0.90625
+PASS   tile_spatial on speck5 neither warns nor raises |  | None
+PASS   tile_spatial on speck5 returns the four keys, with A1 finite | {'A1': 0.0, 'A2': 0.9862552807612387, 'A3': nan, 'A4': nan}
+PASS   tile_spatial on striped neither warns nor raises |  | None
+PASS   tile_spatial on striped returns the four keys, with A1 finite | {'A1': -33.76125000296601, 'A2': 35.271944936420425, 'A3': 0.01562
+PASS   the runner turns RuntimeWarning into an error | RuntimeWarning
+PASS   module code contains no _ppm_from_extent
+PASS   module code contains no 56.23
+PASS   module code contains no read_csv
+PASS   module code contains no manifest
+PASS   module code contains no pandas
+PASS   module code contains no image.open
+PASS   module code contains no data/
+PASS   module code contains no label
+PASS   module code contains no camera
+PASS   module code contains no open(
+PASS   mask_and_field takes ppm as a required argument
+PASS   tile_spatial takes ppm as a required argument
+PASS   frozen inline literal: A3's sill crossing threshold
+PASS   frozen inline literal: the frozen 12th-percentile mask
+PASS   frozen inline literal: the 12 mm illumination base at the caller's ppm
+PASS   frozen inline literal: A4's lag in px from the caller's ppm
+PASS   frozen inline literal: A3's half-extent reference
+PASS   frozen inline literal: A3's horizontal+vertical variogram, no diagonal
+PASS   frozen inline literal: A1's log eigenvalue ratio
+PASS   frozen inline literal: A1's non-negative eigenvalue
+PASS   frozen inline literal: A4's MAD threshold
+PASS   frozen inline literal: A4's 3 px per-axis diagonal offset
+PASS   the finiteness guard is present
+PASS   statistic-side _a2 contains no random, seed or rng
+PASS   statistic-side _a3 contains no random, seed or rng
+PASS   statistic-side _a4 contains no random, seed or rng
+PASS   statistic-side _acf_along contains no random, seed or rng
+PASS   statistic-side _as_ppm contains no random, seed or rng
+PASS   statistic-side _as_tile contains no random, seed or rng
+PASS   statistic-side _block_median_table contains no random, seed or rng
+PASS   statistic-side _direction_contrast contains no random, seed or rng
+PASS   statistic-side _efold contains no random, seed or rng
+PASS   statistic-side _masked_profile contains no random, seed or rng
+PASS   statistic-side _median_column contains no random, seed or rng
+PASS   statistic-side _pair_slices contains no random, seed or rng
+PASS   statistic-side _variogram contains no random, seed or rng
+PASS   statistic-side _variogram_range contains no random, seed or rng
+PASS   statistic-side image_block contains no random, seed or rng
+PASS   statistic-side mask_and_field contains no random, seed or rng
+PASS   statistic-side soil_block contains no random, seed or rng
+PASS   statistic-side tile_spatial contains no random, seed or rng
+PASS   no statistic-side function is a placebo name by accident | ['_a2', '_a3', '_a4', '_acf_along', '_as_ppm', '_as_tile', '_block_median_table'
+PASS   all checks above passed | 0 of 411 failed
+
+411 checks, 0 failed

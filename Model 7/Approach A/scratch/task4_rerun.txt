@@ -1,0 +1,87 @@
+PASS   G0 anchor deviation is exactly 0.0 (not 1e-15, not 'close') | gap 0.00e+00  anchor 43.021730879647698
+PASS   the anchor constant in m7a_eval is the registered 43.0217308796477 | 43.0217308796477
+PASS   the strictly nested 12-column arm IS the Model 7 internal baseline, to 15 digits | measured 43.453225201811563, recorded 43.453225201811563
+PASS   internal baseline and historical anchor are different numbers from different protocols, and the 0.431 between them is recorded rather than hidden | baseline - anchor = +0.431494322163864
+PASS   a gain baseline is defined, and it is the nested one, never the historical anchor | 43.45322520181156
+PASS   exactly two arms were fitted in this run, and they are none and zero | SCORED ['none', 'zero'], lofo_errors calls [12, 16]
+PASS   the 16-column design was built (the with-block arm exists) but never scored | [12, 16]
+PASS   no-block design is 24 x 12 | (24, 12)
+PASS   with-block design is 24 x 16 (K = 4, exactly four columns added) | (24, 16)
+PASS   zero-block design is 24 x 16 | (24, 16)
+PASS   labels are 24 x 11 (the frozen DIN-ISO supports) | (24, 11)
+PASS   24 distinct soils | 24
+PASS   16 CV families over 24 soils | 16
+PASS   designs are float arrays, so no label or fold key rode along as a column | [dtype('float64'), dtype('float64'), dtype('float64')]
+PASS   the head is the imported 12-feature tuple, in order, not a transcription | ('e4', 'e8', 'e16', 'lum_sd', 'grad_mean', 'R', 'G', 'B', 'sat', 'lum_p10', 'lum_p50', 'lum_p90')
+PASS   the block columns are exactly A1-A4 | ('A1', 'A2', 'A3', 'A4')
+PASS   every design cell is finite in all three arms
+PASS   labels are cumulative curves: every cell finite
+PASS   and monotone non-decreasing across the 11 supports | min step 0
+PASS   and bounded within [0, 100] | range [0.0000, 100.0000]
+PASS   and every curve reaches exactly 100 at the last support | [100.0, 100.0, 100.0]
+PASS   and no curve is degenerate: the first support is below 100 and the spread is real | min first support 0.000, min spread 82.293
+PASS   the block in the design is the Task 3 published soil frame, bit for bit
+PASS   and it equals the in-process assembly too (no silent recomputation drift)
+PASS   the zero arm's block is exactly four columns of zeros
+PASS   the zero arm's head is exactly the no-block head
+PASS   the block columns are not all identical to one another or constant
+PASS   G6 (1/6) the same 12 original features, in the same order, bit for bit
+PASS   G6 (2/6) the same family folds: identical keys, identical membership, 16 of them | 16
+PASS   G6 (3/6) the same alpha for every one of the 16 folds | first folds [(np.str_('FAM1'), 0.3), (np.str_('FAM10'), 3.0), (np.str_('FAM11'), 3.0), (np.str_('FAM12'), 3.0)]
+PASS   G6 (4/6) the head machinery is the imported one, not a copy of it
+PASS   G6 (5/6) max absolute PREDICTION difference <= 1e-12 | max |dcurve| 2.842e-14 over 264 cells
+PASS   G6 (6/6) per-soil EMD difference <= 1e-12 and mean difference <= 1e-12 | max |dEMD| 2.842e-14, |dmean| 0.000e+00
+PASS   the residual really is numerics: the two means agree when rounded to 12 digits | 43.453225201811563 vs 43.453225201811563
+PASS   and G6 asserts what the ruling says: both arms reproduce the INTERNAL baseline | zero 43.453225201811563, none 43.453225201811563, baseline 43.453225201811563
+       Model 7 internal baseline (12 cols, nested) : 43.4532252018116  [NOT a Kaggle score]
+       same arm with the four columns zeroed       : 43.4532252018116
+       historical G0 anchor (frozen protocol)      : 43.0217308796477
+       previous EXTERNAL Kaggle submission result  : 60.56167  [different scale]
+PASS   no camera, device, ppm, position, sample-id or fold-label name is a design column | ['e4', 'e8', 'e16', 'lum_sd', 'grad_mean', 'R', 'G', 'B', 'sat', 'lum_p10', 'lum_p50', 'lum_p90', 'A1', 'A2', 'A3', 'A4']
+PASS   the family label list is a fold key, never a column
+PASS   no design column is constant across soils (a dead column would be a silent no-op)
+PASS   no test-split soil is in the fitted design | 10 test soils excluded
+PASS   the design is the 24 labelled training soils and nothing else
+PASS   labels come from the frozen labels_matrix, not a re-derived curve table
+PASS   every soil appears in exactly one held-out fold | 24 scored
+PASS   no fold ever fits on the family it scores | {'family_leaks': 0, 'n_folds': 16, 'n_scored': 24, 'fold_sizes': {np.str_('FAM1'): 2, np.str_('FAM10'): 1, np.str_('FAM11'): 1, np.str_('FAM12'): 2, np.str_('FAM13'): 1, np.str_('FAM14'): 1, np.str_('FAM15'): 1, np.str_('FAM16'): 1, np.str_('FAM2'): 2, np.str_('FAM3'): 2, np.str_('FAM4'): 4, np.str_('FAM5'): 1, np.str_('FAM6'): 1, np.str_('FAM7'): 1, np.str_('FAM8'): 2, np.str_('FAM9'): 1}}
+PASS   16 folds for 16 families, and each fold's fit set excludes exactly its own family | {'family_leaks': 0, 'n_folds': 16, 'n_scored': 24, 'fold_sizes': {np.str_('FAM1'): 2, np.str_('FAM10'): 1, np.str_('FAM11'): 1, np.str_('FAM12'): 2, np.str_('FAM13'): 1, np.str_('FAM14'): 1, np.str_('FAM15'): 1, np.str_('FAM16'): 1, np.str_('FAM2'): 2, np.str_('FAM3'): 2, np.str_('FAM4'): 4, np.str_('FAM5'): 1, np.str_('FAM6'): 1, np.str_('FAM7'): 1, np.str_('FAM8'): 2, np.str_('FAM9'): 1}}
+PASS   family sizes are the frozen 24/16 split: one four-soil family, five pairs, ten singletons | [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 4]
+PASS   14 soils have a sibling in the fitting set and 10 are alone in their family | [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 4]
+PASS   every held-out fold leaves at least two families to fit on (alpha needs a selection set) | 16
+PASS   the none design rebuilds bit for bit in this process
+PASS   the real design rebuilds bit for bit in this process
+PASS   the zero design rebuilds bit for bit in this process
+PASS   the design hash is order-sensitive, so a column permutation is not silently tolerated
+PASS   an unknown block name raises instead of defaulting to something safe | unknown block 'shuffle'; the registered variants are ('none', 'zero', 'real', 'r
+PASS   the fresh interpreter exited 0
+PASS   fresh-interpreter design X0 matches this process | a6e10635a185a18b vs a6e10635a185a18b
+PASS   fresh-interpreter design Xr matches this process | 98bf2474ae8ccb62 vs 98bf2474ae8ccb62
+PASS   fresh-interpreter design Xz matches this process | ad2ba76f633b4d61 vs ad2ba76f633b4d61
+PASS   the three designs hash differently from one another (they are three distinct matrices) | {'X0': 'a6e10635a185a18b', 'Xr': '98bf2474ae8ccb62', 'Xz': 'ad2ba76f633b4d61'}
+PASS   all checks above passed | 0 of 58 failed
+
+==============================================================================
+M7-A TASK 4 - G0 anchor, G6 inertness, G7 design integrity, fold integrity
+==============================================================================
+HISTORICAL G0 anchor (internal, frozen protocol) : 43.021730879647698
+HISTORICAL G0 recomputed                         : 43.021730879647698
+HISTORICAL G0 deviation                          : 0.00e+00  (must be exactly 0.0)
+MODEL 7 internal baseline (nested, 12 cols)      : 43.453225201811563
+MODEL 7 internal baseline recorded in m7a_eval   : 43.453225201811563
+protocol difference between the two              : +0.431494322163864
+zero-block arm mean EMD                          : 43.453225201811563
+G6 max |dcurve| / max |dEMD| / |dmean|           : 2.842e-14 / 2.842e-14 / 0.000e+00
+NOTE 43.0217 and 43.4532 are INTERNAL CV numbers; the only external evidence is a
+      Kaggle submission. 60.56167 was an external Kaggle result, on a different scale.
+designs                         : none 24x12, real 24x16 (built, NOT scored), zero 24x16
+arms fitted in this run          : ['none', 'zero'] (lofo_errors called 2 times: [12, 16] columns)
+CV protocol                      : leave-one-CV-family-out, 16 families / 24 soils,
+                                   alpha re-selected inside each outer training set
+per-soil errors (no-block arm)   : [56.9766, 7.272, 35.4516, 75.7627, 93.1797, 54.4073, 23.4689, 20.5065, 50.726, 41.0496, 16.4168, 44.6631, 23.4808, 62.1063, 70.3379, 31.7519, 38.1766, 38.4789, 11.2376, 79.385, 37.3372, 45.686, 36.3218, 48.6968]
+per-soil errors (zeroed block)   : [56.9766, 7.272, 35.4516, 75.7627, 93.1797, 54.4073, 23.4689, 20.5065, 50.726, 41.0496, 16.4168, 44.6631, 23.4808, 62.1063, 70.3379, 31.7519, 38.1766, 38.4789, 11.2376, 79.385, 37.3372, 45.686, 36.3218, 48.6968]
+timing                           : designs 232 s, fitted arms 11 s
+==============================================================================
+
+58 checks, 0 failed
+EXIT=0

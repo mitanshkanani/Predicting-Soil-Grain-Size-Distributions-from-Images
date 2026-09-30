@@ -1,0 +1,20 @@
+{
+  "nested_honest": 42.8288,
+  "oracle_fixed": 41.1475,
+  "oracle_alpha": 3.0,
+  "oracle_regret": 1.6813,
+  "picks": {
+    "3.0": 7,
+    "1.0": 7,
+    "0.3": 1,
+    "0.1": 1
+  },
+  "n_folds": 16,
+  "n_folds_choosing_oracle": 7,
+  "adaptive_mean": 40.2012,
+  "adaptive_alpha_median": 0.003202,
+  "adaptive_alpha_max": 0.024614,
+  "adaptive_share_near_grid": 0.0208,
+  "grid_floor": 0.03,
+  "anchor_recorded": 43.0217308796477
+}

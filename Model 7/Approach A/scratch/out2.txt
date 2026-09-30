@@ -1,0 +1,32 @@
+tile       axis     lines   energy  acf[0:3]   efold      A2        
+blobs      0deg     251     8.3e+03 [1.    ,0.9609,0.9044] 11.440666 
+blobs      90deg    255     7.7e+03 [1.    ,0.9748,0.9501] 41.675058 
+blobs      A2 = 0.274520692072
+stripe_x   0deg     256     5.54e+03 [1.    ,0.9892,0.9783] 47.547573 
+stripe_x   90deg    224     1.91e+05 [1.    ,0.4799,0.158 ] 1.348028  
+stripe_x   A2 = 35.271944936420
+stripe_y   0deg     224     1.91e+05 [1.    ,0.4799,0.158 ] 1.348028  
+stripe_y   90deg    256     5.54e+03 [1.    ,0.9892,0.9783] 47.547573 
+stripe_y   A2 = 0.028351144282
+noise      0deg     256     6.8e+03 [1.    ,0.9312,0.919 ] 46.605238 
+noise      90deg    256     6.84e+03 [1.    ,0.9298,0.9229] 46.190022 
+noise      A2 = 1.008989319206
+coarse16   0deg     256     1.28e+04 [1.    ,0.9463,0.8926] 11.831606 
+coarse16   90deg    256     2.2e+04 [1.    ,0.9715,0.9433] 25.951785 
+coarse16   A2 = 0.455907210220
+fine3      0deg     255     5.77e+03 [1.    ,0.7217,0.4435] 2.271653  
+fine3      90deg    255     4.25e+03 [1.    ,0.6845,0.369 ] 2.003427  
+fine3      A2 = 1.133883577921
+ramp       0deg     225     1.22e+05 [1.    ,0.9808,0.9618] 40.188779 
+ramp       90deg    256     6.61e+03 [1.    ,0.9892,0.9783] 47.547573 
+ramp       A2 = 0.845233020994
+Traceback (most recent call last):
+  File "C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\Model 7\Approach A\scratch\probe_a2.py", line 31, in <module>
+    a2 = sf._a2(e, m)
+  File "C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\Model 7\Approach A\spatial_features.py", line 195, in _a2
+    l90 = _efold(_acf_along(e, m, axis=0))
+                 ~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\Model 7\Approach A\spatial_features.py", line 164, in _acf_along
+    raise TileDegenerate("direction %d deg has %d valid profile lines, need %d"
+                         % (0 if axis == 1 else 90, lines, MIN_PROFILE_LINES))
+spatial_features.TileDegenerate: direction 90 deg has 3 valid profile lines, need 4

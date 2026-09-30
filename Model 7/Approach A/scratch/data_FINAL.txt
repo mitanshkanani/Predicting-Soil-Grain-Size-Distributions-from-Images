@@ -1,0 +1,390 @@
+PASS   only 256 px tiles
+PASS   only materialized tiles
+PASS   only soil_fraction >= 0.50 tiles
+PASS   1946 qualifying tiles, as measured for the pre-registration | 1946
+PASS   tile set is the frozen loader's set, row for row | 1946 vs 1946
+PASS   tv.TILE_PX and tv.MIN_SOIL_FRACTION are the filter's constants, not copies
+PASS   1541 train / 405 test tiles, as pre-registered | {'train': 1541, 'test': 405}
+PASS   dropped at load: camera | ['tile_id', 'tile_size_px', 'tile_w_mm', 'tile_h_mm', 'tile_x', 'tile_y', 'grid_col', 'grid_row', 'parent_image_path', 'sample_id', 'sample_slug', 'split', 'normalized_ppm', 'soil_fraction', 'tile_path', 'materialized']
+PASS   dropped at load: camera_fam | ['tile_id', 'tile_size_px', 'tile_w_mm', 'tile_h_mm', 'tile_x', 'tile_y', 'grid_col', 'grid_row', 'parent_image_path', 'sample_id', 'sample_slug', 'split', 'normalized_ppm', 'soil_fraction', 'tile_path', 'materialized']
+PASS   dropped at load: cv_group | ['tile_id', 'tile_size_px', 'tile_w_mm', 'tile_h_mm', 'tile_x', 'tile_y', 'grid_col', 'grid_row', 'parent_image_path', 'sample_id', 'sample_slug', 'split', 'normalized_ppm', 'soil_fraction', 'tile_path', 'materialized']
+PASS   dropped at load: source_effective_ppm | ['tile_id', 'tile_size_px', 'tile_w_mm', 'tile_h_mm', 'tile_x', 'tile_y', 'grid_col', 'grid_row', 'parent_image_path', 'sample_id', 'sample_slug', 'split', 'normalized_ppm', 'soil_fraction', 'tile_path', 'materialized']
+PASS   dropped at load: source_image_width | ['tile_id', 'tile_size_px', 'tile_w_mm', 'tile_h_mm', 'tile_x', 'tile_y', 'grid_col', 'grid_row', 'parent_image_path', 'sample_id', 'sample_slug', 'split', 'normalized_ppm', 'soil_fraction', 'tile_path', 'materialized']
+PASS   dropped at load: source_image_height | ['tile_id', 'tile_size_px', 'tile_w_mm', 'tile_h_mm', 'tile_x', 'tile_y', 'grid_col', 'grid_row', 'parent_image_path', 'sample_id', 'sample_slug', 'split', 'normalized_ppm', 'soil_fraction', 'tile_path', 'materialized']
+PASS   normalized_ppm is carried as the physical scale argument
+PASS   every tile reads at one recorded ppm, so the scale is auditable | [np.float64(4.552516)]
+PASS   an invalid call raises instead of being logged | ValueError
+PASS   the abort names the tile that caused it | [{'stage': 'tiles', 'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2
+PASS   the invalid call is recorded with its reason string | [{'stage': 'tiles', 'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2)__x28_y37__t256.png', 'row': 83, 'kind'
+PASS   the invalid call is recorded as a ValueError, not as a degeneracy kind | [{'stage': 'tiles', 'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2)__x28_y37__t256.png
+PASS   an invalid call is NEVER counted as a degenerate tile | []
+PASS   the aborted tile produced no statistic row: it was not skipped as if it were fine | 0
+PASS   the in-flight tile is known at the moment of the abort | {'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2)__x28_y37__t256.pn
+PASS   a manifest pointing at a missing tile aborts | AssertionError
+PASS   the missing tile is recorded as an error, not as degeneracy | [{'stage': 'tiles', 'tile_path': 'data/tiles/does/not/exist__t256.png', 'row': 84, 'kind': 'missing_tile', 'reason': 'missing_tile: manifest
+PASS   the error names the missing tile, not the tile that ran before it | recorded [{'stage': 'tiles', 'tile_path': 'data/tiles/does/not/exist_, missing is data/tiles/does/not/exist__t256.png
+PASS   the error carries the missing row index | [{'stage': 'tiles', 'tile_path': 'data/tiles/does/not/exist__t256.png', 'row': 84, 'kind': 'missing_tile', 'reason': 'mi
+PASS   the free-text reason also names the path that is really missing | [{'stage': 'tiles', 'tile_path': 'data/tiles/does/not/exist__t256.png', 'row': 84, 'kind': 'missing_tile', 'reason': 'missing_tile: manifest references a missin
+PASS   no record was written for the missing tile | ['data/tiles/test/Airbus_BS10_4bis7/Airbus']
+PASS   the tile before the missing one is still counted as a finished tile | ['ok']
+PASS   the very first row can be the one that aborts
+PASS   an abort on the first row still names that row | [{'stage': 'tiles', 'tile_path': 'data/tiles/does/not/exist__first.png', 'row': 83, 'kind': 'missing_tile', 'reason': 'missing_tile: manifest references a missi
+PASS   the first-row abort produced no records | []
+PASS   the constant tile raises TileDegenerate (a tile fact, not a call fact) | TileDegenerate
+PASS   compute_tile_row lets a whole-tile degeneracy reach the caller as TileDegenerate | TileDegenerate
+PASS   a whole-tile degeneracy is status degenerate_tile | degenerate_tile
+PASS   a degenerate tile is NaN in all four keys | ['A1', 'A2', 'A3', 'A4']
+PASS   the degeneracy reason string is captured | degenerate mask: only 0 pixels survive the 12th pct, need 16
+PASS   a valid tile with undefined statistics is status nan_keys | nan_keys
+PASS   the NaN keys are recorded individually | ['A2', 'A3', 'A4']
+PASS   A1 stays finite on a nan_keys tile | -0.034814
+PASS   each NaN key carries its own reason | A2: the 1/e crossing lands at lag 0.6858728847670967, below one full lag step of a 32-lag profile: t
+PASS   a nan_keys tile is never called a degenerate tile
+PASS   a 2-D array is an invalid call, not a degeneracy | ValueError
+PASS   the tile used here really does have a measurable A2 | 0.678793
+PASS   _key_reason answers a disagreement as a (reason, disagreed) pair | tuple: ('tile_spatial wrote NaN but _a2 returned 0.6787932868252777, which is a bug to report, no
+PASS   a key the definition can measure is reported as a disagreement | tile_spatial wrote NaN but _a2 returned 0.6787932868252777, which is a bug to report, not a degeneracy to count
+PASS   the disagreement reason quotes the number the probe returned | tile_spatial wrote NaN but _a2 returned 0.6787932868252777, which is a bug to report, not a degeneracy to count
+PASS   _key_reason keeps its (reason, disagreed) shape for A1 as well | tuple: ('A1 is NaN and this module has no registered undefined branch for it; A1 has no NaN path,
+PASS   A1 has no undefined branch, so a NaN A1 is itself the disagreement | A1 is NaN and this module has no registered undefined branch for it; A1 has no NaN path, so that is a bug rather than a 
+PASS   the blob tile is a valid tile whose keys are undefined | {'A1': -0.03481426269145082, 'A2': nan, 'A3': nan, 'A4': nan}
+PASS   A2 is NaN because its own definition refuses it, not because of a bug | the 1/e crossing lands at lag 0.6858728847670967, below one full lag step of a 32-lag profile: the decorrelation is unre
+PASS   A3 is NaN because its own definition refuses it, not because of a bug | variogram sill window has 3 unmeasured lag(s) of its 3, so the trailing 0.1 fraction of the variogram cannot be averaged
+PASS   A4 is NaN because its own definition refuses it, not because of a bug | direction at offset (0, 5) has 0 masked pairs, need 8
+PASS   a genuine per-key degeneracy is still counted as nan_keys | nan_keys
+PASS   a fabricated NaN raises instead of being tallied | ValueError
+PASS   the fabricated NaN aborts the pass
+PASS   the abort is recorded as an invalid call, not as a degeneracy | [{'stage': 'tiles', 'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2)__x28_y37__t256.png', 'row': 83, 'kind'
+PASS   the error names the tile that triggered the disagreement | [{'stage': 'tiles', 'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2)__x28_y37__t256.png', 'row': 83, 'kind'
+PASS   the offending key is named in the recorded reason | [{'stage': 'tiles', 'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2)__x28_y37__t256.png', 'row': 83, 'kind': 'ValueError', 'rea
+PASS   a fabricated NaN never becomes a degenerate or nan_keys row | []
+PASS   the report surface of an aborted pass counts the disagreement as an invalid call | {'invalid_calls': 1, 'degenerate_mask': 0, 'non_finite': 0}
+PASS   same images as the frozen 12-feature assembly | 162 vs 162
+PASS   columns are A1-A4 plus sample_id only
+PASS   no camera, ppm or sample-derived column is carried into the design
+PASS   no NaN in any image-level statistic
+PASS   the image index is the parent image path
+PASS   one image maps to one soil (no silent overwrite in the assembly)
+PASS   soil columns are exactly A1-A4
+PASS   soil index is sample_id
+PASS   34 soils in the corpus, 24 of them train | 34
+PASS   24 train soils and no test soil leaks into that set | 24
+PASS   soil frame equals sf.soil_block applied to the image rows, bit for bit | max diff 0
+PASS   image frame equals sf.image_block applied to the tile rows, bit for bit
+PASS   image_table calls the tested image block once per image | {'image_block': 2, 'soil_block': 1}
+PASS   soil_table calls the tested soil block once per soil | {'image_block': 2, 'soil_block': 1}
+PASS   an inf tile value aborts the aggregation instead of becoming an inf row | ValueError
+PASS   an all-NaN key stays NaN after aggregation: no pandas fallback number appears | [{'A1': -0.25, 'A2': nan, 'A3': nan, 'A4': nan, 'sample_id': 'S1'}]
+PASS   the dead columns announce themselves, one warning per dead key, from the tested module | [('RuntimeWarning', 'spatial_features.py'), ('RuntimeWarning', 'spatial_features.py'), ('RuntimeWarning', 'spatial_features.py')]
+PASS   a systemic error propagates out of the pass | RuntimeError
+PASS   a systemic error is recorded as an invalid call, never as a degenerate tile | [{'stage': 'tiles', 'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2)__x28_y37__t256.png', 'row': 83, 'kind'
+PASS   a systemic error produces no statistic row for the tile that raised | 0
+PASS   the pass reports itself as aborted
+PASS   the assembly opens no label, curve, fold or submission file | ['manifest_tiles.csv']
+PASS   the only manifest it reads is the tile manifest | ['manifest_tiles.csv']
+PASS   the watched pass really did read something (the spy is armed) | ['manifest_tiles.csv']
+PASS   no ridge, projection, EMD or nested-CV entry point fired | []
+PASS   the patch list was not empty (the leg is armed on real symbols) | ['emd_pair', 'fit_predict', 'labels_matrix', 'nested_predict', 'no_holdout_control_score', 'oracle_sweep', 'project', 'soil_from_images']
+PASS   m7a_data imports only manifest/frame handling, the two local modules and the stdlib | []
+PASS   m7a_data adds nothing to the spatial_features namespace | []
+PASS   no sklearn, torch or model library is imported anywhere in the module | ['PIL', '__future__', 'contextlib', 'hashlib', 'json', 'numpy', 'os', 'pandas', 'pathlib', 'spatial_features', 'sys', 'transfer_eval', 'typing', 'warnings']
+PASS   image table is 162 rows x 5 columns (A1-A4 + sample_id) | (162, 5)
+PASS   soil table is 34 rows x 4 columns | (34, 4)
+PASS   tile census frame is 1946 rows x 4 statistics | (1946, 15)
+PASS   every tile carries all four keys
+PASS   aggregation is image_block then soil_block over the same rows the census counted
+PASS   no assembled image or soil cell is NaN, inf or -inf | non-finite cells: 0
+PASS   every NaN cell in the tile matrix sits in a row with a recorded reason | NaN cells: 0
+PASS   every non-ok tile record carries a reason string
+PASS   no camera-derived column name anywhere in the assembly or the artifacts | []
+PASS   no tile-position column reaches the design
+PASS   data/tile_census.csv exists | C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\Model 7\Approach A\data\tile_census.csv
+PASS   data/census.json exists | C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\Model 7\Approach A\data\census.json
+PASS   census.json is strict JSON (no NaN/Infinity tokens)
+PASS   tile_census.csv has one row per materialised tile | 1946
+PASS   tile_census.csv tile paths are unique
+PASS   tile_census.csv carries the required columns | []
+PASS   census.json field: total_tiles | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: successful_tiles | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: tiles_with_any_nan | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: degenerate_tiles | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: invalid_calls | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: per_key | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: warnings_count | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: errors_count | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: extreme_outlier | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: finiteness | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: non_finite_tiles | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   census.json field: warnings_by_stage | ['aborted', 'camera_columns_present', 'columns', 'degenerate_examples', 'degenerate_tiles', 'determinism_hashes', 'error_records', 'errors_count', 'extreme_outlier', 'finiteness', 'generated_by', 'image_percentiles', 'images', 'images_by_split', 'invalid_calls', 'nan_key_tiles', 'nan_report', 'non_finite_tiles', 'normalized_ppm_values', 'per_key', 'per_status', 'runtime', 'scrambled', 'seed', 'soil_percentiles', 'soils', 'successful_tiles', 'task', 'test_soils', 'tile_w_mm', 'tiles_by_split', 'tiles_with_any_nan', 'total_tiles', 'train_soils', 'warning_records', 'warnings_by_stage', 'warnings_count']
+PASS   per_key A1 has ['nan_count', 'inf_count', 'nonfinite_count', 'min', 'p5', 'median', 'p95', 'max'] | ['inf_count', 'max', 'median', 'min', 'n_finite', 'nan_count', 'nonfinite_count', 'p5', 'p95']
+PASS   per_key A2 has ['nan_count', 'inf_count', 'nonfinite_count', 'min', 'p5', 'median', 'p95', 'max'] | ['inf_count', 'max', 'median', 'min', 'n_finite', 'nan_count', 'nonfinite_count', 'p5', 'p95']
+PASS   per_key A3 has ['nan_count', 'inf_count', 'nonfinite_count', 'min', 'p5', 'median', 'p95', 'max'] | ['inf_count', 'max', 'median', 'min', 'n_finite', 'nan_count', 'nonfinite_count', 'p5', 'p95']
+PASS   per_key A4 has ['nan_count', 'inf_count', 'nonfinite_count', 'min', 'p5', 'median', 'p95', 'max'] | ['inf_count', 'max', 'median', 'min', 'n_finite', 'nan_count', 'nonfinite_count', 'p5', 'p95']
+PASS   total_tiles is the frozen 1946 | 1946
+PASS   census.json also reports the assembled level: image_percentiles | ['A1', 'A2', 'A3', 'A4']
+PASS   census.json also reports the assembled level: soil_percentiles | ['A1', 'A2', 'A3', 'A4']
+PASS   the artifact records the schema it assembled | {'image_table': ['A1', 'A2', 'A3', 'A4', 'sample_id'], 'soil_table': ['A1', 'A2', 'A3', 'A4'], 'tile_census': ['tile_path', 'sample_id', 'split', 'normalized_ppm', 'A1', 'A2', 'A3', 'A4', 'status', 'A1_nan', 'A2_nan', 'A3_nan', 'A4_nan', 'n_nan', 'reason']}
+PASS   the artifact records that no camera column was left in place | []
+PASS   no census row carries the invalid_call status (one would have aborted the run) | {'ok': 1946}
+PASS   successful + any-NaN tiles partition the corpus | 1946 + 0 = 1946
+PASS   degenerate tiles are a subset of the any-NaN tiles | 0 of 0
+PASS   degenerate_tiles equals the degenerate status count | {'ok': 1946}
+PASS   nan_keys tiles equal any-NaN minus whole-tile degeneracies
+PASS   the CSV status column reproduces the aggregate | {'ok': 1946}
+PASS   per_key A1 nan_count matches the CSV tally | 0 vs 0
+PASS   per_key A1 counts NaN and inf separately and adds them honestly | {'nan_count': 0, 'inf_count': 0, 'nonfinite_count': 0}
+PASS   per_key A1 has no inf at all and its finite count is complete | finite 1946 nan 0
+PASS   per_key A1 percentiles are the measured ones | reported [-1.0946915263579609, -0.5067608847953292, -0.18858256244815666, -0.05183426790418756, -0.0068847882097270345] measured [-1.09469153, -0.50676088, -0.18858256, -0.05183427, -0.00688479]
+PASS   per_key A1 ordering min <= p5 <= median <= p95 <= max
+PASS   per_key A2 nan_count matches the CSV tally | 0 vs 0
+PASS   per_key A2 counts NaN and inf separately and adds them honestly | {'nan_count': 0, 'inf_count': 0, 'nonfinite_count': 0}
+PASS   per_key A2 has no inf at all and its finite count is complete | finite 1946 nan 0
+PASS   per_key A2 percentiles are the measured ones | reported [0.17056374272533628, 0.4843145384327253, 1.0004813523569043, 2.0921221114791355, 9.227945396624575] measured [0.17056374, 0.48431454, 1.00048135, 2.09212211, 9.2279454]
+PASS   per_key A2 ordering min <= p5 <= median <= p95 <= max
+PASS   per_key A3 nan_count matches the CSV tally | 0 vs 0
+PASS   per_key A3 counts NaN and inf separately and adds them honestly | {'nan_count': 0, 'inf_count': 0, 'nonfinite_count': 0}
+PASS   per_key A3 has no inf at all and its finite count is complete | finite 1946 nan 0
+PASS   per_key A3 percentiles are the measured ones | reported [0.015625, 0.015625, 0.0625, 0.38281250000000006, 0.7968750000000001] measured [0.015625, 0.015625, 0.0625, 0.3828125, 0.796875]
+PASS   per_key A3 ordering min <= p5 <= median <= p95 <= max
+PASS   per_key A4 nan_count matches the CSV tally | 0 vs 0
+PASS   per_key A4 counts NaN and inf separately and adds them honestly | {'nan_count': 0, 'inf_count': 0, 'nonfinite_count': 0}
+PASS   per_key A4 has no inf at all and its finite count is complete | finite 1946 nan 0
+PASS   per_key A4 percentiles are the measured ones | reported [-0.01341652388555653, -0.0036111754859730893, 0.003751905622288443, 0.0197406224300148, 0.03860782486078168] measured [-0.01341652, -0.00361118, 0.00375191, 0.01974062, 0.03860782]
+PASS   per_key A4 ordering min <= p5 <= median <= p95 <= max
+PASS   no warning was emitted during the real pass, tiles and aggregation alike | []
+PASS   census.json warnings_count equals what the pass recorded | 0 vs 0
+PASS   no error was recorded (an error would have aborted the pass) | []
+PASS   the artifact reports the warning tally per stage it instrumented | {'tiles': 0, 'image_block': 0, 'soil_block': 0}
+PASS   every instrumented stage of the real pass reported zero warnings | {'tiles': 0, 'image_block': 0, 'soil_block': 0}
+PASS   the aggregation sink records the warnings the aggregation emits | 3 recorded
+PASS   the recorded warnings are the real numpy/pandas notices, not a summary | {'RuntimeWarning'}
+PASS   every recorded warning names the stage it came from | ['image_block', 'image_block', 'image_block']
+PASS   a warning from aggregation is attributed to the image being aggregated | [{'stage': 'image_block', 'tile_path': None, 'row': None, 'parent_image_path': 'i1.png', 'sample_id': 'S1', 'category': 'RuntimeWarning', 'message': 'image_bloc
+PASS   the warning message is kept, not just counted | ['image_block: A2 is NaN in every one of 2', 'image_block: A3 is NaN in every one of 2']
+PASS   the aggregation still returns the row an all-NaN column entitles it to | [{'A1': -0.03481426269145082, 'A2': nan, 'A3': nan, 'A4': nan, 'sample_id': 'S1'}]
+PASS   the sink restored the process showwarning on exit | <function showwarning at 0x000001FACE187270>
+PASS   the second aggregation stage is instrumented too | ['soil_block', 'soil_block', 'soil_block']
+PASS   soil_block over an all-NaN column also returns NaN, not a substitute | {'S1': {'A1': -0.03481426269145082, 'A2': nan, 'A3': nan, 'A4': nan}}
+PASS   the report surface counts aggregation warnings, so warnings: 0 can be false | {'meaning': 'a value that is NaN or +-inf; *_tiles counts tiles carrying at least one, *_cells and per-key tallies count values', 'n_tiles': 0, 'degenerate_mask': 0, 'non_finite': 0, 'tiles_with_nan':
+PASS   the report splits the tally by stage | {'tiles': 0, 'image_block': 3, 'soil_block': 3}
+PASS   a warning raised inside the tile loop is recorded against its tile | [{'stage': 'tiles', 'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2)__x28_y37__t256.png', 'row': 83, 'parent_image_path': None,
+PASS   the tile warning is attributed to the tile that produced it | [{'stage': 'tiles', 'tile_path': 'data/tiles/test/Airbus_BS10_4bis7/Airbus_BS10_4bis7__iPhone16_HPC_Airbus BS10-4bis7 (2)__x28_y37__t256.png', 'row': 83, 'paren
+PASS   the forced warning did not become a row or an error | [{'values': {'A1': -0.15380346441376674, 'A2': 0.6787932868252777, 'A3': 0.09375, 'A4': -0.0015497186383289785}, 'status
+PASS   the census tally would have failed on that warning | {'meaning': 'a value that is NaN or +-inf; *_tiles counts tiles carrying at least one, *_cells and per-key tallies count values', 'n_tiles': 1, 'degenerate_mask
+PASS   assembly passes the recording context to BOTH aggregation stages | ['image_block', 'soil_block']
+PASS   the assembly's own warning tally is non-empty when aggregation warns | 2 recorded, tally 2
+PASS   the assembly's stage tally attributes the warnings where they came from | {'tiles': 0, 'image_block': 1, 'soil_block': 1}
+PASS   an aggregation warning is attributed to a soil, not to a tile row | [{'stage': 'image_block', 'tile_path': None, 'row': None, 'parent_image_path': 'data/testing_down/Airbus_BS10_4bis7/iPhone16_HPC_Airbus BS10-4bis7 (2).png', 'sample_id': 'Airbus BS
+PASS   the warnings from this probe never reached the published census | 0
+PASS   an ordinary pass records no warning | []
+PASS   the pass leaves warnings.showwarning exactly as it found it | <function showwarning at 0x000001FACE187270>
+PASS   outside the pass a warning behaves normally instead of being captured | ['control notice']
+PASS   the absolute rule flags only the high member of this column | 1
+PASS   the log rule flags both tails of a positive key | 2
+PASS   a one-sided diagnosis is recorded so the report says which rule saw what
+PASS   a column whose only extreme value is LOW is invisible to the absolute rule | max |z| 4.745
+PASS   the log rule catches the low outlier the absolute rule cannot reach | 1
+PASS   the absolute rule ranks that low value under its own threshold, so it stayed invisible | max |z| 4.745
+PASS   the same value is far past the threshold in multiplicative terms | max log |z| 33.81339051904075
+PASS   a key straddling zero reports the log rule as not applicable rather than inventing one | {'n_values': 5, 'n_finite': 5, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': 1.0, 'mad_is_zero': False, 'n_distinct': 5, 'median': 0.0, 'count_beyond_10_mad': 
+PASS   a key straddling zero still gets the absolute rule | {'n_values': 5, 'n_finite': 5, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': 1.0, 'mad_is_zero': False, 'n_distinct': 5, 'median': 0.0, 'count_beyond_10_mad': 
+PASS   a strictly negative key is measured on the log of its magnitude | {'n_values': 6, 'n_finite': 6, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': 0.050000000000000044, 'mad_is_zero': False, 'n_distinct': 6, 'median': -1.01, 'cou
+PASS   the log rule flags the near-zero member of a negative key | 2
+PASS   a strictly positive key says it took the log of the value itself | value
+PASS   a key measured on its magnitude says so, so the report cannot be misread | the key is strictly negative, so this look is on the MAGNITUDE (log of |x|): a second-order reading of how far apart the
+PASS   the multiplicative note is present exactly where the rule is applicable | [('value', True), ('value', True), (None, False), ('abs', True)]
+PASS   a key with no finite value keeps the whole field set, not a shorter dict | []
+PASS   an all-non-finite key reports itself as having no opinion | {'n_values': 2, 'n_finite': 0, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': None, 'mad_is_zero': False, 'n_distinct': 0, 'median': None, 'count_beyond_10_mad'
+PASS   a zero robust scale is named, not silently counted as clean | {'n_values': 40, 'n_finite': 40, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': 0.0, 'mad_is_zero': True, 'n_distinct': 1, 'median': 7.0, 'c
+PASS   a zero robust scale yields no absolute count, not a zero count | None
+PASS   a zero robust scale also yields no log count | None
+PASS   the artifact says so in words the reader cannot miss | MAD is zero, so |value - median| / MAD has no scale: a zero count here would be not a claim of clean
+PASS   a column whose MAD happens to be zero but which has one distinct value flags nothing and says why | {'n_values': 10, 'n_finite': 10, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': 0.0, 'mad_is_zero': True, 'n_distinct': 2, 'median': 1.0, 'count_beyond_10_mad':
+PASS   the outlier block names its rule | {'mad_z_threshold': 10.0, 'magnitude_floor': 1000000.0}
+PASS   the block states that the same threshold drives the absolute and the log rule | {'mad_z_threshold': 10.0, 'log_z_threshold': 10.0}
+PASS   outlier block complete for A1 | ['count_beyond_10_mad', 'count_beyond_10_mad_log', 'interpretation', 'log_note', 'log_of', 'log_two_sided_applicable', 'log_z_threshold', 'mad', 'mad_is_zero', 'mad_z_threshold', 'magnitude_floor', 'max_abs_value', 'max_abs_z', 'max_abs_z_log', 'median', 'n_abs_above_1e6', 'n_distinct', 'n_finite', 'n_values', 'whole_distribution_above_1e6']
+PASS   no tile value for A1 reaches 1e6 in magnitude (the definitions bound it far below) | max|x| 1.09469  n>1e6 0
+PASS   the log rule reports which scale it used for A1 | abs
+PASS   A1 is one-signed, so both tails were examined | 0
+       outlier report A1: mad 0.0851785, beyond-10MAD 1 (log 0), max |z| 10.638 (log 6.897)
+PASS   outlier block complete for A2 | ['count_beyond_10_mad', 'count_beyond_10_mad_log', 'interpretation', 'log_note', 'log_of', 'log_two_sided_applicable', 'log_z_threshold', 'mad', 'mad_is_zero', 'mad_z_threshold', 'magnitude_floor', 'max_abs_value', 'max_abs_z', 'max_abs_z_log', 'median', 'n_abs_above_1e6', 'n_distinct', 'n_finite', 'n_values', 'whole_distribution_above_1e6']
+PASS   no tile value for A2 reaches 1e6 in magnitude (the definitions bound it far below) | max|x| 9.22795  n>1e6 0
+PASS   the log rule reports which scale it used for A2 | value
+PASS   A2 is one-signed, so both tails were examined | 2
+       outlier report A2: mad 0.199709, beyond-10MAD 27 (log 2), max |z| 41.197 (log 11.013)
+PASS   outlier block complete for A3 | ['count_beyond_10_mad', 'count_beyond_10_mad_log', 'interpretation', 'log_note', 'log_of', 'log_two_sided_applicable', 'log_z_threshold', 'mad', 'mad_is_zero', 'mad_z_threshold', 'magnitude_floor', 'max_abs_value', 'max_abs_z', 'max_abs_z_log', 'median', 'n_abs_above_1e6', 'n_distinct', 'n_finite', 'n_values', 'whole_distribution_above_1e6']
+PASS   no tile value for A3 reaches 1e6 in magnitude (the definitions bound it far below) | max|x| 0.796875  n>1e6 0
+PASS   the log rule reports which scale it used for A3 | value
+PASS   A3 is one-signed, so both tails were examined | 0
+       outlier report A3: mad 0.046875, beyond-10MAD 38 (log 0), max |z| 15.667 (log 3.672)
+PASS   outlier block complete for A4 | ['count_beyond_10_mad', 'count_beyond_10_mad_log', 'interpretation', 'log_note', 'log_of', 'log_two_sided_applicable', 'log_z_threshold', 'mad', 'mad_is_zero', 'mad_z_threshold', 'magnitude_floor', 'max_abs_value', 'max_abs_z', 'max_abs_z_log', 'median', 'n_abs_above_1e6', 'n_distinct', 'n_finite', 'n_values', 'whole_distribution_above_1e6']
+PASS   no tile value for A4 reaches 1e6 in magnitude (the definitions bound it far below) | max|x| 0.0386078  n>1e6 0
+PASS   the log rule reports which scale it used for A4 | None
+       outlier report A4: mad 0.00423312, beyond-10MAD 0 (log None), max |z| 8.234 (log n/a)
+PASS   the soil-level block carries the same two-sided report for A1 | {'n_values': 34, 'n_finite': 34, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': 0.02306515166763487, 'mad_is_zero': Fals
+PASS   the soil-level block carries the same two-sided report for A2 | {'n_values': 34, 'n_finite': 34, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': 0.038096615723329896, 'mad_is_zero': Fal
+PASS   the soil-level block carries the same two-sided report for A3 | {'n_values': 34, 'n_finite': 34, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': 0.0234375, 'mad_is_zero': False, 'n_dist
+PASS   the soil-level block carries the same two-sided report for A4 | {'n_values': 34, 'n_finite': 34, 'mad_z_threshold': 10.0, 'log_z_threshold': 10.0, 'magnitude_floor': 1000000.0, 'mad': 0.0017985671798440572, 'mad_is_zero': Fa
+PASS   nothing was clamped, transformed or winsorised: the artifact holds the raw numbers the pass computed | rows 1946 vs 1946, max |artifact - memory| 0
+PASS   the diagnostic did not filter rows either: every tile is still in the artifact | 1946
+PASS   the diagnostic did not transform the columns it measured: percentiles still match | {'A1': -0.18858256244815666, 'A2': 1.0004813523569043, 'A3': 0.0625, 'A4': 0.003751905622288443}
+PASS   a planted NaN in an artifact is caught by the strict loader | ValueError
+PASS   a planted Infinity is caught too
+PASS   the writer refuses to launder a non-finite into null
+PASS   the writer refuses to launder a NaN either
+PASS   _json_safe still converts the types JSON genuinely cannot hold
+PASS   an inf in a nested report is located by path | ['$.a.b[1]']
+PASS   a NaN in a named field is located by name | ['$.per_key.A2.median']
+PASS   a clean aggregate yields no paths | []
+PASS   None is not treated as non-finite (it is the registered empty answer)
+PASS   the tampered aggregate is the case the guard exists for | ['$.per_key.A2.median']
+PASS   publishing an aggregate with a NaN raises instead of sanitising it | ValueError
+PASS   the failed publish wrote nothing at all | no directory
+PASS   the real aggregate passes the same guard | no exception
+PASS   a dry publish leaves the artifacts exactly as they were | ['census.json', 'image_features_m7a.csv', 'soil_features_m7a.csv', 'tile_census.csv']
+PASS   a clean assembly passes the frame guard | None
+PASS   an +-inf in the tile frame stops the publish | tile frame carries 1 +-inf cell(s); no artifact is written
+PASS   a NaN in the image design frame stops the publish | the image design frame carries 1 NaN cell(s); a fitted design may not hold one, and the median path would have warned about it
+PASS   a NaN in the soil design frame stops the publish
+PASS   a NaN the pass counted as a degenerate key is still allowed to be published | None
+PASS   a NaN filed as an ordinary statistic aborts the publish instead of vanishing | 1 tile(s) hold a non-finite value the pass filed as neither degenerate nor reasoned: t0
+PASS   the guard reaches the tile path of the offending row, not just a count | 1 tile(s) hold a non-finite value the pass filed as neither degenerate nor reasoned: t0
+PASS   an image whose every tile is degenerate refuses the whole publish, rather than writing a design frame a rank-3 fit cannot consume | the image design frame carries 4 NaN cell(s); a fitted design may not hold one, and the median path would have warned about it
+PASS   and that refusal counts the cells it objecting to, so nothing is silently discarded | the image design frame carries 4 NaN cell(s); a fitted design may not hold one, and the median path would have warned about it
+PASS   the aggregate alone shows nothing wrong with the broken assembly | []
+PASS   publish() itself refuses a frame-only defect | ValueError
+PASS   the refused frame-only publish created nothing | no directory
+PASS   the same call on the real assembly is not refused | no exception
+PASS   no tile cell is +-inf | 0 inf cells
+PASS   no image or soil cell is +-inf
+PASS   every tile cell that is not finite is a NaN, and there are none on this corpus | 0 non-finite, 0 NaN
+PASS   the artifact states once what non-finite means here | a value that is NaN or +-inf; *_tiles counts tiles carrying at least one, *_cells and per-key tallies count values
+PASS   the artifact reports the tile-level cell counts it measured | {'cells': 7784, 'nan_cells': 0, 'inf_cells': 0, 'non_finite_cells': 0, 'tiles_with_nonfinite': 0}
+PASS   the artifact reports the image and soil levels too
+PASS   the published design is entirely finite, at every level | {'meaning': 'a value that is NaN or +-inf; *_tiles counts tiles carrying at least one, *_cells and per-key tallies count values', 'tile': {'cells': 7784, 'nan_cells': 0, 'inf_cells': 0, 'non_finite_cells': 0, 'tiles_with_nonfinite': 0}, 'image': {'cells': 648, 'nan_cells': 0, 'inf_cells': 0, 'non_finite_cells': 0, 'tiles_with_nonfinite': 0}, 'soil': {'cells': 136, 'nan_cells': 0, 'inf_cells': 0, 'non_finite_cells': 0, 'tiles_with_nonfinite': 0}}
+PASS   per_key A1: nonfinite_count is NaN plus inf, not one of them alone | {'nan_count': 0, 'inf_count': 0, 'nonfinite_count': 0}
+PASS   per_key A2: nonfinite_count is NaN plus inf, not one of them alone | {'nan_count': 0, 'inf_count': 0, 'nonfinite_count': 0}
+PASS   per_key A3: nonfinite_count is NaN plus inf, not one of them alone | {'nan_count': 0, 'inf_count': 0, 'nonfinite_count': 0}
+PASS   per_key A4: nonfinite_count is NaN plus inf, not one of them alone | {'nan_count': 0, 'inf_count': 0, 'nonfinite_count': 0}
+PASS   report non_finite counts TILES with at least one non-finite key | 0 vs 0
+PASS   report non_finite_cells counts CELLS, separately | 0
+PASS   per-key nonfinite tallies sum to the cell count | {'A1': 0, 'A2': 0, 'A3': 0, 'A4': 0}
+PASS   the aggregate uses the same two names with the same two meanings | 0
+PASS   nan_rate keeps the brief's formula, the non-finite tile fraction, and says so beside it | nan_rate 0.0 nan_only_rate 0.0
+PASS   a corpus with no NaN has both rates at zero, and they are different numbers to count | {'nan_cells': 0, 'non_finite_cells': 0, 'tiles_with_nan': 0, 'non_finite': 0}
+PASS   the tile-level count of NaN keys is still reported under its own name | 0
+PASS   NAN_REPORT carries the meaning string so a reader cannot guess it | {'meaning': 'a value that is NaN or +-inf; *_tiles counts tiles carrying at least one, *_cells and per-key tallies count values', 'n_tiles': 1946, 'degenerate_mask': 0, 'non_finite': 0, 'tiles_with_na
+PASS   with a NaN tile and an inf tile, non_finite counts tiles carrying EITHER (3 fields) | {'meaning': 'a value that is NaN or +-inf; *_tiles counts tiles carrying at least one, *_cells and per-key tallies count values', 'n_tiles': 3, 'degenerate_mask': 0, 'non_finite': 2, 'tiles_with_nan':
+PASS   while tiles_with_nan and nan_cells see only the NaN | {'meaning': 'a value that is NaN or +-inf; *_tiles counts tiles carrying at least one, *_cells and per-key tallies count values', 'n_tiles': 3, 'degenerate_mask': 0, 'non_finite': 2, 'tiles_with_nan':
+PASS   per_key_nan counts the keys the pass FILED as undefined, which is the nan_keys record | {'A1': 0, 'A2': 1, 'A3': 1, 'A4': 0}
+PASS   an inf can only reach that field through a fabricated record, because a real tile is either measured, refused as degenerate, or refused as an invalid call | the degenerate tile returned instead of refusing
+PASS   the two rates are different numbers when the two conditions differ | nan_rate 0.6666666666666666 nan_only_rate 0.3333333333333333
+PASS   the whole-tile degeneracy is still counted by its own field, not by a rate | 0
+PASS   NAN_REPORT keeps the brief's field n_tiles | ['degenerate_mask', 'invalid_calls', 'meaning', 'n_tiles', 'nan_cells', 'nan_only_rate', 'nan_rate', 'non_finite', 'non_finite_cells', 'non_finite_rate', 'per_key_nan', 'per_key_nonfinite', 'scrambled', 'seed_base', 'tiles_with_nan', 'warnings', 'warnings_by_stage']
+PASS   NAN_REPORT keeps the brief's field degenerate_mask | ['degenerate_mask', 'invalid_calls', 'meaning', 'n_tiles', 'nan_cells', 'nan_only_rate', 'nan_rate', 'non_finite', 'non_finite_cells', 'non_finite_rate', 'per_key_nan', 'per_key_nonfinite', 'scrambled', 'seed_base', 'tiles_with_nan', 'warnings', 'warnings_by_stage']
+PASS   NAN_REPORT keeps the brief's field non_finite | ['degenerate_mask', 'invalid_calls', 'meaning', 'n_tiles', 'nan_cells', 'nan_only_rate', 'nan_rate', 'non_finite', 'non_finite_cells', 'non_finite_rate', 'per_key_nan', 'per_key_nonfinite', 'scrambled', 'seed_base', 'tiles_with_nan', 'warnings', 'warnings_by_stage']
+PASS   NAN_REPORT keeps the brief's field nan_rate | ['degenerate_mask', 'invalid_calls', 'meaning', 'n_tiles', 'nan_cells', 'nan_only_rate', 'nan_rate', 'non_finite', 'non_finite_cells', 'non_finite_rate', 'per_key_nan', 'per_key_nonfinite', 'scrambled', 'seed_base', 'tiles_with_nan', 'warnings', 'warnings_by_stage']
+PASS   NAN_REPORT keeps the brief's field per_key_nan | ['degenerate_mask', 'invalid_calls', 'meaning', 'n_tiles', 'nan_cells', 'nan_only_rate', 'nan_rate', 'non_finite', 'non_finite_cells', 'non_finite_rate', 'per_key_nan', 'per_key_nonfinite', 'scrambled', 'seed_base', 'tiles_with_nan', 'warnings', 'warnings_by_stage']
+PASS   NAN_REPORT keeps the brief's field invalid_calls | ['degenerate_mask', 'invalid_calls', 'meaning', 'n_tiles', 'nan_cells', 'nan_only_rate', 'nan_rate', 'non_finite', 'non_finite_cells', 'non_finite_rate', 'per_key_nan', 'per_key_nonfinite', 'scrambled', 'seed_base', 'tiles_with_nan', 'warnings', 'warnings_by_stage']
+PASS   NAN_REPORT keeps the brief's field warnings | ['degenerate_mask', 'invalid_calls', 'meaning', 'n_tiles', 'nan_cells', 'nan_only_rate', 'nan_rate', 'non_finite', 'non_finite_cells', 'non_finite_rate', 'per_key_nan', 'per_key_nonfinite', 'scrambled', 'seed_base', 'tiles_with_nan', 'warnings', 'warnings_by_stage']
+PASS   NAN_REPORT n_tiles is the corpus | 1946
+PASS   NAN_REPORT degenerate_mask is the whole-tile count | 0
+PASS   NAN_REPORT non_finite is the non-finite TILE count, the one meaning used here | 0
+PASS   NAN_REPORT nan_rate is the brief's non-finite tile fraction | 0.0
+PASS   NAN_REPORT nan_only_rate is the NaN-tile fraction the name describes | 0.0
+PASS   NAN_REPORT per-key NaN tallies match the artifact | {'A1': 0, 'A2': 0, 'A3': 0, 'A4': 0}
+PASS   NAN_REPORT per-key non-finite tallies are cell counts, not tile counts | {'A1': 0, 'A2': 0, 'A3': 0, 'A4': 0}
+PASS   NAN_REPORT warnings is the whole-pass tally across all three stages | {'tiles': 0, 'image_block': 0, 'soil_block': 0}
+PASS   NAN_REPORT counts no invalid call, because one would have aborted the pass | 0
+PASS   data/image_features_m7a.csv exists | C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\Model 7\Approach A\data\image_features_m7a.csv
+PASS   data/soil_features_m7a.csv exists | C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\Model 7\Approach A\data\soil_features_m7a.csv
+PASS   the persisted image frame has the tested aggregation's rows | 162 vs 162
+PASS   the persisted soil frame has the tested aggregation's rows | 34 vs 34
+PASS   the persisted image frame equals the in-memory one bit for bit
+PASS   the persisted soil frame equals the in-memory one bit for bit
+PASS   the persisted frames carry no camera, ppm or position column | ['A1', 'A2', 'A3', 'A4', 'sample_id', 'A1', 'A2', 'A3', 'A4']
+PASS   the soil frame carries exactly A1-A4 | ['A1', 'A2', 'A3', 'A4']
+PASS   every published artifact is hashed by the run that wrote it | ['census.json', 'image_features_m7a.csv', 'soil_features_m7a.csv', 'tile_census.csv']
+PASS   the hashes match the files on disk, byte for byte | all four sha256 agree
+PASS   every published artifact is listed with its size | {'tile_census.csv': 390662, 'census.json': 13537, 'image_features_m7a.csv': 21594, 'soil_features_m7a.csv': 2723}
+PASS   re-publishing the same assembly reproduces all four artifacts byte for byte | {}
+PASS   the probe publish wrote the same four filenames and nothing else | ['census.json', 'image_features_m7a.csv', 'soil_features_m7a.csv', 'tile_census.csv']
+PASS   the probe directory is cleaned up, so a re-run cannot read a stale frame | C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images\Model 7\Approach A\scratch\frame_probe
+PASS   the scrambled path runs on real tiles and returns all four keys
+PASS   scrambling changes the statistics (it is not a no-op) | [1.1968, 1.2047, 0.8273]
+PASS   the scrambled path is deterministic in the recorded seed
+PASS   the seed is the manifest row index plus the base, per tile | [90084, 90085, 90086]
+PASS   the census itself ran unscrambled
+PASS   spatial_features imports no dataframe library | ['__future__', 'numpy', 'pathlib', 'preprocess', 'sys', 'typing', 'warnings']
+PASS   no dataframe module is bound into spatial_features at runtime | []
+PASS   repo data/ is byte-for-byte untouched by the whole pass | before (2693, 1383612403, '3a658f9a5fe102f6') after (2693, 1383612403, '3a658f9a5fe102f6')
+PASS   only the four published artifacts live in Model 7/Approach A/data | ['census.json', 'image_features_m7a.csv', 'soil_features_m7a.csv', 'tile_census.csv']
+PASS   the second in-process pass reproduces the first, byte for byte | ('84e2b2c23e100b95e1b2b15e97933b81bde808b86602908676f002b97c54399e', '778990e14303980a83d688ae739efb5a57fe548d2fdc1b72a9f9718ed87184b0', '41dbbd7e729cee22183cacfcc6409eaa5d6037a390e7afe41265a5df75df3eb6') / ('84e2b2c23e100b95e1b2b15e97933b81bde808b86602908676f002b97c54399e', '778990e14303980a83d688ae739efb5a57fe548d2fdc1b72a9f9718ed87184b0', '41dbbd7e729cee22183cacfcc6409eaa5d6037a390e7afe41265a5df75df3eb6')
+PASS   the fresh interpreter exited 0
+PASS   the fresh interpreter reported the three vectors | M7A-HASH|84e2b2c23e100b95e1b2b15e97933b81bde808b86602908676f002b97c54399e|778990e14303980a83d688ae739efb5a57fe548d2fdc1b72a9f9718ed87184b0|41dbbd7e729cee22183cacfcc6409eaa5d6037a390e7afe41265a5df75df3eb6
+PASS   run 3 (fresh interpreter) equals run 1 and run 2 byte for byte | 
+       run1 ('84e2b2c23e100b95e1b2b15e97933b81bde808b86602908676f002b97c54399e', '778990e14303980a83d688ae739efb5a57fe548d2fdc1b72a9f9718ed87184b0', '41dbbd7e729cee22183cacfcc6409eaa5d6037a390e7afe41265a5df75df3eb6')
+       run2 ('84e2b2c23e100b95e1b2b15e97933b81bde808b86602908676f002b97c54399e', '778990e14303980a83d688ae739efb5a57fe548d2fdc1b72a9f9718ed87184b0', '41dbbd7e729cee22183cacfcc6409eaa5d6037a390e7afe41265a5df75df3eb6')
+       run3 ['84e2b2c23e100b95e1b2b15e97933b81bde808b86602908676f002b97c54399e', '778990e14303980a83d688ae739efb5a57fe548d2fdc1b72a9f9718ed87184b0', '41dbbd7e729cee22183cacfcc6409eaa5d6037a390e7afe41265a5df75df3eb6']
+PASS   the tile vector hash is not the image vector hash (three distinct vectors are hashed) | ('84e2b2c23e100b95e1b2b15e97933b81bde808b86602908676f002b97c54399e', '778990e14303980a83d688ae739efb5a57fe548d2fdc1b72a9f9718ed87184b0', '41dbbd7e729cee22183cacfcc6409eaa5d6037a390e7afe41265a5df75df3eb6')
+PASS   the rewritten tile_census.csv is byte-identical to the standalone census run | a9ca9e0103c13086 vs a9ca9e0103c13086
+PASS   all checks above passed | 0 of 324 failed
+
+==============================================================================
+M7-A TASK 3 CENSUS - 1946 materialised tiles, four frozen spatial statistics
+==============================================================================
+outcome (3) valid finite tile (all four keys) : 1946
+outcome (2) valid tile, degenerate statistic  : 0 with any NaN key
+    of which whole-tile TileDegenerate        : 0
+    of which NaN in one or more keys only     : 0
+outcome (1) invalid call (aborts the pass)    : 0
+status counts                                 : {'ok': 1946}
+images / soils (train soils)                  : 162 / 34 (24 train)
+split tiles                                   : {'train': 1541, 'test': 405}
+------------------------------------------------------------------------------
+key         nan  nonfinite          min           p5       median          p95          max
+A1            0          0    -1.094692    -0.506761    -0.188583    -0.051834    -0.006885
+A2            0          0     0.170564     0.484315     1.000481     2.092122     9.227945
+A3            0          0     0.015625     0.015625     0.062500     0.382813     0.796875
+A4            0          0    -0.013417    -0.003611     0.003752     0.019741     0.038608
+------------------------------------------------------------------------------
+EXTREME OUTLIERS (report only; nothing clamped, transformed or winsorised)
+  two rules: |x-median|/MAD (absolute) and the same rule on log|x| (multiplicative,
+  symmetric). A zero MAD or an inapplicable log rule is reported as itself.
+  tile  A1  MAD 0.0851785  abs>10MAD    1  max|z|   10.638 | log>10MAD    0  max|z|    6.897 (log abs) | max|x| 1.09469  whole dist > 1e6: False
+  tile  A2  MAD 0.199709   abs>10MAD   27  max|z|   41.197 | log>10MAD    2  max|z|   11.013 (log value) | max|x| 9.22795  whole dist > 1e6: False
+  tile  A3  MAD 0.046875   abs>10MAD   38  max|z|   15.667 | log>10MAD    0  max|z|    3.672 (log value) | max|x| 0.796875  whole dist > 1e6: False
+  tile  A4  MAD 0.00423312 abs>10MAD    0  max|z|    8.234 | log>10MAD None  max|z|      n/a (log None) | max|x| 0.0386078  whole dist > 1e6: False
+  soil  A1  MAD 0.0230652  abs>10MAD    0  max|z|    3.516 | log>10MAD    0  max|z|    4.868 (log abs) | max|x| 0.264916  whole dist > 1e6: False
+  soil  A2  MAD 0.0380966  abs>10MAD    0  max|z|    4.551 | log>10MAD    0  max|z|    4.202 (log value) | max|x| 1.17327  whole dist > 1e6: False
+  soil  A3  MAD 0.0234375  abs>10MAD    1  max|z|   18.083 | log>10MAD    0  max|z|    4.071 (log value) | max|x| 0.46875  whole dist > 1e6: False
+  soil  A4  MAD 0.00179857 abs>10MAD    0  max|z|    6.116 | log>10MAD None  max|z|      n/a (log None) | max|x| 0.0141592  whole dist > 1e6: False
+finiteness, measured on the arrays before anything was serialised
+  tile   cells   7784  NaN 0  inf 0  non-finite 0  (a value that is NaN or +-inf; *_tiles counts til)
+  image  cells    648  NaN 0  inf 0  non-finite 0  (a value that is NaN or +-inf; *_tiles counts til)
+  soil   cells    136  NaN 0  inf 0  non-finite 0  (a value that is NaN or +-inf; *_tiles counts til)
+assembled soil table, min / median / max (what a rank-3 fit would standardise)
+  A1  n 34  -0.264916  -0.184202  -0.103116
+  A2  n 34  0.892047  0.999912  1.17327
+  A3  n 34  0.015625  0.0449219  0.46875
+  A4  n 34  -0.000130927  0.00315997  0.0141592
+warnings during the real pass, by stage                : 0 {'tiles': 0, 'image_block': 0, 'soil_block': 0}
+errors recorded (any would abort)                     : 0
+non-finite tiles / cells                             : 0 / 0
+degenerate / NaN-key reasons              : none on this corpus
+determinism, three vectors per run
+  vectors: 1 = 1946 tiles, 2 = 162 images, 3 = 34 soils
+  run 1, this process      84e2b2c23e100b95 | 778990e14303980a | 41dbbd7e729cee22
+  run 2, this process      84e2b2c23e100b95 | 778990e14303980a | 41dbbd7e729cee22
+  run 3, fresh interpreter 84e2b2c23e100b95 | 778990e14303980a | 41dbbd7e729cee22
+  all three runs byte-identical : True
+  tile_census.csv sha256       : a9ca9e0103c13086e1d2d94ba87051ce3590755cb4e86dc818b9813b7c4299cb
+artifacts published (all four are byte-comparable between runs)
+  census.json                 13537 bytes  Model 7\Approach A\data\census.json
+  image_features_m7a.csv      21594 bytes  Model 7\Approach A\data\image_features_m7a.csv
+  soil_features_m7a.csv        2723 bytes  Model 7\Approach A\data\soil_features_m7a.csv
+  tile_census.csv            390662 bytes  Model 7\Approach A\data\tile_census.csv
+==============================================================================
+
+324 checks, 0 failed
+DATA_EXIT=0

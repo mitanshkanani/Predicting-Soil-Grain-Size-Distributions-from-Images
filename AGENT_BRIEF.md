@@ -1201,3 +1201,33 @@ Persistent memory (read it too; it is written for future sessions):
 - user:    `~/.qoder/memory/`
 Both have a `MEMORY.md` index. Memory is point-in-time — **verify against the repo before asserting**
 file paths, constants, or "X exists".
+
+---
+
+## 19. Model 7 registered — M7-A first, 2026-09-29
+
+The owner approved `research_map_1_2_5_6.md` as the evidence baseline, then approved the Model 7
+candidate boundary pass (`model7_preregistrations.md`) and gave the registration order.
+
+- **M7-A is registered as Model 7 / Experiment 1.** Folder `Model 7/Approach A/`: contract
+  `instructions.txt`, frozen spec `model_spec_m7a.md` (the approved pre-registration, relocated
+  verbatim — K = 4 statistics, alias-separability pre-gate, four controls, family-honest LOFO, G0
+  anchor **43.0217308796477** to 0.00e+00, G1 **>= 3.00 EMD**), plus `data/`, `scratch/`, `results/`.
+  No code exists yet; the plan comes before implementation and needs its own approval.
+- **M7-C stays pre-registered and unrun** (`model7_preregistrations.md` section 3). It becomes the
+  next experiment only if M7-A is rejected by its pre-gates or fails G1. Its primary arm is
+  selector-only `SEL-1SE`; the adaptive-penalty estimator is excluded from it because its learned
+  penalties fall below the frozen grid floor, which makes it a model-class change, not better
+  selection.
+- **M7-T stays suspended.** Ruling recorded in `Model 7/instructions.txt`: M5's closure is scoped to a
+  *mechanism* (camera adaptation / moment matching, including its transductive form), **not** to every
+  use of unlabeled test-image statistics — so the letter does not cover M7-T, but the "NOT dead"
+  sentence closes "adapting the features to the test distribution" in intent. That ambiguity is not
+  read as permission.
+- **M7-B and M7-E are not revived**, by instruction. M7-E additionally collides with the cancelled
+  "alternative classical regressors" row above and with the measured L1 null.
+- Standing conditions on the run: no tuning, feature expansion or post-hoc selection after seeing the
+  CV result; no submission unless the pre-registered criteria are satisfied; internal CV EMD and
+  external Kaggle EMD (**60.56167**) stay separate scales and are never compared arithmetically.
+
+Re-verify this section and the registration with `python scratch/check_m7_prereg.py` (64 checks).

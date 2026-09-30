@@ -1,0 +1,159 @@
+MODEL 7 - MODEL-LEVEL RECORD
+================================================================================
+Created 2026-09-29, immediately after research_map_1_2_5_6.md was approved as the
+evidence baseline and after the Model 7 candidate boundary pass recorded in
+model7_preregistrations.md.
+
+STATUS OF EVERY SHORTLIST CANDIDATE
+--------------------------------------------------------------------------------
+  M7-A  within-tile spatial organisation features
+        CLOSED 2026-09-30 as REFUTED-PRE-GATE. Tasks 1-6 ran; the alias-
+        separability pre-gate failed on its own registered rule, so no CV arm
+        was ever scored, no control beyond the gate's two placebos ran, and no
+        submission exists. Folder: Model 7/Approach A/
+  M7-C  selector-only alpha replacement (SEL-1SE)
+        PRE-REGISTERED, NOT RUNNING. Kept in model7_preregistrations.md section 3
+        with its thresholds fixed. It is evaluated only if M7-A is rejected by
+        its pre-gates or fails G1. Owner instruction: do not run it yet.
+  M7-B  monotone-by-construction CDF head
+        NOT REVIVED, by owner instruction. Frozen on the shortlist. Its premise
+        was checked and holds (monotonicity has only ever been imposed after the
+        fact by np.maximum.accumulate; no isotonic or constrained estimator
+        exists anywhere in the repository), and the adjacent evidence cuts
+        against it: the rank floors show post-projection 6.25 beats bare 7.35,
+        so the projection currently helps.
+  M7-E  tail-emphasising loss weighting
+        NOT REVIVED, by owner instruction. It collides with the cancelled
+        "alternative classical regressors (robust, boosted trees)" row in
+        AGENT_BRIEF.md section 12 and with the measured L1 null (41.22 against
+        41.15), which is the opposite-signed version of the same lever.
+  M7-T  transductive geometry from the 35 unlabeled test images
+        SUSPENDED. See the ruling below. Not killed by rule, not preregistered,
+        and explicitly NOT permitted to run.
+
+THE M5 CLOSURE BOUNDARY, RESOLVED AND RECORDED
+--------------------------------------------------------------------------------
+  Question asked: does Model 5's permanent closure cover ALL use of unlabeled
+  test-image statistics?
+
+  Answer: NO. All three records scope the closure to a mechanism, not to a data
+  source.
+
+    - AGENT_BRIEF.md section 12 closes "label-free camera adaptation (CORAL /
+      moment matching, incl. transductive use of the unlabeled test images)".
+    - Model 5 spec section 10 schedules no "follow-up alignment variant".
+    - Model 5/instructions.txt makes a re-run with a different alignment target
+      "a NEW pre-registered experiment requiring an explicit owner decision".
+
+  The distinction: Model 5 estimated a MAP taking the source feature distribution
+  onto the target's, by matching means and covariances, with camera-defined
+  directions, and re-mapped the inputs. M7-T proposed a fixed-rank subspace and
+  penalty geometry with no distributional matching and no camera identity. That
+  is outside the letter of the closure.
+
+  What cuts the other way: the same section 12 block states that the in-domain
+  headroom is not reachable "nor by adapting the features to the test
+  distribution (Model 5 tested that and closed)", and M7-T's motivation was
+  exactly to make the estimator fit the deployment distribution's geometry.
+
+  Disposition: M7-T is suspended, not preregistered. The ambiguity is not read as
+  permission. It returns only on an explicit owner ruling that the sentence meant
+  distribution matching specifically, and then only as a new pre-registered
+  experiment whose first clause is an inertness check - at 12 dimensions and rank
+  3 the train+test pooled subspace may be nearly identical to the train-only one,
+  which would make the arm structurally inert rather than merely null. The prize
+  is small in any case: the camera term measured by Model 5 is about 5.55 EMD.
+
+  Self-correction kept on the record: the first draft of this ruling answered
+  "yes, the closure covers it" and killed M7-T on the parenthetical alone. That
+  over-read all three records.
+
+WHAT MODEL 7 MAY NOT REPEAT
+--------------------------------------------------------------------------------
+  Model 5 closed because a mean-shift is annihilated by the head's StandardScaler
+  (zeros to 6.9e-15) and CORAL alignment was actively harmful (-8.748 EMD pooled,
+  inconsistent by direction). Model 2 closed because learned embeddings did not
+  beat the 12 features alone or fused, and its untrained `fr` arm posted the best
+  in-domain number (39.26) with the worst transfer number (83.94). Model 1 closed
+  having reached an in-domain floor near 39-41 with the best external result of
+  61.23560, later tied at 60.56167 by Model 2 E1.
+
+  The corrected bounds in research_map_1_2_5_6.md apply. In particular the leaky
+  1-NN bound is WITHDRAWN: honest local lookup scores 47.66 against the shipped
+  model's 43.02, so local/neighbour methods are worse than the model, and there
+  is no valid upper or lower bound on unused feature information at n = 24.
+
+THE SCALES, WHICH ARE NOT INTERCHANGEABLE
+--------------------------------------------------------------------------------
+  External Kaggle EMD : the host's score on real hidden soils. Current best
+                        60.56167 (Model 2 E1). The public set is a fixed 3 of 10
+                        soils, and the 95% band around a 3-soil mean is
+                        [21.7, 69.9], so no gain under roughly 25 EMD is
+                        externally confirmable.
+  Internal CV EMD     : family-honest cross-validation on the 24 labelled soils.
+                        Shipped anchor 43.0217308796477 (nested).
+  Never compare the two arithmetically. Scratch and run artifacts must keep them
+  on separate lines.
+
+RUN LOG - AMENDMENT A1, 2026-09-30 (supersedes the Task 5 INVALID-IMPLEMENTATION stop)
+--------------------------------------------------------------------------------
+  Task 5's verdict of INVALID-IMPLEMENTATION, recorded because the registered
+  rule measured a median alias curve gap of 56.0966 against Model 6-3's recorded
+  65.7, is SUPERSEDED. It was not an implementation defect.
+
+  Forensic reconstruction (scratch/reconstruct_m63_rule.py, 21 checks, 0
+  failures; original probe source recovered verbatim from the session transcript
+  into scratch/_m63_commands_verbatim.txt) establishes that 65.7 / 28.1 /
+  1.65 / 1.58 and 1.95 / 1.37 were printed by Model 6-3's own inline procedure:
+  worst-8 / best-8 groups, Euclidean nearest neighbour over all 23 other soils
+  with NO CV-family constraint, and five plus four hand-typed pairs for the
+  separability leg. The registered M7-A Task 5 rule is top-10 / remaining-14
+  WITH a required different CV family, so it measures a different pair set.
+
+  Therefore 65.7 is not a valid reproduction target for the registered rule, and
+  the requirement is removed by amendment to the pre-registration rather than by
+  adjusting any measurement. No neighbour definition was searched for in order to
+  make the historical number appear.
+
+  Task 5 now stands CLOSED on: top-10 share 61.195788% and worst-soil share
+  10.143224% reproduced within registered tolerances; 10 alias + 14 control pairs;
+  cross-family invariant holds; deterministic argmin verified; H038-G190 present;
+  determinism across two runs; artifact bytes unchanged.
+
+  UNCHANGED, and verified unchanged: the alias-pair selection rule, the groups,
+  the family constraint, every threshold, every control, G1-G7, the verdict
+  precedence, the A1-A4 definitions, and data/alias_pairs.csv (sha
+  250056df2ec9d9b110e850b8f83d802779d9af681e81d386bf7e6aa7e27fad33).
+
+VERDICT - M7-A : REFUTED-PRE-GATE (2026-09-30, Task 6 registered close step)
+--------------------------------------------------------------------------------
+  The alias-separability pre-gate failed, so Model 7 / Approach A closes here at
+  zero modelling cost, exactly as the pre-registration provided for. Tasks 7, 8
+  and 9 were not run. No CV arm, no gain, no bootstrap, no P-COLS, no P-SEL, no
+  fit, no prediction, no submission, no Kaggle upload exists.
+
+  Median separation of the frozen 10 alias pairs, in z units over the standardised design:
+    base12  existing 12 features .................. 0.6092662145916635
+    block16 12 + real A1-A4 ...................... 0.6819016912408908  (gain +0.07263547664922732)
+    rand16  12 + P-RAND, seed 90001 ............... 0.7224015189653787  (gain +0.11313530437371522)
+    shuf16  12 + P-SHUF, seed 90002 ............... 0.8756421132465049  (gain +0.26637589865484135)
+  Reported, not gate-relevant: the 14 control pairs move 0.47746876432619256 ->
+  0.6910281098505341 (gain +0.21355934552434153).
+
+  gate_passed = False because the registered rule requires the real block's gain to exceed BOTH
+  placebo gains, and +0.0726 is below +0.1131 and below +0.2664. Four appended columns inflate
+  RMS pair distance by construction; the noise blocks of identical dimensionality inflate it more,
+  so A1-A4 carry no alias-pair-specific information at soil-level aggregation. No rule, threshold,
+  pair set, seed or statistic was adjusted in response to this result.
+
+  Determinism: the gate ran in three cold interpreters (the checker's own subprocess leg, then two
+  registered runs). All fields matched exactly, with identical sorted-key JSON, and the pair table
+  stayed byte-identical before and after. Contract test: 53 checks, 0 failed.
+
+  Evidence: scratch/_m7a_gate_run.log, scratch/_m7a_task6_checker.log, Model 7/Approach A/
+  {alias_gate.py, check_alias_gate.py}.
+
+  NEXT REGISTERED BRANCH: M7-C, the selector-only alpha replacement (SEL-1SE) pre-registered in
+  model7_preregistrations.md section 3, whose thresholds are already fixed and which this contract
+  makes eligible now that M7-A is rejected at its pre-gate. It is NOT started; owner approval is
+  required.

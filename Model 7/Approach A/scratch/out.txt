@@ -1,0 +1,31 @@
+== LAG BREAKDOWN (finding 1) ==
+blobs      lags=127 both=127 single=  0 none=  0 nan_today=  0 first_single=- A3=0.398438
+stripe_x   lags=127 both=127 single=  0 none=  0 nan_today=  0 first_single=- A3=0.015625
+noise      lags=127 both=127 single=  0 none=  0 nan_today=  0 first_single=- A3=0.007812
+coarse16   lags=127 both=127 single=  0 none=  0 nan_today=  0 first_single=- A3=0.109375
+fine3      lags=126 both=126 single=  0 none=  0 nan_today=  0 first_single=- A3=0.023529
+ramp       lags=127 both=127 single=  0 none=  0 nan_today=  0 first_single=- A3=0.906250
+thin_band  lags=127 both=  2 single= 35 none= 90 nan_today= 90 first_single=3 A3=nan
+speck5     lags=127 both=  3 single=  0 none=124 nan_today=124 first_single=- A3=nan
+
+== SILL WINDOW / CROSSING ==
+blobs      win=12 tail_finite=12 nan_before_cross=0 cross_lag=51
+stripe_x   win=12 tail_finite=12 nan_before_cross=0 cross_lag=2
+noise      win=12 tail_finite=12 nan_before_cross=0 cross_lag=1
+coarse16   win=12 tail_finite=12 nan_before_cross=0 cross_lag=14
+fine3      win=12 tail_finite=12 nan_before_cross=0 cross_lag=3
+ramp       win=12 tail_finite=12 nan_before_cross=0 cross_lag=116
+thin_band  win=12 tail_finite= 0 nan_before_cross=None cross_lag=None
+speck5     win=12 tail_finite= 0 nan_before_cross=None cross_lag=None
+
+== A2 ZERO ENERGY (finding 2) ==
+_a2(zeros, all-True mask) = 1.0
+  profile lines: 64 dot(p,p) with p=prof-mean: 0.0
+_a2 on a random tile: 0.9183772748112088
+
+== AGGREGATION NON-FINITE (finding 3) ==
+image_block [inf, inf]       -> {'A1': nan, 'A2': 2.0, 'A3': 3.0, 'A4': 4.0} | raised=None | warnings=['RuntimeWarning: image_block: A1 is NaN in every one of 2']
+image_block [inf, 2.0]       -> {'A1': inf, 'A2': 2.0, 'A3': 3.0, 'A4': 4.0} | raised=None | warnings=[]
+soil_block [inf, inf]        -> {'A1': nan, 'A2': 2.0, 'A3': 3.0, 'A4': 4.0} | raised=None | warnings=['RuntimeWarning: soil_block: A1 is NaN in every one of 2 ']
+image_block [nan, nan]       -> {'A1': nan, 'A2': 2.0, 'A3': 3.0, 'A4': 4.0} | raised=None | warnings=['RuntimeWarning: image_block: A1 is NaN in every one of 2']
+image_block [-inf, 2.0]      -> {'A1': -inf, 'A2': 2.0, 'A3': 3.0, 'A4': 4.0} | raised=None | warnings=[]

@@ -1,0 +1,170 @@
+
+########## transcript line 11543  tool=Bash ##########
+cd "C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images" && timeout 1200 python - <<'PY'
+import numpy as np, pandas as pd, sys
+sys.path.insert(0,"Model 5/Model 5 Experiment 1")
+import transfer_eval as te
+DL=np.log10(np.array([0.002,0.0063,0.02,0.063,0.2,0.63,2,6.3,20,63,200]))
+F=list(te.FEATURES); IMG=te.image_features("."); ids,Y=te.labels_matrix(".")
+ft=pd.read_csv("Model 2/Model 2 Experiment 3/cv_families.csv"); FM=dict(zip(ft.sample_id.astype(str),ft.cv_family))
+X=te.soil_from_images(IMG).loc[ids,F].to_numpy(float); fam=np.array([FM[s] for s in ids]); fams=sorted(set(fam))
+def emd(a,b):
+    a=np.asarray(a,float).ravel();b=np.asarray(b,float).ravel();return float(np.trapezoid(np.abs(a-b),DL))
+errp={}
+for al in te.ALPHAS:
+    pf={}
+    for Fo in fams:
+        ho=np.array([i for i,f in enumerate(fam) if f==Fo]); ke=np.array([i for i,f in enumerate(fam) if f!=Fo])
+        P=te.fit_predict(X[ke],Y[ke],X[ho],al); pf[Fo]={i:emd(P[j],Y[i]) for j,i in enumerate(ho)}
+    errp[al]=pf
+e=pd.Series({ids[i]:v for Fo in fams for ba in [min({al:float(np.mean([x for G in [g for g in fams if g!=Fo] for x in errp[al][G].values()])) for al in te.ALPHAS}.values(),key=lambda _:0) or None] for i,v in errp[min({al:float(np.mean([x for G in [g for g in fams if g!=Fo] for x in errp[al][G].values()])) for al in te.ALPHAS},key=lambda al:float(np.mean([x for G in [g for g in fams if g!=Fo] for x in errp[al][G].values()]))))[Fo].items()})
+srt=e.sort_values(ascending=False)
+mu,sd=X.mean(0),X.std(0)+1e-12; Z=(X-mu)/sd
+d50=np.array([10**np.interp(50.,np.maximum(Y[i],np.linspace(1e-6,1,11)),DL) for i in range(24)])
+print("A) FEATURE ALIASING: nearest training neighbour in feature space, and how different its curve is")
+print("   %-7s %7s %8s %9s %10s   %s"%("soil","err","nn-feat-d","nn-EMD","D50 mm","verdict"))
+rows=[]
+for i,s in enumerate(ids):
+    dd=np.linalg.norm(Z-Z[i],axis=1); dd[i]=1e9; j=int(np.argmin(dd))
+    nd,ne=dd[j],emd(Y[j],Y[i]); rows.append((s,nd,ne))
+    if s in list(srt.index[:6])+list(srt.index[-3:]):
+        print("   %-7s %7.2f %8.2f %9.2f %10.4f   %s"%(s,e[s],nd,ne,d50[i],
+            "ALIASING: near neighbour, very different curve" if nd<2.0 and ne>25 else ("isolated in feature space" if nd>3 else "moderate")))
+R=pd.DataFrame(rows,columns=["soil","nnfeat","nnemd"]).set_index("soil")
+worst=list(srt.index[:8]); best=list(srt.index[-8:])
+print("\n   group medians: nn-feature-distance worst8 %.2f best8 %.2f | nn-curve-EMD worst8 %.1f best8 %.1f"%(
+    R.loc[worst,"nnfeat"].median(),R.loc[best,"nnfeat"].median(),R.loc[worst,"nnemd"].median(),R.loc[best,"nnemd"].median()))
+print("\nB) IDENTIFIABILITY CEILING: a 1-nearest-neighbour feature predictor (no model at all)")
+nn=[min((emd(Y[j],Y[i]) for j in range(24) if j!=i))]
+loo=[R.loc[s,"nnemd"] for s in ids]
+print("   LOO nearest-neighbour mean EMD %.2f  vs ridge model %.2f  vs train-median curve 82.62"%(np.mean(loo),e.mean()))
+print("   -> if 1-NN is close to the model, the features already carry about all they can carry;")
+print("      the remaining error is what THESE features cannot separate.")
+print("\nC) DO OTHER MODELS FAIL ON THE SAME SOILS? (E3's own per-soil CV errors)")
+q=pd.read_csv("Model 2/Model 2 Experiment 3/cv_per_soil.csv").set_index("sample_id")
+r1=q[["M1","dinov2@c256","fr@c256","fuse@c256"]].rank(axis=0)
+print("   Spearman rank correlation of per-soil error between model families:")
+for a,b in [("M1","dinov2@c256"),("M1","fr@c256"),("M1","fuse@c256"),("dinov2@c256","fr@c256")]:
+    print("      %-14s vs %-14s rho = %+.3f"%(a,b,r1[a].corr(r1[b],method="spearman")))
+print("   the 8 worst M1 soils, and where each sits in the other models' rankings (1=worst):")
+for s in worst:
+    print("      %-7s M1 %6.1f (rank %2d) | D %6.1f (rank %2d) | FR %6.1f (rank %2d)"%(
+        s,q.loc[s,"M1"],int(r1.loc[s,"M1"]),q.loc[s,"dinov2@c256"],int(r1.loc[s,"dinov2@c256"]),q.loc[s,"fr@c256"],int(r1.loc[s,"fr@c256"])))
+print("\nD) CROSS-CAMERA PATTERN (Model 5's validated NONE-arm per-soil errors)")
+p=pd.read_csv("Model 5/Model 5 Experiment 1/per_soil_transfer.csv"); n=p[p.arm=="NONE"]
+A=n[n.direction=="A"].set_index("sample_id").emd; B=n[n.direction=="B"].set_index("sample_id").emd
+print("   rho between the two camera directions' per-soil error: %+.3f  (a shared, soil-intrinsic problem)"%A.corr(B,method="spearman"))
+both=[s for s in A.index if s in B.index]
+print("   of the 8 worst in-domain soils, how many are also worst cross-camera: %d"%len(set(worst)&set(A.sort_values(ascending=False).index[:8])))
+PY
+
+########## transcript line 11551  tool=Bash ##########
+cd "C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images" && timeout 1200 python - <<'PY'
+import numpy as np, pandas as pd, sys
+sys.path.insert(0,"Model 5/Model 5 Experiment 1")
+import transfer_eval as te
+DL=np.log10(np.array([0.002,0.0063,0.02,0.063,0.2,0.63,2,6.3,20,63,200]))
+F=list(te.FEATURES); IMG=te.image_features("."); ids,Y=te.labels_matrix(".")
+ft=pd.read_csv("Model 2/Model 2 Experiment 3/cv_families.csv")
+FM=dict(zip(ft.sample_id.astype(str),ft.cv_family))
+X=te.soil_from_images(IMG).loc[ids,F].to_numpy(float)
+fam=np.array([FM[s] for s in ids]); fams=sorted(set(fam))
+def emd(a,b):
+    a=np.asarray(a,float).ravel(); b=np.asarray(b,float).ravel()
+    return float(np.trapezoid(np.abs(a-b),DL))
+errp={}
+for al in te.ALPHAS:
+    pf={}
+    for Fo in fams:
+        ho=np.array([i for i,f in enumerate(fam) if f==Fo])
+        ke=np.array([i for i,f in enumerate(fam) if f!=Fo])
+        P=te.fit_predict(X[ke],Y[ke],X[ho],al)
+        pf[Fo]={i:emd(P[j],Y[i]) for j,i in enumerate(ho)}
+    errp[al]=pf
+def inner_mean(al,Fo):
+    vals=[]
+    for G in fams:
+        if G!=Fo: vals+=list(errp[al][G].values())
+    return float(np.mean(vals))
+err={}
+for Fo in fams:
+    ba=min(te.ALPHAS,key=lambda al: inner_mean(al,Fo))
+    for i,v in errp[ba][Fo].items(): err[ids[i]]=v
+e=pd.Series(err)
+print("ANCHOR mean %.13f"%e.mean())
+ref=pd.read_csv("Model 2/Model 2 Experiment 3/cv_per_soil.csv").set_index("sample_id")["M1"]
+print("max dev vs E3 per-soil: %.2e"%max(abs(e[s]-ref[s]) for s in ref.index))
+srt=e.sort_values(ascending=False)
+mu,sd=X.mean(0),X.std(0)+1e-12; Z=(X-mu)/sd
+d50=np.array([10**np.interp(50.,np.maximum(Y[i],np.linspace(1e-6,1,11)),DL) for i in range(24)])
+rows=[]
+for i in range(24):
+    dd=np.linalg.norm(Z-Z[i],axis=1); dd[i]=1e9; j=int(np.argmin(dd))
+    rows.append((ids[i],dd[j],emd(Y[j],Y[i])))
+R=pd.DataFrame(rows,columns=["soil","nnfeat","nnemd"]).set_index("soil")
+print("\nA) FEATURE ALIASING (nearest neighbour in the 12-dim soil features)")
+print("   %-7s %7s %9s %9s %9s   %s"%("soil","err","nn-feat-d","nn-EMD","D50 mm","reading"))
+for s in list(srt.index[:6])+list(srt.index[-3:]):
+    nd,ne=R.loc[s,"nnfeat"],R.loc[s,"nnemd"]
+    tag="ALIASING: near twin, very different curve" if (nd<2.2 and ne>25) else ("isolated in feature space" if nd>3 else "moderate")
+    print("   %-7s %7.2f %9.2f %9.2f %9.4f   %s"%(s,e[s],nd,ne,d50[list(ids).index(s)],tag))
+w=list(srt.index[:8]); b=list(srt.index[-8:])
+print("   medians  worst8: nn-dist %.2f  nn-curve-EMD %.1f | best8: nn-dist %.2f  nn-curve-EMD %.1f"%(
+    R.loc[w,"nnfeat"].median(),R.loc[w,"nnemd"].median(),R.loc[b,"nnfeat"].median(),R.loc[b,"nnemd"].median()))
+print("\nB) IDENTIFIABILITY CEILING -- a 1-NN feature predictor, no model at all")
+print("   LOO 1-NN mean EMD %.2f | ridge model %.2f | train-median curve 82.62"%(R["nnemd"].mean(),e.mean()))
+print("\nC) DO OTHER MODEL FAMILIES FAIL ON THE SAME SOILS?")
+q=pd.read_csv("Model 2/Model 2 Experiment 3/cv_per_soil.csv").set_index("sample_id")
+rk=q[["M1","dinov2@c256","fr@c256","fuse@c256","shuf@c256"]].rank(axis=0)
+for a,b2 in [("M1","dinov2@c256"),("M1","fr@c256"),("M1","fuse@c256"),("M1","shuf@c256")]:
+    print("   rank corr %-13s vs %-13s rho=%+.3f"%(a,b2,rk[a].corr(rk[b2],method="spearman")))
+print("   worst-8 M1 soils: their rank (1=worst) in the other families")
+for s in w: print("      %-7s M1 rank %2d | D rank %2d | FR rank %2d | fuse rank %2d"%(s,int(rk.loc[s,"M1"]),int(rk.loc[s,"dinov2@c256"]),int(rk.loc[s,"fr@c256"]),int(rk.loc[s,"fuse@c256"])))
+print("\nD) CROSS-CAMERA PATTERN (Model 5's validated NONE-arm per-soil errors)")
+p=pd.read_csv("Model 5/Model 5 Experiment 1/per_soil_transfer.csv"); n=p[p.arm=="NONE"]
+A=n[n.direction=="A"].set_index("sample_id").emd; B=n[n.direction=="B"].set_index("sample_id").emd
+print("   rho(A,B) = %+.3f over the %d soils scored both ways"%(A.corr(B,method="spearman"),len(set(A.index)&set(B.index))))
+print("   overlap: %d of M5's 8 worst in A are also in M5's 8 worst in B"%len(set(w)&set(A.sort_values(ascending=False).index[:8])))
+R.to_csv("/tmp/m6_nn.csv"); e.to_csv("/tmp/m6_err.csv")
+PY
+
+########## transcript line 11557  tool=Bash ##########
+cd "C:\Users\mitansh\Desktop\KAGGLE HACKATHONS\Predicting-Soil-Grain-Size-Distributions-from-Images" && timeout 900 python - <<'PY'
+import numpy as np, pandas as pd, sys
+sys.path.insert(0,"Model 5/Model 5 Experiment 1")
+import transfer_eval as te
+F=list(te.FEATURES); IMG=te.image_features(".")
+def pair_test(a,b):
+    A=IMG[(IMG.sample_id==a)&(IMG.split=="train")][F].to_numpy(float)
+    B=IMG[(IMG.sample_id==b)&(IMG.split=="train")][F].to_numpy(float)
+    out=[]
+    for j,f in enumerate(F):
+        x,y=A[:,j],B[:,j]
+        s=np.sqrt(((x.var(ddof=1)/len(x))+(y.var(ddof=1)/len(y))))
+        t=(x.mean()-y.mean())/(s+1e-12)
+        # overlap of the two per-image distributions: can ANY threshold separate them?
+        lo,hi=min(x.mean(),y.mean()),max(x.mean(),y.mean())
+        frac=np.mean((x>min(x.mean(),y.mean()))&(x<max(x.mean(),y.mean())))
+        out.append((f,t,abs(x.mean()-y.mean())/(np.std(np.r_[x,y])+1e-12)))
+    ts=np.array([o[1] for o in out]); ds=np.array([o[2] for o in out])
+    return ts,ds,out
+pairs=[("H038","G190"),("H037","H368"),("H405","H615"),("F827","H372"),("H616","H183")]
+print("Can the two members of each ALIASING PAIR be separated at all, from per-image features?")
+print("(a feature exists only if some column shows between-soil difference >> within-soil scatter)")
+for a,b in pairs:
+    ts,ds,_=pair_test(a,b)
+    k=int(np.argmax(ds))
+    print("  %-6s vs %-6s : max Cohen-like d = %5.2f (feature %s) | features with |t|>3: %2d/12 | median d %.2f"%(
+        a,b,ds.max(),F[k],int((np.abs(ts)>3).sum()),np.median(ds)))
+print("""
+  Reading guide: d ~ 0 means the two soils' images are statistically the same in every feature --
+  no function of these images can tell them apart, so the error is destroyed before the model.
+  d > ~1.5 means a real, findable separating feature exists.""")
+# aggregate: how separable are aliasing pairs vs well-modelled pairs
+def dsum(a,b):
+    ts,ds,_=pair_test(a,b); return ds.max()
+al=[dsum(*p) for p in pairs]
+ok=[dsum("H368","H615"),dsum("H181","H183"),dsum("H372","H181"),dsum("H615","G190")]
+print("\n  aliasing-pair max-d:  "+" ".join("%.2f"%v for v in al)+"   (median %.2f)"%np.median(al))
+print("  low-error-pair max-d: "+" ".join("%.2f"%v for v in ok)+"   (median %.2f)"%np.median(ok))
+PY

@@ -1,0 +1,186 @@
+== levels and partitions
+PASS  total_tiles                                                reported 1946           recomputed 1946           gap n/a
+PASS  csv rows equal the manifest's qualifying tiles             reported 1946           recomputed 1946           gap n/a
+PASS  successful_tiles                                           reported 1946           recomputed 1946           gap n/a
+PASS  tiles_with_any_nan                                         reported 0              recomputed 0              gap n/a
+PASS  degenerate_tiles                                           reported 0              recomputed 0              gap n/a
+PASS  nan_key_tiles                                              reported 0              recomputed 0              gap n/a
+PASS  invalid_calls                                              reported 0              recomputed 0              gap n/a
+PASS  per_status sums to the corpus                              reported 1946           recomputed 1946           gap n/a
+PASS  images                                                     reported 162            recomputed 162            gap n/a
+PASS  soils                                                      reported 34             recomputed 34             gap n/a
+PASS  tiles_by_split                                             reported {'train': 1541, 'test': 405} recomputed {'train': 1541, 'test': 405} gap n/a
+PASS  train_soils                                                reported 24             recomputed 24             gap n/a
+PASS  test_soils                                                 reported 10             recomputed 10             gap n/a
+PASS  normalized_ppm_values                                      reported [4.552516]     recomputed [4.552516]     gap sequence
+PASS  tile_w_mm                                                  reported 56.23263875280958 recomputed 56.23263875280958 gap 0
+
+== tile-level per-key statistics
+PASS  A1 nan_count                                               reported 0              recomputed 0              gap n/a
+PASS  A1 inf_count                                               reported 0              recomputed 0              gap n/a
+PASS  A1 nonfinite_count = nan + inf                             reported 0              recomputed 0              gap n/a
+PASS  A1 n_finite                                                reported 1946           recomputed 1946           gap n/a
+PASS  A1 min                                                     reported -1.0946915263579609 recomputed -1.0946915263579609 gap 0
+PASS  A1 p5                                                      reported -0.5067608847953292 recomputed -0.5067608847953292 gap 0
+PASS  A1 median                                                  reported -0.18858256244815666 recomputed -0.18858256244815666 gap 0
+PASS  A1 p95                                                     reported -0.05183426790418756 recomputed -0.05183426790418756 gap 0
+PASS  A1 max                                                     reported -0.0068847882097270345 recomputed -0.0068847882097270345 gap 0
+PASS  A1 NaN flags agree with the values                         reported 0              recomputed 0              gap n/a
+PASS  A1 n_nan columns sum to the NaN cells                      reported 0              recomputed 0              gap n/a
+PASS  A2 nan_count                                               reported 0              recomputed 0              gap n/a
+PASS  A2 inf_count                                               reported 0              recomputed 0              gap n/a
+PASS  A2 nonfinite_count = nan + inf                             reported 0              recomputed 0              gap n/a
+PASS  A2 n_finite                                                reported 1946           recomputed 1946           gap n/a
+PASS  A2 min                                                     reported 0.17056374272533628 recomputed 0.17056374272533628 gap 0
+PASS  A2 p5                                                      reported 0.4843145384327253 recomputed 0.4843145384327253 gap 0
+PASS  A2 median                                                  reported 1.0004813523569043 recomputed 1.0004813523569043 gap 0
+PASS  A2 p95                                                     reported 2.0921221114791355 recomputed 2.0921221114791355 gap 0
+PASS  A2 max                                                     reported 9.227945396624575 recomputed 9.227945396624575 gap 0
+PASS  A2 NaN flags agree with the values                         reported 0              recomputed 0              gap n/a
+PASS  A2 n_nan columns sum to the NaN cells                      reported 0              recomputed 0              gap n/a
+PASS  A3 nan_count                                               reported 0              recomputed 0              gap n/a
+PASS  A3 inf_count                                               reported 0              recomputed 0              gap n/a
+PASS  A3 nonfinite_count = nan + inf                             reported 0              recomputed 0              gap n/a
+PASS  A3 n_finite                                                reported 1946           recomputed 1946           gap n/a
+PASS  A3 min                                                     reported 0.015625       recomputed 0.015625       gap 0
+PASS  A3 p5                                                      reported 0.015625       recomputed 0.015625       gap 0
+PASS  A3 median                                                  reported 0.0625         recomputed 0.0625         gap 0
+PASS  A3 p95                                                     reported 0.38281250000000006 recomputed 0.38281250000000006 gap 0
+PASS  A3 max                                                     reported 0.7968750000000001 recomputed 0.7968750000000001 gap 0
+PASS  A3 NaN flags agree with the values                         reported 0              recomputed 0              gap n/a
+PASS  A3 n_nan columns sum to the NaN cells                      reported 0              recomputed 0              gap n/a
+PASS  A4 nan_count                                               reported 0              recomputed 0              gap n/a
+PASS  A4 inf_count                                               reported 0              recomputed 0              gap n/a
+PASS  A4 nonfinite_count = nan + inf                             reported 0              recomputed 0              gap n/a
+PASS  A4 n_finite                                                reported 1946           recomputed 1946           gap n/a
+PASS  A4 min                                                     reported -0.01341652388555653 recomputed -0.01341652388555653 gap 0
+PASS  A4 p5                                                      reported -0.0036111754859730893 recomputed -0.0036111754859730893 gap 0
+PASS  A4 median                                                  reported 0.003751905622288443 recomputed 0.003751905622288443 gap 0
+PASS  A4 p95                                                     reported 0.0197406224300148 recomputed 0.0197406224300148 gap 0
+PASS  A4 max                                                     reported 0.03860782486078168 recomputed 0.03860782486078168 gap 0
+PASS  A4 NaN flags agree with the values                         reported 0              recomputed 0              gap n/a
+PASS  A4 n_nan columns sum to the NaN cells                      reported 0              recomputed 0              gap n/a
+
+== assembled levels
+PASS  image A1 min/median/max                                    reported [-0.7621460111789249, -0.18003484132045888, -0.07626708356717776] recomputed [-0.7621460111789249, -0.18003484132045888, -0.07626708356717776] gap sequence
+PASS  image A1 nonfinite cells                                   reported 0              recomputed 0              gap n/a
+PASS  image A2 min/median/max                                    reported [0.5912042742182735, 0.9971495399987569, 1.3947913548999433] recomputed [0.5912042742182735, 0.9971495399987569, 1.3947913548999433] gap sequence
+PASS  image A2 nonfinite cells                                   reported 0              recomputed 0              gap n/a
+PASS  image A3 min/median/max                                    reported [0.015625, 0.0546875, 0.7109375] recomputed [0.015625, 0.0546875, 0.7109375] gap sequence
+PASS  image A3 nonfinite cells                                   reported 0              recomputed 0              gap n/a
+PASS  image A4 min/median/max                                    reported [-0.0013522226526087588, 0.0036056622280570966, 0.01856202605784335] recomputed [-0.0013522226526087588, 0.0036056622280570966, 0.01856202605784335] gap sequence
+PASS  image A4 nonfinite cells                                   reported 0              recomputed 0              gap n/a
+PASS  soil A1 min/median/max                                     reported [-0.2649158954582553, -0.18420189409398485, -0.10311602273270676] recomputed [-0.2649158954582553, -0.18420189409398485, -0.10311602273270676] gap sequence
+PASS  soil A1 nonfinite cells                                    reported 0              recomputed 0              gap n/a
+PASS  soil A2 min/median/max                                     reported [0.8920470899331444, 0.9999118031107497, 1.1732716785075277] recomputed [0.8920470899331444, 0.9999118031107497, 1.1732716785075277] gap sequence
+PASS  soil A2 nonfinite cells                                    reported 0              recomputed 0              gap n/a
+PASS  soil A3 min/median/max                                     reported [0.015625, 0.044921875, 0.46875] recomputed [0.015625, 0.044921875, 0.46875] gap sequence
+PASS  soil A3 nonfinite cells                                    reported 0              recomputed 0              gap n/a
+PASS  soil A4 min/median/max                                     reported [-0.00013092697054062352, 0.0031599691348714876, 0.014159228853471317] recomputed [-0.00013092697054062352, 0.0031599691348714876, 0.014159228853471317] gap sequence
+PASS  soil A4 nonfinite cells                                    reported 0              recomputed 0              gap n/a
+
+== extreme outliers, both rules, tile level
+PASS  tile A1 mad                                                reported 0.08517845024128881 recomputed 0.08517845024128881 gap 0
+PASS  tile A1 mad_is_zero                                        reported False          recomputed False          gap n/a
+PASS  tile A1 n_distinct                                         reported 1946           recomputed 1946           gap n/a
+PASS  tile A1 median                                             reported -0.18858256244815666 recomputed -0.18858256244815666 gap 0
+PASS  tile A1 count beyond 10 MAD                                reported 1              recomputed 1              gap n/a
+PASS  tile A1 max abs z                                          reported 10.637772363115657 recomputed 10.637772363115657 gap 0
+PASS  tile A1 log rule applicable                                reported True           recomputed True           gap n/a
+PASS  tile A1 count beyond 10 log MAD                            reported 0              recomputed 0              gap n/a
+PASS  tile A1 max abs log z                                      reported 6.897234133281603 recomputed 6.897234133281603 gap 0
+PASS  tile A1 max |value|                                        reported 1.0946915263579609 recomputed 1.0946915263579609 gap 0
+PASS  tile A1 values above 1e6                                   reported 0              recomputed 0              gap n/a
+PASS  tile A1 whole distribution above 1e6                       reported False          recomputed False          gap n/a
+PASS  tile A2 mad                                                reported 0.19970880816791148 recomputed 0.19970880816791148 gap 0
+PASS  tile A2 mad_is_zero                                        reported False          recomputed False          gap n/a
+PASS  tile A2 n_distinct                                         reported 1946           recomputed 1946           gap n/a
+PASS  tile A2 median                                             reported 1.0004813523569043 recomputed 1.0004813523569043 gap 0
+PASS  tile A2 count beyond 10 MAD                                reported 27             recomputed 27             gap n/a
+PASS  tile A2 max abs z                                          reported 41.19730181029457 recomputed 41.19730181029457 gap 0
+PASS  tile A2 log rule applicable                                reported True           recomputed True           gap n/a
+PASS  tile A2 count beyond 10 log MAD                            reported 2              recomputed 2              gap n/a
+PASS  tile A2 max abs log z                                      reported 11.013462744385835 recomputed 11.013462744385835 gap 0
+PASS  tile A2 max |value|                                        reported 9.227945396624575 recomputed 9.227945396624575 gap 0
+PASS  tile A2 values above 1e6                                   reported 0              recomputed 0              gap n/a
+PASS  tile A2 whole distribution above 1e6                       reported False          recomputed False          gap n/a
+PASS  tile A3 mad                                                reported 0.046875       recomputed 0.046875       gap 0
+PASS  tile A3 mad_is_zero                                        reported False          recomputed False          gap n/a
+PASS  tile A3 n_distinct                                         reported 88             recomputed 88             gap n/a
+PASS  tile A3 median                                             reported 0.0625         recomputed 0.0625         gap 0
+PASS  tile A3 count beyond 10 MAD                                reported 38             recomputed 38             gap n/a
+PASS  tile A3 max abs z                                          reported 15.66666666666667 recomputed 15.66666666666667 gap 0
+PASS  tile A3 log rule applicable                                reported True           recomputed True           gap n/a
+PASS  tile A3 count beyond 10 log MAD                            reported 0              recomputed 0              gap n/a
+PASS  tile A3 max abs log z                                      reported 3.6724253419714956 recomputed 3.6724253419714956 gap 0
+PASS  tile A3 max |value|                                        reported 0.7968750000000001 recomputed 0.7968750000000001 gap 0
+PASS  tile A3 values above 1e6                                   reported 0              recomputed 0              gap n/a
+PASS  tile A3 whole distribution above 1e6                       reported False          recomputed False          gap n/a
+PASS  tile A4 mad                                                reported 0.004233115549022337 recomputed 0.004233115549022337 gap 0
+PASS  tile A4 mad_is_zero                                        reported False          recomputed False          gap n/a
+PASS  tile A4 n_distinct                                         reported 1946           recomputed 1946           gap n/a
+PASS  tile A4 median                                             reported 0.003751905622288443 recomputed 0.003751905622288443 gap 0
+PASS  tile A4 count beyond 10 MAD                                reported 0              recomputed 0              gap n/a
+PASS  tile A4 max abs z                                          reported 8.234105314357274 recomputed 8.234105314357274 gap 0
+PASS  tile A4 log rule applicable                                reported False          recomputed False          gap n/a
+PASS  tile A4 count beyond 10 log MAD                            reported None           recomputed None           gap n/a
+PASS  tile A4 max abs log z                                      reported None           recomputed None           gap n/a
+PASS  tile A4 max |value|                                        reported 0.03860782486078168 recomputed 0.03860782486078168 gap 0
+PASS  tile A4 values above 1e6                                   reported 0              recomputed 0              gap n/a
+PASS  tile A4 whole distribution above 1e6                       reported False          recomputed False          gap n/a
+
+== extreme outliers, soil level
+PASS  soil A1 count beyond 10 MAD                                reported 0              recomputed 0              gap n/a
+PASS  soil A1 count beyond 10 log MAD                            reported 0              recomputed 0              gap n/a
+PASS  soil A1 max abs z                                          reported 3.5155143365069725 recomputed 3.5155143365069725 gap 0
+PASS  soil A1 log rule applicable                                reported True           recomputed True           gap n/a
+PASS  soil A2 count beyond 10 MAD                                reported 0              recomputed 0              gap n/a
+PASS  soil A2 count beyond 10 log MAD                            reported 0              recomputed 0              gap n/a
+PASS  soil A2 max abs z                                          reported 4.550532169465503 recomputed 4.550532169465503 gap 0
+PASS  soil A2 log rule applicable                                reported True           recomputed True           gap n/a
+PASS  soil A3 count beyond 10 MAD                                reported 1              recomputed 1              gap n/a
+PASS  soil A3 count beyond 10 log MAD                            reported 0              recomputed 0              gap n/a
+PASS  soil A3 max abs z                                          reported 18.083333333333332 recomputed 18.083333333333332 gap 0
+PASS  soil A3 log rule applicable                                reported True           recomputed True           gap n/a
+PASS  soil A4 count beyond 10 MAD                                reported 0              recomputed 0              gap n/a
+PASS  soil A4 count beyond 10 log MAD                            reported None           recomputed None           gap n/a
+PASS  soil A4 max abs z                                          reported 6.11556790419889 recomputed 6.11556790419889 gap 0
+PASS  soil A4 log rule applicable                                reported False          recomputed False          gap n/a
+
+== finiteness of the published arrays
+PASS  tile cells                                                 reported 7784           recomputed 7784           gap n/a
+PASS  tile nan_cells                                             reported 0              recomputed 0              gap n/a
+PASS  tile inf_cells                                             reported 0              recomputed 0              gap n/a
+PASS  tile non_finite_cells                                      reported 0              recomputed 0              gap n/a
+PASS  tile tiles carrying a non-finite value                     reported 0              recomputed 0              gap n/a
+PASS  image cells                                                reported 648            recomputed 648            gap n/a
+PASS  image nan_cells                                            reported 0              recomputed 0              gap n/a
+PASS  image inf_cells                                            reported 0              recomputed 0              gap n/a
+PASS  image non_finite_cells                                     reported 0              recomputed 0              gap n/a
+PASS  image tiles carrying a non-finite value                    reported 0              recomputed 0              gap n/a
+PASS  soil cells                                                 reported 136            recomputed 136            gap n/a
+PASS  soil nan_cells                                             reported 0              recomputed 0              gap n/a
+PASS  soil inf_cells                                             reported 0              recomputed 0              gap n/a
+PASS  soil non_finite_cells                                      reported 0              recomputed 0              gap n/a
+PASS  soil tiles carrying a non-finite value                     reported 0              recomputed 0              gap n/a
+PASS  non_finite_tiles (surface)                                 reported 0              recomputed 0              gap n/a
+PASS  the published design holds no non-finite cell              reported 0              recomputed 0              gap n/a
+
+== schema and leakage boundaries
+PASS  image columns                                              reported ['A1', 'A2', 'A3', 'A4', 'sample_id'] recomputed ['A1', 'A2', 'A3', 'A4', 'sample_id'] gap sequence
+PASS  soil columns                                               reported ['A1', 'A2', 'A3', 'A4'] recomputed ['A1', 'A2', 'A3', 'A4'] gap sequence
+PASS  census columns                                             reported ['tile_path', 'sample_id', 'split', 'normalized_ppm', 'A1', 'A2', 'A3', 'A4', 'status', 'A1_nan', 'A2_nan', 'A3_nan', 'A4_nan', 'n_nan', 'reason'] recomputed ['tile_path', 'sample_id', 'split', 'normalized_ppm', 'A1', 'A2', 'A3', 'A4', 'status', 'A1_nan', 'A2_nan', 'A3_nan', 'A4_nan', 'n_nan', 'reason'] gap sequence
+PASS  no camera-derived column in any artifact                   reported []             recomputed []             gap sequence
+PASS  image index is the parent image path                       reported parent_image_path recomputed parent_image_path gap n/a
+PASS  soil index is the sample id                                reported sample_id      recomputed sample_id      gap n/a
+PASS  every census tile path is in the manifest                  reported 1946           recomputed 1946           gap n/a
+PASS  every image row's soil agrees with the manifest            reported ['Airbus BS10-4bis7', 'Airbus BS12-5bis8', 'Airbus BS6-3', 'Audorfring', 'F827', 'G190', 'H030', 'H037', 'H038', 'H126', 'H181', 'H183', 'H366', 'H367', 'H368', 'H371', 'H372', 'H374', 'H405', 'H493', 'H516', 'H549', 'H615', 'H616', 'H617', 'H637', 'H666', 'H668', 'Kleinkummerfeld 18-3', 'Kleinkummerfeld 2-2', 'Kleinkummerfeld 2-3', 'Kleinkummerfeld 9-4', 'Münster_BS6_9,0-10m', 'Testfeld Lidl WHV'] recomputed ['Airbus BS10-4bis7', 'Airbus BS12-5bis8', 'Airbus BS6-3', 'Audorfring', 'F827', 'G190', 'H030', 'H037', 'H038', 'H126', 'H181', 'H183', 'H366', 'H367', 'H368', 'H371', 'H372', 'H374', 'H405', 'H493', 'H516', 'H549', 'H615', 'H616', 'H617', 'H637', 'H666', 'H668', 'Kleinkummerfeld 18-3', 'Kleinkummerfeld 2-2', 'Kleinkummerfeld 2-3', 'Kleinkummerfeld 9-4', 'Münster_BS6_9,0-10m', 'Testfeld Lidl WHV'] gap sequence
+
+== artifact self-description
+PASS  warnings are counted by stage, all zero                    reported 0              recomputed 0              gap n/a
+PASS  warnings_count agrees with the stage tally                 reported 0              recomputed 0              gap n/a
+PASS  errors_count                                               reported 0              recomputed 0              gap n/a
+PASS  the meaning of non-finite is stated once                   reported True           recomputed True           gap n/a
+PASS  the run was not scrambled                                  reported False          recomputed False          gap n/a
+
+169 comparisons, 0 disagreed
