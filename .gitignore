@@ -15,3 +15,4 @@ data/
 # headless dry-run logs from scratch/run_*.py
 scratch/*.log
 final_kaggle_upload_m2e1.zip
+.playwright-mcp

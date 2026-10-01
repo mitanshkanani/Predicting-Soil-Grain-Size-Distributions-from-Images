@@ -1,0 +1,19 @@
+{
+  "arms": [
+    "E2-A",
+    "E2-B",
+    "E2-C"
+  ],
+  "internal_lofo": {
+    "E2-A": 43.45322520181156,
+    "E2-B": 42.98851142563132,
+    "E2-C": 42.726775177317826
+  },
+  "g0_reproduced": 43.45322520181156,
+  "submitted_files": [
+    "Submission_Model8_E2_E2A.csv",
+    "Submission_Model8_E2_E2B.csv",
+    "Submission_Model8_E2_E2C.csv"
+  ],
+  "note": "Internal scores are reported only. Selection among arms is EXTERNAL by design; see plan.md section 6."
+}

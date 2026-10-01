@@ -1,0 +1,4 @@
+arm,n_features,internal_lofo,alpha,submission
+E2-A,12,43.45322520181156,3.0,Submission_Model8_E2_E2A.csv
+E2-B,5,42.98851142563132,1.0,Submission_Model8_E2_E2B.csv
+E2-C,12,42.726775177317826,3.0,Submission_Model8_E2_E2C.csv

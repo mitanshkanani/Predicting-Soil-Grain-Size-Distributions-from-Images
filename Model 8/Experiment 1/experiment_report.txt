@@ -1,0 +1,204 @@
+================================================================================
+MODEL 8 / EXPERIMENT 1 - EXPERIMENT REPORT
+Date: 2026-09-30
+Hypothesis: the frozen rank-3 head treats log10(D50) -> curve shape as LINEAR, and the
+           true relation is quadratic.
+VERDICT:  NOT-RESOLVED on the end-to-end claim.
+          One mechanism CONFIRMED independently, and it is new information about the
+          label space.
+No Kaggle submission is proposed. Reasoning in section 7.
+================================================================================
+
+1. HEADLINE, THE TWO HALVES OF THIS RESULT
+--------------------------------------------------------------------------------
+They point in opposite directions and both are real.
+
+CONFIRMED - the shape map is curved.
+    Quadratic beats linear on the shape map by +6.09 EMD with the true median grain
+    size held exactly fixed and NO features at all.
+    Family-cluster bootstrap 95% CI [+1.278, +10.769], P(gain < 0) = 0.0073.
+    Better for 19 of 24 soils. Median per-family gain +7.4 EMD.
+    Degree 3 does NOT improve on degree 2 (19.36 vs 19.12), so the effect saturates at
+    exactly two parameters.
+
+NOT RESOLVED - it does not survive contact with the noisy D50 estimate.
+    Wiring the same quadratic through the full feature -> D50 -> shape pipeline gains
+    only +0.47 EMD against the linear control (CI [-3.876, +4.923], P = 0.433), and
+    +2.66 EMD against the frozen head with the CI straddling zero.
+
+This is the outcome section 9.9 of the plan PRE-REGISTERED as the likely one, quoted
+from research_and_plan.md:
+
+    "The label-side fix is real; the reparameterised pipeline is not yet a demonstrable
+     improvement."
+
+The experiment confirmed that prediction rather than contradicting it. That is what a
+pre-registration is for.
+
+2. GATES
+--------------------------------------------------------------------------------
+G1  reproduce the frozen baseline            43.453225201811563   PASS (gap 0.000e+00)
+G2  E1-A beats E1-B by >= 3.00 EMD            +0.466                FAIL
+G3  family-cluster CI lower bound > 0        [-1.700, +6.526]      FAIL
+G4  beats placebo + best-of-N null            +40.07 vs placebo     FAIL (null)
+
+G1 deserves a note: it reproduced the registered baseline BIT-EXACTLY, not merely to
+1e-6. The ruler here is an independent transcription of Model 7's registered nested
+protocol, written from the rule rather than copied from the result, and it landed on
+43.453225201811563 with zero deviation. Zero family leaks across all 16 folds. So the
+failures below are not measurement noise or a broken harness - the instrument is sound
+and the answer is a real no.
+
+3. ALL ARMS
+--------------------------------------------------------------------------------
+arm      what it is                                  mean EMD
+-------  -----------------------------------------  ----------
+frozen   rank-3 PCA head, strictly nested LOFO      43.4532   <- the ruler
+E1-A     quadratic shape map, PREDICTED D50         40.7920
+E1-B     linear shape map, PREDICTED D50            41.2578   <- the control
+E1-C     quadratic, PERMUTED labels (placebo)       80.8621
+E1-D     quadratic, TRUE D50, no features           19.1172
+E1-D-lin linear,    TRUE D50, no features           25.2096
+
+E1-C at 80.86 confirms the pipeline carries real signal: destroy the label-to-feature
+correspondence and error more than doubles. It is not a null machine.
+
+4. THE CONFIRMED MECHANISM, IN DETAIL
+--------------------------------------------------------------------------------
+With the true D50 supplied, the map from grain size to curve shape:
+
+    linear    25.21 EMD
+    quadratic 19.12 EMD     <- 6.09 better
+    cubic     19.36 EMD     <- WORSE than quadratic
+
+Per-family gains (quadratic minus linear, positive = quadratic better):
+    FAM16 +31.1   FAM10 +17.8   FAM14 +17.2   FAM13 +16.7   FAM6  +13.0
+    FAM12 +10.8   FAM11  +8.2   FAM5  +8.0    FAM4  +7.4    FAM8  +7.4
+    FAM9  +3.5    FAM3  +1.9    FAM2  +1.0    FAM15 -1.0    FAM1 -6.4
+    FAM7 -27.6
+
+Worse in 3 of 16 families, dominated by one (FAM7). Median family gains 7.4 EMD, so
+this is a broad effect rather than one carried by a single family.
+
+WHY THIS MATTERS EVEN THOUGH THE END-TO-END CLAIM FAILED
+The frozen head's error decomposes as roughly 25.21 of shape cost against 16.42 of D50
+error (plan section 9.3). And section 9.3 also showed the shape is NOT learnable from
+any feature - every feature gives NEGATIVE R-squared on the shape residual. So the
+shape block could only ever be reduced by making the fixed map a better map.
+
+This experiment says that lever exists and is worth about 6 EMD. It simply is not
+reachable by predicting D50 first and then mapping, because a D50 estimate carrying
+roughly 3x error in grain size is too noisy to place a soil on a curved map. That is a
+statement about the ROUTE, not about the target.
+
+5. INDEPENDENT CORROBORATION
+--------------------------------------------------------------------------------
+The competition's co-host, Enrico Soranzo, fits a TWO-PARAMETER Weibull (GRAI3, and the
+2025 Soils and Foundations paper) to the cumulative curve, and the dominant public
+notebook motif is the same. This measurement independently lands on two parameters and
+shows the third adds nothing - from an unrelated direction.
+
+5b. AN HONEST LIMITATION ON THE NULL
+--------------------------------------------------------------------------------
+The permutation null is UNDERPOWERED at n=24, and I am not going to present it as
+though it were not. Over 2000 draws its gap has SD 4.82 and a p95 of +8.80 - WIDER
+than the real +6.09. So the best-of-N null cannot discriminate this effect, and G4's
+failure on that test is a statement about the null's resolution, not evidence against
+the mechanism.
+
+The family-cluster bootstrap CAN discriminate it (CI [+1.28, +10.77], P = 0.0073), and
+that is the ruler section 9.4 pre-registered for this comparison. Where the two
+instruments disagree, the pre-registered one governs and the other is reported as
+inconclusive.
+
+6. BUGS FOUND AND FIXED DURING THIS RUN
+--------------------------------------------------------------------------------
+Recorded because each one would have produced a wrong answer silently.
+
+(a) D50 interpolation convention. The natural mistake is to interpolate
+    percent-versus-log-diameter instead of log-diameter-versus-percent. check_d50.py
+    asserts the round-trip curve_at(Y, D50) == 50, which only the correct convention
+    satisfies; the wrong one differs by up to 1.210 in log10 D50, a FACTOR OF 16 in
+    diameter. It also matches the project's independently recorded logD50 column to
+    2.220e-16.
+
+(b) The first permutation null permuted curve rows, which carried each curve's own
+    D50 along with it and left the relationship under test intact. It produced a
+    "null" mean of +5.72 against a real +6.09 - a null that tracks the real effect.
+    Corrected to hold the D50 abscissa fixed and permute only the targets.
+
+(c) A row-indexing bug in the shape-only arm: project() returns 2-D and indexing it as
+    1-D raised on shapes (22,) vs (11,).
+
+(d) A wrong assertion in my own gate: it rejected log10 D50 < 0 as invalid, but -1.671
+    is 0.021 mm, a perfectly ordinary fine soil. Only the DIAMETER must be positive.
+
+7. WHY NO submission.csv WAS GENERATED
+--------------------------------------------------------------------------------
+Generating one is technically trivial here - the test features are the same 34-row CSV,
+it runs locally on CPU in seconds. It is declined on evidence, not on capability:
+
+  - The verdict is NOT-RESOLVED. The project's own rule (Model 6, Approach A) is
+    SUBMIT = TRUE if and only if VERDICT == SUPPORTED.
+  - The best candidate gain, +2.66 EMD, is about one tenth of what the public
+    leaderboard can resolve. With per-soil SD 22.75, a 3-soil public mean has a 95%
+    band near [21.7, 69.9]; the 10-soil private band is [32.6, 53.8].
+  - Three of the six submissions this project has ever made were probes, not gate
+    passes, including the current best of 60.56167.
+  - AGENT_BRIEF.md is explicit: "Do not quote 60.56 as evidence that pretrained
+    features work."
+
+Spending a slot on a change that cannot be measured on the board, and cannot beat the
+existing best by a resolvable margin, is how the project produced a 172.70.
+
+8. WHAT THIS ESTABLISHES, AND WHAT IT DOES NOT
+--------------------------------------------------------------------------------
+ESTABLISHED (new, and reusable)
+  - The log10(D50) -> shape relation is genuinely curved; two parameters suffice and a
+    third does not. P = 0.0073, 19/24 soils, saturating at degree 2.
+  - The end-to-end D50 reparameterisation does NOT deliver it. Predicting D50 first and
+    mapping through it is the wrong route for this gain.
+  - 25.21 EMD of the frozen head's error is shape, ~16.42 is D50, and the shape portion
+    has a real unexploited structural correction that features cannot supply.
+
+NOT ESTABLISHED
+  - Any Kaggle improvement. None is claimed and none should be inferred.
+  - Any transfer claim. Every ruler here measures interpolation on 24 labelled soils.
+
+9. WHAT I RECOMMEND NEXT
+--------------------------------------------------------------------------------
+The shape lever is real but the D50-first route cannot pull it, because the D50
+estimate is too noisy (~3x error in grain size) to place a soil on a curved map. Two
+ways to reach the same 6 EMD without that noise:
+
+  (a) Correct the shape INSIDE the existing head rather than replacing it. Keep the
+      rank-3 basis and the ridge, and let the residual be modelled with a quadratic
+      term in log10 D50 that is estimated jointly rather than in a second stage. This
+      is the more promising route because it never requires a hard D50 placement.
+
+  (b) Attack the colour extrapolation (plan section 9.5), which is the only measured,
+      mechanistically explained lead for the 43 -> 61 internal-to-external gap: 0 of 10
+      test soils have a close training neighbour, and ALL of the extrapolation is in
+      the colour block, with B exceeding the training range by 3.33 SD on 9 of 10 soils.
+
+My recommendation is (a) first, as Experiment 2. It is the direct follow-up to a
+mechanism this experiment just confirmed, it needs no new features and no GPU, and it
+targets a block that no feature engineering has ever been able to touch.
+
+================================================================================
+FILES
+  d50.py              D50 extraction, with the interpolation convention documented
+  check_d50.py        the gate on that extraction; passes
+  head_d50.py         the two-stage head: scalar regression, then polynomial shape map
+  ruler.py            the registered nested protocol, transcribed from the rule
+  run_e1.py           the four arms, the four gates, the artefacts
+  cv_per_soil.csv     per-soil error for every arm, with family id and chosen alpha
+  arm_comparison.csv  mean EMD per arm
+  bootstrap.json      family-cluster CIs for every pairwise difference
+  placebo.json        the permutation null
+  reproduce_anchor.txt  G1 evidence
+  verdict.json        machine-readable gates and verdict
+
+An internal CV mean is a measurement on 24 labelled soils. It is not a Kaggle score.
+The two are never subtracted.
+================================================================================

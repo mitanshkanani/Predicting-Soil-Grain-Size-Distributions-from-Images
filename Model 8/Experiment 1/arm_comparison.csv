@@ -1,0 +1,7 @@
+arm,degree,mean_emd,vs_frozen,note
+frozen,rank-3 PCA,43.45322520181156,0.0,"ruler, strictly nested LOFO"
+E1-A,2,40.79201778767074,-2.6612074141408213,"primary, predicted D50"
+E1-B,1,41.257826703693475,2.195398498118088,"control, linear shape"
+E1-C,2,80.8620744565314,-37.40884925471984,"placebo, permuted labels"
+E1-D,2,19.117180119014318,24.336045082797245,"true D50, no features"
+E1-D-linear,1,25.209553004277605,18.243672197533957,"true D50, linear"

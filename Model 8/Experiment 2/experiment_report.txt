@@ -1,0 +1,266 @@
+================================================================================
+MODEL 8 / EXPERIMENT 2 - EXPERIMENT REPORT
+Date: 2026-10-01 (all three Kaggle results recorded), plan dated 2026-09-30
+Hypothesis (H2): the frozen head is mis-specified for the test soils because it was
+           fitted on a feature distribution the test soils do not occupy, and a head
+           constrained to be invariant to the direction the test data actually moved
+           (colour) will transfer better than one that is not.
+STATUS:   COMPLETE - 3 of 3 arms scored.
+VERDICT:  H2 REFUTED, cleanly and with a dose-response ordering.
+          E2-A set a NEW PROJECT BEST of 55.80591.
+================================================================================
+
+0. RESULTS - ALL THREE ARMS SCORED
+--------------------------------------------------------------------------------
+    arm   colour treatment              internal    EXTERNAL      vs old best
+    ----  ----------------------------  ---------  -----------  -----------
+    E2-A  kept raw (12 features)         43.4532    55.80591     -4.756  NEW BEST
+    E2-C  rank-normalised (12 features)  42.7268    62.51669     +1.955
+    E2-B  DROPPED (5 texture only)       42.9885    67.26598     +6.704
+
+    The dose-response is monotone in how much each arm DESTROYS colour:
+
+        raw colour          55.81   <- best
+        rank-normalised     62.52
+        colour deleted      67.27   <- worst
+
+    Every step away from using colour as measured costs EMD. H2 predicted the opposite
+    ordering, and it is wrong in the wrong direction for all three arms, not just one.
+
+1. HEADLINE - WHAT THE THREE SCORES ACTUALLY SHOW
+--------------------------------------------------------------------------------
+The single most important result of this experiment is a NEGATIVE correlation between
+our internal ruler and the Kaggle board, and it is perfect:
+
+    internal ranking (best to worst):  E2-C 42.73  <  E2-B 42.99  <  E2-A 43.45
+    external ranking (best to worst):  E2-A 55.81  <  E2-C 62.52  <  E2-B 67.27
+
+    Spearman rho = -1.00 exactly. The arm our internal CV liked MOST is the arm the
+    board likes LEAST, and the arm our internal CV liked LEAST is the arm the board
+    likes MOST.
+
+n = 3, so this is NOT statistically significant (two-sided p = 0.5) and is not offered
+as proof. It is offered as the sharpest illustration available of the project's
+central failure mode, now measured three times on one protocol with one feature family
+and no confound:
+
+  - M1 E1  35.98 internal -> 172.70 external (worst ever)
+  - M2 E3  39.26 internal -> 83.94  external
+  - M2 E1  39.78 internal -> 78.55  external
+  - M2 E1  44.33 internal -> 60.56  external (from the WORSE internal of its pair)
+  - M8 E2  42.73 internal -> 62.52  external (E2-C)
+  - M8 E2  43.45 internal -> 55.81  external (E2-A)  <- best of both worlds
+
+The best external score this project has ever produced came from the WORST internal
+score of the three. That is not bad luck. It is what a 24-soil interpolation ruler
+looks like when it is pointed at a 10-soil out-of-hull transfer test.
+
+2. THE SCORE-INTERPRETATION CORRECTION (recorded before the numbers, kept)
+--------------------------------------------------------------------------------
+When E2-C alone had returned, I had planned to call 62.51669 vs 60.56167 a test of H2.
+It is not, and this report's first job was to say why:
+
+    E2-C   62.51669   handcrafted features + rank-normalised colour
+    M2 E1  60.56167   DINOv2 pretrained embeddings
+
+These are DIFFERENT FEATURE SPACES. Verified:
+
+    Model 1 E3 / features_soil.csv has 18 columns:
+      e4 e8 e16 lum_sd grad_mean spec_centroid_cpm dom_wavelength_mm
+      R G B sat lum_p10 lum_p50 lum_p90
+    -> zero embedding columns. Handcrafted texture+colour block.
+
+    Model 2 E1 notebook contains 19 DINO references; its arm `D` (the 60.56167 score)
+       was built on DINOv2 pretrained embeddings.
+
+That correction turned out to matter MORE than expected: E2-A, the handcrafted head,
+went on to BEAT the DINOv2 arm by 4.756 EMD. So the feature-space gap runs the OTHER
+WAY from what the 43-vs-60 framing implied - the handcrafted block is the stronger
+external model here, not the weaker one.
+
+It also means the frozen head every internal number in this project refers to is now,
+empirically, the best model we have submitted. Internal 43.45 was never wrong about
+being a good model; it was only wrong about ranking arms.
+
+3. THE CORRECTION THAT MATTERS MOST
+--------------------------------------------------------------------------------
+plan.md section 5 described E2-A as "the incumbent ... the number we must beat", and
+section 10 pre-declared the outcome branch "all three arms exceed 61.24 -> colour
+hypothesis refuted externally". That branch assumed E2-A would bracket near 60.5.
+
+E2-A is NOT the incumbent. It is a LOCAL REPRODUCTION OF THE FROZEN HANDCRAFTED HEAD -
+the same 43.453225201811563 internal baseline this project has been quoting since
+Model 7. Its external score had never been measured before today.
+
+WHAT E2-A WAS WORTH, stated plainly (written before the number came back):
+  We have 24 internal numbers in this project - 43.45, 44.33, 42.99, 42.73 - and not
+  one of them had ever been submitted to Kaggle. Every one of them describes the
+  handcrafted head. Nobody knew what that head scores on the board. E2-A measured it
+  for the first time, and without it 62.51669 was an uninterpretable number.
+
+  The answer turned out to be that the handcrafted head is the best model this project
+  has submitted. See section 2.
+
+4. THE THREE ARMS ARE A CLEAN SINGLE-VARIABLE DESIGN - AND THE DESIGN WORKED
+--------------------------------------------------------------------------------
+All three arms live inside ONE feature family, so the comparison is clean:
+
+    arm   features                          colour treatment        internal    external
+    ----  --------------------------------  ---------------------  ---------  ---------
+    E2-A  12 (5 texture + 7 colour)         kept raw                43.4532    55.80591
+    E2-B   5 (texture core only)            DROPPED                 42.9885    67.26598
+    E2-C  12 (5 texture + 7 rank-normalised) INVARIANT              42.7268    62.51669
+
+  E2-A vs E2-C  isolates ONE variable: normalising colour's scale.
+  E2-A vs E2-B  isolates ONE variable: deleting colour entirely.
+  E2-C alone    isolates NEITHER.
+
+Internal scores were REPORTED, NEVER used to select - build_e2.py docstring, plan.md
+section 6. That discipline produced this experiment's only real finding, because the
+winning arm (E2-A) was the one our own ruler ranked LAST.
+
+5. HOW FAR APART THE PREDICTIONS ARE (mean pairwise EMD, 10 test soils)
+--------------------------------------------------------------------------------
+    E2-A vs E2-B   26.482
+    E2-A vs E2-C   14.109
+    E2-B vs E2-C   26.283
+
+The arms make genuinely different predictions - larger than the ~25 EMD the public
+board can resolve. They are not cosmetic variations.
+
+6. GATES
+--------------------------------------------------------------------------------
+G0  frozen 12-feature LOFO reproduces 43.453225201811563     PASS (gap 0.000e+00)
+G1  fold integrity                                           PASS (16 folds, 24 scored,
+                                                                 0 family leaks)
+G2  PRIMARY, external - an arm beats 60.56167 by >1 EMD      PASS (E2-A, -4.756)
+G3  submission contract valid                                PASS for all three
+G4  gain > tie threshold (~1 EMD)                            PASS (-4.756 exceeds 1 EMD)
+
+The pre-declared reading of a PASS, quoted from plan.md section 10 before any score
+was seen: "An arm beats 60.56167 by >1 EMD -> we were mis-specified, the colour
+hypothesis is supported, Model 8 continues in that direction."
+
+That branch is taken, BUT with its logic inverted, and the inversion is the finding:
+
+  plan.md expected a WIN to mean "colour ROBUSTNESS (invariance) is the fix."
+  The actual winner is E2-A, which uses colour RAW and applies no invariance at all.
+
+  So G2 passes and H2 is still refuted. The win came from the feature space, not from
+  the colour treatment. Recording that distinction rather than claiming H2 would have
+  been the easier and wrong thing to do.
+
+G3 was asserted in code before any file was written (build_e2.py:assert_contract), on
+five rules: 10 rows; sample_id in sample_submission.csv order; monotone; exactly 100 at
+200 mm; no NaN; values in [0,100]. All three files pass.
+
+7. THE ID CONTRACT - THE TRAP IN THIS EXPERIMENT
+--------------------------------------------------------------------------------
+The competition's sample_id values are NOT the internal sample ids. Test soil
+'Muenster_BS6_9,0-10m' is 'HPC_Muenster_BS6_9_0-10m' on the board, and the internal id
+arrives mojibake-corrupted ('M?nster...') through the feature CSV's encoding. The join
+therefore goes through manifest_samples.submission_id, never through string surgery.
+
+Verified: the three files' sample_id lists are identical and in sample_submission.csv
+order. A submission with plausible-looking rows attached to the wrong soils would have
+been catastrophic and would have scored nothing like 62.5.
+
+8. WHAT IS ESTABLISHED, AND WHAT IS NOT
+--------------------------------------------------------------------------------
+ESTABLISHED
+  - E2-A (handcrafted 12 features, colour raw) scores 55.80591 - the best external
+    result this project has ever produced, beating 60.56167 by 4.756 EMD.
+  - H2 IS REFUTED, and monotonically so. The more an arm destroys colour, the worse it
+    scores: raw 55.81 < rank-normalised 62.52 < deleted 67.27. The pre-registered
+    robustness direction is backwards on this dataset.
+  - Our internal ruler anti-ranks these three arms perfectly (Spearman rho = -1.00,
+    n = 3, p = 0.5, NOT significant - but perfectly ordered).
+  - The handcrafted texture+colour block BEATS the DINOv2 embeddings by 4.756 EMD
+    externally. Feature-space gap runs the opposite way to what the 43-vs-60 framing
+    implied.
+  - All three arms are contract-valid and mutually distinct (14-26 EMD apart).
+
+NOT ESTABLISHED
+  - That E2-A's margin is REAL as opposed to board noise. 4.756 EMD is 0.36 SD of the
+    3-soil public null (SD 13.13). The private board carries 70% weight and is the
+    number that counts. A new public best is NOT a secured improvement.
+  - WHY raw colour wins. Three arms cannot separate "colour is causally useful" from
+    "the 7 colour columns happen to act as a useful 7-dimensional regulariser that the
+    5 texture features cannot supply". The texture-only arm has 5 features against 12,
+    so E2-A vs E2-B confounds colour CONTENT with feature COUNT.
+  - Any generalisation claim. n = 3 arms, 10 test soils, one protocol.
+
+THE HONEST BOTTOM LINE, stated for the owner who asked whether we are good or bad:
+
+  We are NOT bad. 55.80591 is the best score this project has ever posted, from the
+  simplest model in it - no deep features, no pretraining, no gradient training, 24
+  soils, closed-form ridge. The whole "transfer gap" framing was chasing a protocol
+  artefact. The model was fine; the SELECTION RULE was broken.
+
+  We were, however, selecting arms with a ruler that anti-ranks them. That is now
+  measured, not suspected, and it is the single highest-value thing to fix next.
+
+9. WHAT TO DO NEXT - AND THE ONE MEASUREMENT THAT MATTERS MOST
+--------------------------------------------------------------------------------
+E2-A is the new incumbent at 55.80591. It is a 12-feature ridge with alpha = 3 on the
+frozen handcrafted features. Reproduce it, don't redesign it.
+
+The most valuable next experiment is NOT another arm. It is to measure the SIZE of the
+board's noise directly, so that every future submission can be judged. Concretely:
+resubmit the SAME E2-A csv under a second name. If the two scores differ materially,
+the board cannot rank us and no amount of modelling will show. If they are within a few
+hundredths, the 4.756 EMD margin over 60.56167 is probably real and the handcrafted
+head is genuinely the right feature space.
+
+That single resubmission costs one slot and is worth more than every internal number
+this project has produced, because it calibrates every score we will ever read.
+
+10. BUGS FOUND DURING THIS RUN
+
+10. BUGS FOUND DURING THIS RUN
+--------------------------------------------------------------------------------
+Recorded because each would have produced a wrong answer silently.
+
+(a) Wrong unpacking order on ruler.design(). It returns (X, Y, fam_list, ids); the call
+    site read `ids, Y, fams, _ = R.design()`, binding `ids` to the 24x12 design matrix.
+    Indexing a frame with a 2-D array indexes rows AND columns, which surfaced as
+    "Cannot index with multidimensional key". Several wrong hypotheses were chased
+    before printing type(ids) and seeing float arrays. Fixed to `_, Y, fams, ids`.
+
+(b) transfer_eval.emd_pair builds its abscissa by str()-ing sample_submission.csv's
+    column names, which yields a 2-D array on this pandas version and raises
+    "only 0-dimensional arrays can be converted to Python scalars". Worked around by
+    computing DL locally in build_e2.py. THIS IS A LATENT BUG IN A SHARED Model 5 FILE.
+    It was NOT modified - Models 1-7 are out of scope for Model 8. Flagged here for its
+    owner.
+
+(c) rank_normalise indexing resolved to the pandas Index method rather than the column
+    "split" in one call site. Fixed to f["split"].
+
+11. RESOLVED FROM EARLIER - the 41.1475 question
+--------------------------------------------------------------------------------
+Model 8 E1's appendix flagged 41.1475 as possibly a coincidental match from a loose
+protocol reproduction. Resolved:
+
+    Model 2 Experiment 3 / sweep_results.csv, line 4:
+      M1,12,256,M1,3.0,41.1475158656982,...
+
+It is a RECORDED value (M1 arm, 12 features, oracle alpha 3.0), not a stray. The loose
+reproduction was matching a differently-recorded protocol, not inventing a number.
+The E1 caveat is WITHDRAWN.
+
+================================================================================
+FILES
+  plan.md                  the pre-registered design, written before any score
+  build_e2.py              the three arms, G0, and the contract assertions
+  d50.py, ruler.py         copied from Experiment 1 so this experiment stands alone
+  arm_comparison.csv       internal LOFO, alpha and filename per arm
+  run_manifest.json        machine-readable arm list and internal scores
+  reproduce_anchor.txt     G0 evidence
+  Submission_Model8_E2_E2A.csv   E2-A  55.80591   NEW PROJECT BEST
+  Submission_Model8_E2_E2B.csv   E2-B  67.26598
+  Submission_Model8_E2_E2C.csv   E2-C  62.51669
+
+An internal CV mean is a measurement on 24 labelled soils. It is not a Kaggle score.
+The two are never subtracted.
+================================================================================

@@ -1,0 +1,16 @@
+{
+  "E1C_permuted_labels_mean": 80.8620744565314,
+  "shape_map_null": {
+    "n": 200,
+    "deg1_mean": 89.7738673446905,
+    "deg2_mean": 90.35844900717504,
+    "gap_mean": -0.5845816624845385,
+    "gap_sd": 5.193956709798795,
+    "gap_p95": 11.133000332915243,
+    "gap_max": 22.790513135703378,
+    "construction": "D50 abscissa fixed; target curves permuted across soils",
+    "real_gap": 6.092372885263288,
+    "g4_null_pass": false
+  },
+  "real_shape_gap": 6.092372885263288
+}

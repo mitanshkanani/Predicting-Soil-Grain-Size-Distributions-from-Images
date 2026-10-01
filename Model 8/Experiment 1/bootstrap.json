@@ -1,0 +1,23 @@
+{
+  "method": "family-cluster bootstrap, 16 families resampled",
+  "n_draws": 20000,
+  "seed": 20260930,
+  "comparisons": {
+    "E1A_vs_E1B": {
+      "mean": 0.46580891602274144,
+      "ci95": [
+        -3.875827266042205,
+        4.92331053269858
+      ],
+      "p_gain_negative": 0.4332
+    },
+    "E1A_vs_frozen": {
+      "mean": 2.6612074141408213,
+      "ci95": [
+        -1.7002549774428908,
+        6.526169840028321
+      ],
+      "p_gain_negative": 0.11545
+    }
+  }
+}
