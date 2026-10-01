@@ -1,6 +1,6 @@
 ================================================================================
 MODEL 8 / EXPERIMENT 2 - EXPERIMENT REPORT
-Date: 2026-10-01 (all three Kaggle results recorded), plan dated 2026-09-30
+Date: 2026-10-01 (all FIVE Kaggle results recorded), plan dated 2026-09-30
 Hypothesis (H2): the frozen head is mis-specified for the test soils because it was
            fitted on a feature distribution the test soils do not occupy, and a head
            constrained to be invariant to the direction the test data actually moved
@@ -248,6 +248,107 @@ protocol reproduction. Resolved:
 It is a RECORDED value (M1 arm, 12 features, oracle alpha 3.0), not a stray. The loose
 reproduction was matching a differently-recorded protocol, not inventing a number.
 The E1 caveat is WITHDRAWN.
+
+12. THE ALPHA PROBE - PREDICTION REFUTED, AND THE CONTRADICTION RESOLVED
+================================================================================
+Alpha is the ONLY tuned quantity in the entire model. The 12 features, the rank-3
+curve basis, the ridge and the projection are all fixed. So alpha IS the hypothesis
+space, and Experiment 2 measured that the internal ruler anti-ranks arms. Two probe
+submissions were pre-registered (alpha_probe.py) at alpha = 0.3 and 30, bracketing the
+incumbent alpha = 3, before any score was seen.
+
+    alpha   internal    EXTERNAL
+    -----   ---------   ---------
+     0.3     43.9182     59.38746
+     3.0     41.1475     55.80591    <- argmin BOTH internally and externally
+    30.0     51.7009     71.10598
+
+    Spearman rho (internal vs external) = +1.000
+    Pearson  r                          = +1.000
+    external spread 15.30 | internal spread 10.55
+
+I PREDICTED THE OPPOSITE and the prediction was wrong. The pre-registered hypothesis
+was that the external optimum might sit where the internal ruler cannot see it. It
+does not - internal picked alpha = 3, the board agrees, and the correlation across the
+curve is perfectly POSITIVE.
+
+THE CONTRADICTION, AND WHY IT IS NOT A CONTRADICTION
+  Experiment 2's arm ranking: internal Spearman = -1.000 (anti-ranks).
+  The alpha curve:         internal Spearman = +1.000 (ranks correctly).
+
+Both are true, n = 3 each, and neither is statistically significant on its own. But
+together they LOCALISE the failure, which is the point:
+
+  - Within a single head, varying a continuous regularisation parameter, the internal
+    ruler orders things CORRECTLY and tracks the external curve's shape.
+  - Across DIFFERENT FEATURE SETS (12 raw vs 12 rank-normalised vs 5), the internal
+    ruler orders things EXACTLY BACKWARDS.
+
+So the internal ruler is not broken. It is a reliable interpolator that is being
+asked a question it cannot answer. What it measures is "how well does this head
+interpolate 24 labelled soils". What Experiment 2 needed was "how well does this head
+transfer to 10 out-of-hull soils". Those are different quantities, and NO amount of
+alpha tuning, feature engineering or arm-shopping inside the first one moves the
+second.
+
+  This also retires the "sample noise" explanation (mechanism 3 in plan.md section 2)
+  as the PRIMARY cause. Three arms with a perfect anti-rank and a perfect positive-rank
+  under a deterministic metric is not noise - noise would not produce rho = -1.000.
+
+13. WHAT ACTUALLY CHANGED THE EXTERNAL SCORE - THE CAMERA FINDING
+--------------------------------------------------------------------------------
+The external scores move far more with ALPHA (15.30 EMD spread) than with the colour
+treatment (11.46 EMD spread). That says regularisation strength is the dominant lever
+available, and the optimum is already found.
+
+But the reason the arms anti-rank is visible in data E2 never looked at. Two columns in
+features_soil.csv are unused by the frozen 12, and they are the whole story:
+
+    cameras          train: Motorola Edge;Samsung A52 21, Motorola Edge 1,
+                           Motorola Edge 60 Fusion 1, Samsung A52 1
+                    test:  iPhone 16  x7, iPhone 14 x3
+
+    ZERO iPhone images in training. TEN in test. And n_images shifts -1.371 SD
+    (train mean 5.29, test mean 3.50).
+
+The train/test split is a CAMERA SPLIT, not a random split. Every "extrapolation" this
+project has measured (B 3.33 SD beyond range, lum_p50 2.22 SD) is a phone-manufacturer
+colour-rendering shift, not a soil-property shift.
+
+That reframes everything in section 8's "we are NOT bad" conclusion. It is still true
+that 55.80591 is a real new best from the simplest model in the repo. But it is
+achieved DESPITE a total camera change, and the reason it survives is the feature
+space is handcrafted texture, which is far more camera-invariant than raw RGB. The
+rank-normalisation arm (E2-C) failed precisely BECAUSE it destroys the absolute colour
+scale - the one thing that still helps identify soil when the sensor is different.
+
+This is a testable prediction, and it is FALSIFIABLE: the frozen head should transfer
+BETTER to iPhone images than to unseen Samsung/Motorola images, per-soil. It is also
+cheap to check - the split of the training set by camera is already in the data.
+
+14. RECOMMENDATION FOR EXPERIMENT 3
+--------------------------------------------------------------------------------
+Do NOT build another arm on the handcrafted features. The alpha curve says we are at
+the regularisation optimum, and Experiment 2 says the arm ranking is not knowable
+internally.
+
+The camera finding is the live lead. Concrete Experiment 3, three pre-registered arms,
+all decidable EXTERNALLY because the camera split makes the question unanswerable
+internally:
+
+  E3-A  E2-A unchanged, refit with a camera-invariant colour space (CIELAB / opponent
+        colour, or hue-saturation only). The train/test gap is a rendering shift, so
+        moving to a perceptual space is the mechanistically motivated correction.
+  E3-B  E2-A plus the two unused texture columns (spec_centroid_cpm, dom_wavelength_mm).
+        Cheap, and they are the only unused signal in the table.
+  E3-C  E2-A on the 5 texture-core features with colour added back PER-CAMERA... no.
+        Replaced by: E2-A with alpha chosen to be deliberately non-optimal (alpha = 10)
+        as a positive control that the external curve is a real curve and not noise.
+
+  Three arms, declared now, all submitted, no selection. Same discipline as E2.
+
+NO MODEL IS BUILT YET. The plan must be written and approved before implementation, per
+the standing instruction for Model 8.
 
 ================================================================================
 FILES

@@ -1,0 +1,32 @@
+{
+  "incumbent": {
+    "alpha": 3.0,
+    "external": 55.80591,
+    "internal_nested": 43.45322520181156,
+    "submission": "Submission_Model8_E2_E2A.csv"
+  },
+  "probes": [
+    {
+      "alpha": 0.3,
+      "external": 59.38746
+    },
+    {
+      "alpha": 30.0,
+      "external": 71.10598
+    }
+  ],
+  "internal_argmin": 3.0,
+  "internal_spread_full_grid": 51.87155861984616,
+  "gate_g5_reproduction_gap": 4.889390510243175e-07,
+  "rule": "BOTH probes are submitted. The curve is the result; the argmin is incidental and is NOT claimed as an improvement.",
+  "internal_probes": {
+    "0.3": 43.9182,
+    "30.0": 51.7009
+  },
+  "spearman_internal_vs_external": 1.0,
+  "argmin_internal": 3.0,
+  "argmin_external": 3.0,
+  "external_spread": 15.30007,
+  "internal_spread_local": 10.5534,
+  "verdict": "PREDICTION REFUTED. Internal ranks the alpha curve CORRECTLY (rho=+1). The arm anti-ranking (rho=-1) localises to feature-set choice, not to regularisation."
+}
