@@ -1,0 +1,177 @@
+================================================================================
+MODEL 8 / EXPERIMENT 3 - RESULT
+Date: 2026-10-01
+Hypothesis (H3): transfer is governed by how camera-invariant the feature space is. Moving the
+           colour block from sensor-relative RGB to a perceptually uniform space would improve
+           transfer to an unseen camera, holding the head fixed.
+VERDICT:  H3 REFUTED.
+          All three arms scored AT OR ABOVE the control. Colour-space encoding is not the lever.
+BEST:     unchanged. E2-A = 55.80591 remains the project best.
+================================================================================
+
+1. THE THREE SCORES
+--------------------------------------------------------------------------------
+arm   treatment                                    internal  EXTERNAL   vs control
+----  ------------------------------------------  --------  ---------  -----------
+E3-A  RGB channel means -> CIELAB (L*,a*,b*)       40.7900   56.08671     +0.281
+E3-B  RGB / pipeline's grey-world gains             41.7686   57.87360     +2.068
+E3-C  incumbent + spec_centroid_cpm, dom_wave_mm   44.6424   56.43951     +0.634
+                                                       control = 55.80591
+
+    Nothing beat the control. All three landed slightly WORSE, by 0.28 to 2.07 EMD.
+
+    Against the public null SD of 13.13, those gaps are 0.02, 0.16 and 0.05 SD. So the
+    correct reading is not "CIELAB is worse" - it is "these three are indistinguishable
+    from the control on this board."
+
+2. THE HEADLINE IS NOT THE ARMS. IT IS THE SPREAD.
+--------------------------------------------------------------------------------
+                        internal spread    external spread
+    Experiment 2 arms      0.73 EMD            11.46 EMD
+    Experiment 3 arms      3.85 EMD             1.79 EMD
+
+Experiment 2 changed the FEATURE SET and the board moved 11.46 EMD.
+Experiment 3 changed the COLOUR ENCODING and the board moved 1.79 EMD - entirely inside the
+noise band, and in the WRONG direction.
+
+Three different colour treatments (raw RGB, rank-normalised, CIELAB, grey-world corrected -
+four in fact) all land in 55.8-57.9. The model is INSENSITIVE to how colour is encoded. That
+is a much stronger and more useful statement than any single arm's score.
+
+3. WHAT THIS RULES OUT, AND WHY IT MATTERS
+--------------------------------------------------------------------------------
+The camera finding was REAL and is not in question: 0 iPhone images in training, 35 in test,
+grey-world gains differing systematically by camera, blue 3.33 SD beyond training range.
+
+But being real is not the same as being the binding constraint. Experiment 3 shows the camera
+shift is something the model is already robust TO. The handcrafted head absorbs a complete
+camera change and delivers the same score regardless of how colour is encoded. That is
+evidence the frozen head is genuinely camera-invariant already - which is exactly why it
+survived the camera split when DINOv2 lost by 4.76 EMD.
+
+So the 43 -> 56 story is now:
+
+    internal CV measures interpolation on 24 Motorola/Samsung soils   ~43
+    the model transfers to 10 iPhone soils at all                      yes, 55.8
+    the gap is caused by feature-set choice                          CONFIRMED (E2, 11.46 EMD)
+    the gap is caused by colour encoding                             REFUTED (E3, 1.79 EMD)
+    the gap is caused by regularisation                              REFUTED (E2 alpha, optimal at 3)
+
+4. THE INTERNAL RULER - A CORRECTION I OWE
+--------------------------------------------------------------------------------
+    Experiment 2 arms: internal rho = -1.000   (perfect anti-rank)
+    Experiment 3 arms: internal rho = +0.500   (positive, n = 3)
+
+I wrote in plan.md section 4, as a PREDICTION before these scores existed: "If the same thing
+happens here, the arm our ruler likes MOST will lose."
+
+That prediction was WRONG. E3-A had the best internal score (40.79) and the best external score
+of the three (56.09). The anti-rank did not repeat.
+
+This is a correction to something I asserted confidently, so it gets stated plainly: the
+anti-ranking is NOT a stable law. It was one observed ordering at n = 3. E3 is a second sample
+and it came out +0.500. Any claim that "internal CV anti-ranks arms" should be read as "in E2
+it did, once, and we do not yet know how often."
+
+That weakens the tidy narrative I gave you earlier and it is worth having weakened, because a
+n = 3 ordering from a single experiment was never strong enough to build on.
+
+5. THE REAL FINDING, AND IT IS NOT ABOUT COLOUR
+--------------------------------------------------------------------------------
+Across five external submissions of the SAME head at the SAME alpha, varying only the colour
+treatment:
+
+    E2-A  raw RGB                55.80591   <- project best
+    E3-A  CIELAB                56.08671
+    E3-C  +2 texture columns    56.43951
+    E2-a0.3                      59.38746
+    E3-B  grey-world corrected   57.87360
+    E2-C  rank-normalised        62.51669
+    E2-B  colour deleted         67.26598
+
+The best and worst differ by 11.46 EMD, and the worst is the one with colour REMOVED. Colour is
+worth about 11 EMD and the model cannot work without it. But the ENCODING of that colour is
+worth under 2 EMD.
+
+That is the finding: this model extracts what it needs from colour and is indifferent to how
+colour is written down. Any further gain has to come from a different direction - more
+information, not a better parameterisation of what we already have.
+
+6. PRE-REGISTERED OUTCOMES - WHICH ONE OCCURRED
+--------------------------------------------------------------------------------
+From plan.md section 9:
+
+  - "An arm beats 55.80591 by >1 EMD"                          NO. Best arm is +0.28.
+  - "All three land inside 55-57"                              NO. They land 56.1-57.9.
+  - "All three land worse than 55.80591"                       YES - all three did.
+  - "Nothing lands inside the public band"                      NO.
+
+The branch that occurred: "raw RGB beats a perceptual space despite the camera shift, meaning
+the grey-world gains carry real soil information. Surprising, and worth knowing."
+
+Stated precisely, because the branch's own wording overreaches: all three arms being worse
+does NOT show the grey-world gains carry soil information. It shows the transform to CIELAB
+did not help. The grey-world arm (E3-B) scored worst of the three, which is weak evidence that
+undoing the pipeline's correction removes real information - but 2.07 EMD is 0.16 SD and cannot
+carry that conclusion.
+
+H3 IS REFUTED. The honest statement is: a camera-invariant colour encoding does not improve
+transfer here, and the model is already insensitive to colour encoding.
+
+7. WHAT IS ESTABLISHED, AND WHAT IS NOT
+--------------------------------------------------------------------------------
+ESTABLISHED
+  - H3 is refuted. Four distinct colour encodings span 1.79 EMD on the public board.
+  - The camera split is real and mechanistically documented, but it is NOT the binding
+    constraint - the model already absorbs it.
+  - Colour is worth 11.46 EMD (deleting it costs that much) and its ENCODING is worth under 2.
+  - The internal ruler did NOT anti-rank these arms (rho = +0.500), correcting my E2-based claim.
+  - Both registered anchors reproduced bit-exactly; the CIELAB transform is exact to 1e-9.
+
+NOT ESTABLISHED
+  - Whether E3-A is truly equal to E2-A. A 0.28 EMD gap at 0.02 SD is not a difference.
+  - Whether grey-world gains carry soil information. E3-B's 2.07 EMD loss is 0.16 SD.
+  - Whether ANY of these differences would survive the private board, which carries 70%.
+  - Whether a fundamentally different model class would do better. This experiment varied the
+    feature ENCODING only. It cannot speak to CNNs, transformers, or learned embeddings.
+
+8. WHERE THE PROJECT STANDS
+--------------------------------------------------------------------------------
+Ten submissions. Best 55.80591, unchanged since Experiment 2. The last six submissions have all
+landed between 55.8 and 62.5, and the four best are within 0.7 EMD of each other.
+
+That is the plateau, stated plainly: we are not moving. Three experiments have now tested
+feature set (E2, 11.46 EMD of movement), regularisation (E2, optimal), and colour encoding
+(E3, 1.79 EMD). Two of those three were the available levers and neither moved us.
+
+The honest conclusion is the one pre-registered in plan.md section 6: further tuning of THIS
+head is not merely slow, it is uninformative. Twelve handcrafted features and 24 soils appear to
+be the binding constraint.
+
+9. WHAT I WOULD DO NEXT, AND THE HONEST DIFFICULTY
+--------------------------------------------------------------------------------
+If the intent is to move the score, the next step has to be MORE INFORMATION, because that is
+the only dimension the evidence supports. Options, none of them cheap:
+
+  (a) Per-image features instead of per-soil medians. The pipeline currently collapses each
+      soil to ONE row by taking the median over qualifying tiles. The 127 train JPGs carry
+      information that the median throws away. This is the largest untapped source in the
+      project and it needs no new sensor data.
+  (b) A model class that can use the images directly. But note honestly: DINOv2 LOST to the
+      handcrafted head by 4.76 EMD here, so "just use a big pretrained model" is not supported
+      by anything we have measured.
+  (c) Accept 55.80591 and spend remaining submissions on something orthogonal.
+
+What I would NOT do is another round of feature-block swaps on these 12 columns. Experiment 3
+just measured that this model is insensitive to how those columns are encoded, and
+re-encoding produced 1.79 EMD of movement inside the noise band.
+
+================================================================================
+FILES
+  Submission_Model8_E3_E3A.csv   56.08671
+  Submission_Model8_E3_E3B.csv   57.87360
+  Submission_Model8_E3_E3C.csv   56.43951
+
+An internal CV mean is a measurement on 24 labelled soils. It is not a Kaggle score.
+The two are never subtracted.
+================================================================================

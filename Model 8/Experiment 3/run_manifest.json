@@ -1,0 +1,28 @@
+{
+  "arms": [
+    "E3-A",
+    "E3-B",
+    "E3-C"
+  ],
+  "alpha": 3.0,
+  "incumbent_external": 55.80591,
+  "internal_lofo": {
+    "E3-A": 40.789970248905966,
+    "E3-B": 41.7685822993058,
+    "E3-C": 44.64244336598069
+  },
+  "g0_nested": 43.45322520181156,
+  "g0_oracle": 41.1475158656982,
+  "submitted_files": [
+    "Submission_Model8_E3_E3A.csv",
+    "Submission_Model8_E3_E3B.csv",
+    "Submission_Model8_E3_E3C.csv"
+  ],
+  "note": "Internal scores are reported only. Selection among arms is EXTERNAL by design; see plan.md section 4 and 5.",
+  "external": {
+    "E3-A": 56.08671,
+    "E3-B": 57.8736,
+    "E3-C": 56.43951
+  },
+  "verdict": "H3 REFUTED. All three arms scored at or above the 55.80591 control. Colour-space encoding is not the lever."
+}

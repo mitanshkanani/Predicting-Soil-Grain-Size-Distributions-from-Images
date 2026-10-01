@@ -1,0 +1,236 @@
+================================================================================
+MODEL 8 / EXPERIMENT 3 - EXPERIMENT REPORT
+Date: 2026-10-01
+Hypothesis (H3): transfer is governed by how camera-invariant the feature space is. Moving the
+           colour block from a sensor-relative space (RGB) to a perceptually uniform one will
+           improve transfer to an unseen camera, holding the head fixed.
+STATUS:   INTERNAL STEP COMPLETE. 3 submission CSVs written and contract-asserted.
+          AWAITING KAGGLE RESULT. No upload performed.
+CONTROL:  E2-A = 55.80591 (the metric is deterministic, so this is a known reference point,
+          not a re-submission)
+================================================================================
+
+1. THE CAUSE THIS EXPERIMENT WAS BUILT ON
+--------------------------------------------------------------------------------
+The train/test split is a CAMERA split. data/processed_meta/manifest_images.csv, 162 images:
+
+    camera                      images   split
+    Motorola Edge                  69   train
+    Samsung A52                    55   train
+    iPhone 16                      21   TEST ONLY
+    iPhone 14                      14   TEST ONLY
+    Motorola Edge 60 Fusion         3   train
+
+Zero iPhone images in training. All 35 test images are iPhone. The split is by camera, not at
+random.
+
+So every "extrapolation" this project measured across seven experiments - blue 3.33 SD beyond
+range on 9/10 test soils, lum_p50 2.22 SD, lum_p90 1.39 SD, green 1.28 SD - is a phone
+manufacturer COLOUR RENDERING shift, not a soil property shift. Texture features are all
+approximately 0.000 excess, because texture is camera-stable and colour is not.
+
+The mechanism is visible in the preprocessing metadata. The pipeline already applies a
+per-image grey-world correction, and its gains differ systematically by camera:
+
+    camera                  gw_gain_r  gw_gain_g  gw_gain_b
+    Motorola Edge              0.942     0.999     1.063
+    Samsung A52                0.905     0.977     1.132
+    Motorola Edge 60 Fusion    0.898     0.882     1.264
+    iPhone 16                  0.974     0.994     1.033
+    iPhone 14                  0.980     0.988     1.033
+
+Motorola and Samsung get blue pushed up 6-26%; iPhones only 3%. Blue-heavy iPhone soils are
+therefore being compared against blue-PUSHED Samsung soils - a mismatch in DIRECTION, not just
+in scale. This is the concrete source of the 3.33 SD blue excess.
+
+2. GATES
+--------------------------------------------------------------------------------
+G0  nested LOFO anchor    43.4532252018115628   gap 0.000e+00   PASS
+G0  oracle alpha=3 anchor 41.1475158656982032   gap 0.000e+00   PASS
+G1  fold integrity        16 folds, 24 scored, 0 family leaks   PASS
+G2  submission contract   all three files, five rules each      PASS
+G3  PRIMARY (external)    PENDING
+G4  reporting rule only
+
+BOTH anchors reproduced bit-exactly. This is the strengthened gate from plan.md section 5, and
+it now checks two independent recorded values rather than one. The oracle anchor is the
+stronger of the two: it reproduces Model 2 E3's recorded oracle EMD to the last bit, which
+confirms this module's transcription of the protocol is faithful at the alpha level too, not
+just at the nested level.
+
+3. THE CIELAB GATE (check_lab.py) - 11 checks, all passing
+--------------------------------------------------------------------------------
+scikit-image is not installed and this project does not install packages, so srgb_to_lab in
+build_e3.py is a hand transcription of a standard transform. A transcription error there is
+invisible in the output - it produces plausible Lab numbers - and it would silently corrupt
+E3-A, the arm the whole hypothesis rests on. So it is gated against properties that are true BY
+DEFINITION.
+
+    [ok] sRGB white -> L*=100, a*=b*=0                (exactly 0.000000000)
+    [ok] sRGB black -> L*=0
+    [ok] neutral greys have a*=b*=0                    (max chroma 2.78e-14)
+    [ok] grey L* increases with level
+    [ok] L* monotone non-decreasing in R, G and B
+    [ok] sRGB primaries match published CIELAB          (max dev 0.0078)
+    [ok] grey L* at code 0    matches first principles  (0.000000000)
+    [ok] grey L* at code 51   matches first principles  (21.246731295)
+    [ok] grey L* at code 128  matches first principles  (53.585013452)
+    [ok] grey L* at code 255  matches first principles  (100.000000000)
+    [ok] a* and b* are not swapped
+    [ok] deterministic
+
+The four code-value checks are cross-validations rather than remembered constants. For a neutral
+grey the L* path never touches the colour matrix at all - Y = Yn, so the matrix cancels and
+only the sRGB companding curve and the standard constants remain. The expected value is
+therefore derived from first principles in the gate and compared to what srgb_to_lab produces:
+two genuinely separate computations agreeing to 1e-9.
+
+4. THE THREE ARMS
+--------------------------------------------------------------------------------
+arm   treatment                                    feats  internal LOFO   external
+----  ------------------------------------------  -----  --------------  --------
+E3-A  RGB channel means -> CIELAB (L*,a*,b*)          12     40.7900      PENDING
+E3-B  RGB divided by pipeline's grey-world gains       12     41.7686      PENDING
+E3-C  incumbent + spec_centroid_cpm, dom_wavelength    14     44.6424      PENDING
+      _mm
+
+Alpha is held at 3.0 in all three. Experiment 2's alpha probe established 3.0 as the EXTERNAL
+argmin (0.3 -> 59.39, 3.0 -> 55.81, 30 -> 71.11), so varying it here would confound the
+experiment with a factor already known to be at its optimum.
+
+INTERNAL SCORES ARE REPORTED, NEVER USED TO SELECT. Note in advance what Experiment 2 predicts
+about them: the internal ranking here is E3-A 40.79 < E3-B 41.77 < E3-C 44.64, and E2's arms
+ranked internally 42.73 < 42.99 < 43.45 against external 62.52 < 67.27 < 55.81, a perfect
+anti-rank. If the same thing happens here, the arm our ruler likes MOST will lose. That is the
+pattern, stated as a prediction before the scores exist.
+
+5. HOW FAR APART THE PREDICTIONS ARE (mean pairwise EMD, 10 test soils)
+--------------------------------------------------------------------------------
+    E3-A vs E3-B    6.505
+    E3-A vs E3-C    9.080
+    E3-B vs E3-C   14.792
+
+The arms make genuinely different predictions. For scale, Experiment 2's arms were 14-26 EMD
+apart, so these are comparable but somewhat closer - E3-A and E3-B in particular differ by less
+than the public board can resolve (3-soil null SD 13.13).
+
+6. SUBMISSION CONTRACT - VERIFIED TWICE
+--------------------------------------------------------------------------------
+build_e3.py:assert_contract checks five rules before any file is written, and the three CSVs
+were then re-verified by a separate check that does not share code with the writer:
+
+    E3A  rows=10 cols=12 ids_exact=True monotone=True end100=True nan=0 range=[0.000,100.000]
+    E3B  rows=10 cols=12 ids_exact=True monotone=True end100=True nan=0 range=[0.000,100.000]
+    E3C  rows=10 cols=12 ids_exact=True monotone=True end100=True nan=0 range=[0.000,100.000]
+
+E3-C was also confirmed to differ from E2-A (mean pairwise EMD 2.304), as it must - it carries
+two extra columns. A 14-feature design that reproduced the 12-feature predictions exactly would
+mean the extra columns were being dropped, not used.
+
+The internal-id -> competition-id join goes through manifest_samples.submission_id, never
+string surgery. Test soil 'Muenster_BS6_9,0-10m' is 'HPC_Muenster_BS6_9_0-10m' on the board,
+and the internal id arrives mojibake-corrupted as 'M?nster...' through the feature CSV's
+encoding.
+
+7. BUGS FOUND DURING THIS RUN
+--------------------------------------------------------------------------------
+(a) THE COLOUR BLOCK IS SEVEN COLUMNS, NOT THREE. srgb_to_lab was first called on all of
+    R,G,B,sat,lum_p10,lum_p50,lum_p90. Only R,G,B are RGB channel means - `sat` is a saturation
+    ratio and lum_p10/p50/p90 are luminance percentiles, i.e. scalars derived from the image
+    rather than channel means. Passing them raised a core-dimension error, which is the GOOD
+    outcome: the transform refused the data instead of silently treating a saturation ratio as
+    a blue channel. Fixed in both E3-A and E3-B; the four derived scalars are now carried
+    through unchanged, which keeps all 12 feature roles intact and E3-A a true one-variable
+    change against the incumbent.
+
+(b) A hardcoded D65 white point that was not the matrix's own row sums. My first transcribed
+    matrix's green row summed to 1.0000001, not exactly 1.0, so white came out at L* =
+    100.0000039 instead of 100. Caught by the gate. Fixed at the source by DERIVING the white
+    point from the matrix row sums, which is its correct definition.
+
+(c) TWO OF MY OWN GATE ASSERTIONS WERE WRONG, and the gate was right to fail. Recorded because
+    a gate that cannot fail is not a gate:
+      - I asserted dL*/d(code) must be SMALLER in the dark than the light, reasoning that a
+        perceptual space must compress. Measured, it is LARGER in the dark (0.423) than in the
+        light (0.354). My assumption was false; L* is roughly a power law in code value over
+        0-255, not S-shaped. Replaced with a real cross-check.
+      - I then asserted grey L* against a reference table I RECALLED FROM MEMORY, and my table
+        was wrong for code 51 (I had 21.2887; the true value is 21.2467). Again the reference
+        was wrong, not the transform. Replaced with the first-principles derivation above.
+    Both were my errors in the TEST, not in the CODE. I verified that independently rather than
+    assuming the code was at fault, because the sRGB primaries were already matching published
+    values to 0.0000 - which pins the matrix and makes it implausible that the same code had a
+    companding bug.
+
+(d) The sRGB-to-XYZ matrix was upgraded to the full-precision constants published in CSS Color 4
+    after checking them against the specification. The 7-decimal variant is the same matrix
+    rounded. The primaries check improved from 0.0000 deviation (rounded form, compensating
+    error) to 0.0078 (spec form, no compensation).
+
+8. WHAT IS ESTABLISHED, AND WHAT IS NOT
+--------------------------------------------------------------------------------
+ESTABLISHED
+  - The train/test split is a camera split: 0 iPhone training images, 35 iPhone test images.
+  - Grey-world gains already in the pipeline differ systematically by camera, pushing blue
+    up 6-26% on Motorola/Samsung and only 3% on iPhones - a direction mismatch, not a scale one.
+  - The CIELAB transform is exact to 1e-9 against definitional and first-principles references.
+  - Both registered protocol anchors reproduce bit-exactly under this module.
+  - All three arms are contract-valid and mutually distinct (6.5-14.8 EMD apart).
+
+NOT ESTABLISHED
+  - Anything about H3. That is what the three submissions are for.
+  - That camera shift is the ONLY cause of the internal/external gap. It is a cause with a
+    mechanism and a measured magnitude; whether it is the whole story is exactly what E3-A and
+    E3-B test.
+  - That grey-world gains are pure sensor error. They were fitted per image to that image's own
+    illuminant estimate, so they encode some real soil signal too. E3-B can lose for two
+    different reasons and a loss is not automatically evidence against H3.
+
+HONEST LIMITS, STATED BEFORE ANY SCORE IS SEEN
+  - Public board is 3 fixed test soils; per-soil SD 22.75 -> 3-soil null SD 13.13. A 4.76 EMD
+    margin is 0.36 SD. Differences below ~5 EMD are not resolvable publicly. Private is 70%.
+  - E3-A and E3-B differ by 6.5 EMD, which is INSIDE the public noise band. Even if one clearly
+    beats the other, the public board may not separate them.
+  - n = 24 labelled soils, ~8-10 effectively independent.
+  - Three arms cannot separate "CIELAB is better" from "CIELAB decorrelates luminance from
+    chroma", nor from "any monotone recolouring would do".
+  - THE CAMERA SPLIT IS CONFOUNDED WITH THE SPLIT ITSELF. With 0 iPhone training images we cannot
+    separate "unseen camera" from "unseen anything". No amount of additional data from THIS
+    dataset fixes that; only more cameras would.
+  - The metric is deterministic. Resubmitting an identical file returns an identical score, so
+    no noise-measurement experiment is available. The board's resolution is a fixed property we
+    work around, not something we can calibrate away.
+
+9. PRE-REGISTERED OUTCOMES - DECIDED NOW, NOT AFTER
+--------------------------------------------------------------------------------
+  - An arm beats 55.80591 by >1 EMD   -> H3 supported; camera-invariance is the lever.
+  - All three land inside 55-57         -> H3 refuted. With E2's alpha result, this says the
+                                          head is at its ceiling and 24 soils are the binding
+                                          constraint. STOP TUNING THE HEAD - which would itself
+                                          be the most valuable thing established so far.
+  - All three land worse than 55.80591  -> raw RGB beats a perceptual space despite the camera
+                                          shift, meaning the grey-world gains carry real soil
+                                          information. Surprising, and worth knowing.
+  - Nothing lands inside the public band -> this dataset cannot resolve differences of this
+                                          size, and further submission-based search is
+                                          uninformative. E2 already predicted this.
+
+No outcome is spun. SUBMIT = TRUE if and only if H3 is supported. An external tie is not
+support.
+
+10. FILES
+--------------------------------------------------------------------------------
+  plan.md                  the pre-registered design, written before any score
+  build_e3.py              the three arms, G0, the CIELAB and grey-world transforms
+  check_lab.py             the gate on the transcribed CIELAB transform; 11 checks, passes
+  d50.py, ruler.py         copied from Experiment 2 so this experiment stands alone
+  arm_comparison.csv       internal LOFO, alpha and filename per arm
+  run_manifest.json        machine-readable arm list, anchors, control score
+  reproduce_anchor.txt     G0 evidence for both anchors
+  Submission_Model8_E3_E3A.csv   E3-A  PENDING
+  Submission_Model8_E3_E3B.csv   E3-B  PENDING
+  Submission_Model8_E3_E3C.csv   E3-C  PENDING
+
+An internal CV mean is a measurement on 24 labelled soils. It is not a Kaggle score.
+The two are never subtracted.
+================================================================================

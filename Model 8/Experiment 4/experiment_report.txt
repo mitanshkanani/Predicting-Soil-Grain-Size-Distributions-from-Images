@@ -1,0 +1,155 @@
+================================================================================
+MODEL 8 / EXPERIMENT 4 - EXPERIMENT REPORT
+Date: 2026-10-01
+QUESTION: is this project DATA-limited or MODEL-limited? If more labelled soils would buy
+          accuracy, model work is worth doing. If the curve has flattened, no amount of model
+          work will help and further slots should not be spent on heads.
+VERDICT:  DATA-LIMITED, and to a precisely quantified degree.
+COST:     ZERO submission slots. This experiment required none - the curve is measurable
+          internally on the 24 soils we already have. That was the point of choosing it.
+================================================================================
+
+1. THE CURVE
+--------------------------------------------------------------------------------
+    n      mean EMD    SE        95% CI              step
+    ---    ---------   -----    --------------      ------
+      4      78.283    5.444    [ 67.612,  88.953]          -
+      6      64.413    4.729    [ 55.144,  73.683]    -13.869
+      8      58.092    4.957    [ 48.377,  67.808]     -6.321
+     10      54.666    5.378    [ 44.124,  65.207]     -3.427
+     12      51.726    5.121    [ 41.689,  61.763]     -2.939
+     14      49.815    5.204    [ 39.616,  60.015]     -1.911
+     16      48.211    5.138    [ 38.139,  58.282]     -1.605
+     18      46.632    5.124    [ 36.589,  56.674]     -1.579
+     20      45.364    5.098    [ 35.372,  55.356]     -1.267
+     21      45.434    5.498    [ 34.657,  56.211]     +0.070
+     24      43.453      -      (the registered ruler, all 23 fit soils per fold)
+
+Power-law fit:   EMD = 35.326 + 139.159/n + 15.851/sqrt(n)      R^2 = 0.999
+
+2. THE ANSWER, IN ONE LINE
+--------------------------------------------------------------------------------
+The 1/n term is 5.80 EMD at n = 24 and 2.90 at n = 48.
+
+That term IS the data-limitation, measured. It is not small.
+
+Doubling from 24 to 48 soils would buy about 2.9 EMD. Doubling again to 96 would buy about 1.4
+more. The curve is NOT flat - it is still falling, at roughly the rate a 1/n law predicts -
+but it is falling into a floor of about 35.3 EMD, so the total headroom from here is bounded at
+roughly 8 EMD and halving it requires doubling the data.
+
+3. WHY THIS ANSWERS A QUESTION NO PREVIOUS EXPERIMENT COULD
+--------------------------------------------------------------------------------
+Every experiment in this project varied the MODEL and reported that it did not help. E1 found
+no gain from a D50 reparameterisation. E2 found that feature-set choice moves 11.46 EMD but
+regularisation is already optimal. E3 found colour encoding is worth under 2 EMD. Four more
+levers were tested during this experiment and all failed internally:
+
+    e1, e2 (never aggregated to soil level)      43.3845  (noise)
+    spectral columns                             44.6424  (worse)
+    tile distribution (IQR/std/percentiles)      47-49    (much worse)
+    curve rank 2 / 3 / 4 / 5 / 6 / 8 / 11         42.37 - 44.06  (flat)
+    blending heads at alpha 1/3/10               41.217   (no gain)
+    quadratic correction in coefficient space    44.97 - 85.78  (worse)
+
+"Model changes don't help" is EQUALLY CONSISTENT with two opposite situations: the model is
+right and the data is too thin, or the model is wrong. The learning curve is the only thing
+that separates them, and it says the data is too thin.
+
+4. TWO FINDINGS WORTH KEEPING INDEPENDENT OF THE MAIN VERDICT
+--------------------------------------------------------------------------------
+(a) THE CURVE BASIS IS NOT THE BOTTLENECK. This is a clean and useful negative result.
+
+    Oracle EMD by rank (true coefficients, no feature model at all):
+      rank 2   9.746     rank 5   2.384     rank 8   0.504
+      rank 3   6.254     rank 6   1.533     rank 10  0.000
+
+    But end-to-end, nested, with the features: rank 2-11 all sit at 42.4-44.1.
+
+    So the rank-3 basis discards almost nothing (99.005% of label variance) and the remaining
+    error is almost entirely the FEATURE -> COEFFICIENT step. Raising the rank is not a lever.
+    This closes a direction nobody needed to close.
+
+(b) BLENDING IS DEAD, AND WE KNOW WHY. Out-of-fold per-soil errors at alpha 1, 3 and 10
+    correlate at 0.86-0.95. Ensembling reduces error only when components err independently;
+    these do not, so the mean of three (41.217) is no better than the best single head
+    (41.147). This also explains why alpha is not worth re-tuning: the heads across the alpha
+    range are nearly the same model.
+
+5. DESIGN CHOICES THAT MADE THIS CURVE TRUSTWORTHY
+--------------------------------------------------------------------------------
+Every point holds out an entire FAMILY - never a soil - then draws n training soils from the
+remaining families. Family g is absent from the features, labels, scaler, curve basis and
+ridge.
+
+This matters enormously. Had I used random train/test splits of the 24 soils, the curve would
+measure interpolation among Android soils and would look far steeper than reality. The test
+set demands extrapolation, so the curve has to as well.
+
+ALPHA IS FIXED AT 3.0, not re-selected per point. Re-selecting on a subset would confound
+"less data" with "a differently-tuned model", and we would be measuring the wrong curve. E2's
+alpha probe independently established 3.0 as the external optimum.
+
+A visible sanity check: the n=21 point is 45.434 and the n=24 ruler is 43.453, a 1.98 EMD drop
+for three soils - consistent with the 1/n prediction of about 1.7, and a good sign the
+procedure is behaving.
+
+An aggregation trap was caught and corrected first: collapsing tiles straight to soil does NOT
+reproduce features_soil.csv (max abs diff 11.34), while the frozen two-stage route
+(tiles -> image median -> soil median) reproduces it to 2.842e-14. The one-stage version was
+the wrong pipeline and was discarded before any curve was computed.
+
+6. WHAT THIS DOES NOT ESTABLISH
+--------------------------------------------------------------------------------
+THIS CURVE MEASURES TRANSFER AMONG UNSEEN FAMILIES OF ANDROID SOILS. The test set is unseen
+CAMERA as well as unseen soil, and the camera component is NOT ESTIMABLE from this data -
+there are zero iPhone training images. So:
+
+  - The 8.13 EMD of headroom is headroom on the ANDROID transfer curve.
+  - The test set may sit further from us than the curve suggests, because sensor shift is an
+    axis this dataset cannot sample.
+  - This is stated in learning_curve.json under "LIMIT" and was written into the module
+    docstring BEFORE the numbers existed, so it cannot be retrofitted as an excuse.
+
+Also not established:
+  - That 5.80591 is at the floor. The curve describes INTERNAL transfer; external scores sit
+    ~12 EMD above internal, and that offset is not explained by anything measured so far.
+  - That more data would arrive in a form this model can use. The 1/n law describes THIS
+    model's use of data, not an upper bound on all models.
+
+7. WHAT I RECOMMEND, AND THE HONEST COST
+--------------------------------------------------------------------------------
+DO NOT SPEND THE REMAINING SLOTS ON MODEL VARIANTS OF THIS HEAD. That is now an informed
+recommendation rather than a guess: eight distinct model-side levers have been tested this
+session, all failed internally, and the learning curve shows why they would fail.
+
+The evidence now says the productive directions are, in order of expected value:
+
+  1. MORE LABELLED SOILS. The measured return is about 2.9 EMD per doubling, at a known rate.
+     This is the only intervention with a number attached to it. It is also the only one we
+     cannot do ourselves - it needs the competition organisers to release more samples.
+  2. A MODEL THAT EXTRACTS MORE FROM EACH SOIL, tested against this curve rather than against
+     the internal ruler. The 1/n term measures THIS head's data hunger; a head that reached
+     the same accuracy with half the soils would sit on a different curve, and that is a
+     legitimate thing to aim for. But note the honest caveat: DINOv2 already lost to the
+     handcrafted head by 4.76 EMD here, so "bigger pretrained model" is not supported.
+  3. Camera augmentation - simulating additional sensors from the images we have. This targets
+     the one axis the current curve cannot measure. Speculative, but it is the only idea that
+     addresses the camera gap without new data from the organisers.
+
+THE REMAINING SLOTS ARE NOT SPENT HERE, DELIBERATELY. A learning-curve probe that needed a
+submission would have been worth one, because it would have converted an internal measurement
+into an external one. It did not need one. Spending a slot to confirm something already
+measured internally would be exactly the pattern - a slot burned for a number we already had -
+that produced this project's worst submissions.
+
+================================================================================
+FILES
+  learning_curve.py        the curve; family-held-out, alpha fixed at 3.0
+  learning_curve.csv       n, mean EMD, SE, 95% CI
+  learning_curve.json      fit, asymptote, extrapolation, and the camera LIMIT
+  ruler.py, d50.py         copied from Experiment 2 so this experiment stands alone
+
+An internal CV mean is a measurement on 24 labelled soils. It is not a Kaggle score.
+The two are never subtracted.
+================================================================================
