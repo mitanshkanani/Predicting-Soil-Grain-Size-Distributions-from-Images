@@ -1,0 +1,30 @@
+MODEL 10 / E1 -- D1 determinism: sha256 of every artifact, run_1 (Tasks 2-4) vs run_2 (cold re-run of gates+score+submit in fresh interpreters)
+mismatches: 0
+
+Submission_Model10_E1_B.csv        run1 1d1f3342db5bf19927e48dd63bd1c686a94e1a533402f496bbbb9b0e048fc391
+                                   run2 1d1f3342db5bf19927e48dd63bd1c686a94e1a533402f496bbbb9b0e048fc391
+                                   IDENTICAL
+Submission_Model10_E1_C.csv        run1 48af674a6a5224969cd5e32af4f293555b98488af0392779f4225d1f607f8f1c
+                                   run2 48af674a6a5224969cd5e32af4f293555b98488af0392779f4225d1f607f8f1c
+                                   IDENTICAL
+arm_comparison.csv                 run1 ae9405f99f466be5509943b2155455ace97315f798976a3ec202b2dc5ca47aed
+                                   run2 ae9405f99f466be5509943b2155455ace97315f798976a3ec202b2dc5ca47aed
+                                   IDENTICAL
+bootstrap.json                     run1 a34301cb60e29713def2f08792061c4e166e4cdfbb7c38e4f8218c45d2194d32
+                                   run2 a34301cb60e29713def2f08792061c4e166e4cdfbb7c38e4f8218c45d2194d32
+                                   IDENTICAL
+cv_per_soil.csv                    run1 7d69cfe911fb503ef243ccbd74df6db01ff05cd0b72159fc934a0377342137bc
+                                   run2 7d69cfe911fb503ef243ccbd74df6db01ff05cd0b72159fc934a0377342137bc
+                                   IDENTICAL
+gates.json                         run1 c99454ca50fe0c511ed4c71789bb36f10cf7ceedc5f85c5e0152ba63d387bcbe
+                                   run2 c99454ca50fe0c511ed4c71789bb36f10cf7ceedc5f85c5e0152ba63d387bcbe
+                                   IDENTICAL
+placebo.json                       run1 0331913562f8ba5c5cfc92978ba44f4f9b133683ed86be8ac94dd5a74cd5d328
+                                   run2 0331913562f8ba5c5cfc92978ba44f4f9b133683ed86be8ac94dd5a74cd5d328
+                                   IDENTICAL
+score_internal.json                run1 cc6191c761b2023cd6a68d2e65f4b4a3e3d793472cd3360abf63719f5faa74a8
+                                   run2 cc6191c761b2023cd6a68d2e65f4b4a3e3d793472cd3360abf63719f5faa74a8
+                                   IDENTICAL
+submission_report.json             run1 84762aa80eb52d99b1cb0a2c8f8205db98a4d5994ece33d3925bbdde29085e68
+                                   run2 84762aa80eb52d99b1cb0a2c8f8205db98a4d5994ece33d3925bbdde29085e68
+                                   IDENTICAL

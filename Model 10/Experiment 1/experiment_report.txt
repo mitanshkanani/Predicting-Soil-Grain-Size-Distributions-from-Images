@@ -1,0 +1,149 @@
+==============================================================================
+MODEL 10 / EXPERIMENT 1 -- EXPERIMENT REPORT
+Date: 2026-10-02 | Status: complete locally, AWAITING Kaggle scores for G2
+Hypothesis (H10): fitting the frozen head at image granularity (127 rows) 
+  instead of soil medians (24 rows) changes external transfer, and the effect
+  decomposes into a fit-side and a test-side component.
+==============================================================================
+
+1. GATES
+------------------------------------------------------------------------------
+  G0a_anchors                                True
+  G0b_rebuild                                True
+  G1_fold_integrity                          True
+  arm_A_equality_to_registered_ruler         True
+  placebo_worse_than_every_real_arm          True
+  G3_submission_contract                     True
+  D1_determinism                             True
+  G2_external                                RESOLVED -- B 82.87051, C 60.58798 vs incumbent 55.80591. Branch: B worse by > 5 EMD -> image-granularity fitting is HARMFUL; the errors-in-variables risk stated in plan.md 8 materialised.
+
+  G0a  nested anchor 43.4532252018115628 gap 0.000e+00 | oracle anchor 41.1475158656982032 gap 0.000e+00
+       rebuilt-matrix gaps: nested 0.000e+00, oracle 0.000e+00
+  G0b  image->soil rebuild vs features_soil.csv: max abs diff 2.842e-14 (tol 1e-10)
+  G1   16 folds, 24 soils scored, 0 family leaks
+  A-equiv arm A through the generic image-capable path equals the registered
+       ruler to 0.0e+00 per soil -- the arms share one pipeline, not two.
+  D1   determinism across a cold re-run: PASS
+
+2. INTERNAL CV -- REPORTED, NEVER USED TO SELECT (plan.md 5)
+------------------------------------------------------------------------------
+  arm A  mean 43.453225   alpha chosen min 0.10 / median 3.00 / max 3.00   [control (incumbent, score known, not resubmitted)]
+  arm B  mean 36.827927   alpha chosen min 0.03 / median 0.30 / max 0.30   [image-level fit; mean raw then project once]
+  arm C  mean 40.826547   alpha chosen min 0.30 / median 1.00 / max 3.00   [soil-level fit; project each image then mean]
+  per-soil: B improved on A in 16 of 24 soils; C in 15 of 24.
+  placebo (arm B, labels permuted, seed 90001): 97.048032 -- far worse than every real
+  arm, so the instrument is healthy and the arms carry signal, not noise.
+
+3. FAMILY-CLUSTER BOOTSTRAP (16 families, 20000 draws, seed 20260934)
+------------------------------------------------------------------------------
+  difference = arm1 minus arm2; negative means arm1 has LOWER (better) EMD
+  B - A (total effect)                   -6.625298  95% CI [-13.991438, +0.373441]  P(arm1 better) 0.9648
+  C - A (test side only)                 -2.626678  95% CI [-6.754907, +1.318231]  P(arm1 better) 0.8693
+  B - C (fit side + projection placement) -3.998621  95% CI [-8.116362, +0.814538]  P(arm1 better) 0.9485
+
+  READ THIS BEFORE READING THE TABLE ABOVE. Every interval includes zero.
+  The largest internal gain (B vs A) is 6.63 EMD, which is BELOW the project's
+  own measured best-of-N null of 15.29 EMD -- the apparent gain you get from
+  picking the winner of a handful of fitted configurations on shuffled labels.
+  So this experiment did NOT establish an internal improvement either.
+  That is not a failure of the arms; it is the resolution limit of 24 soils
+  (~8-10 effectively independent, six near-duplicate curve pairs).
+
+4. WHAT ACTUALLY MOVED IN ARM B -- the regularisation finding
+------------------------------------------------------------------------------
+  Arm A selects alpha ['0.1', '0.3', '1', '3'] across folds; arm B selects alpha ['0.03', '0.3'].
+  This is a measured mechanism, not a hypothesis: image rows scatter around the
+  soil medians, so the residual sum of squares is larger at any given alpha, and
+  nested selection answers by shrinking the penalty. The 1/n_images weighting
+  holds total loss mass at one per soil as designed (asserted at every fold), but
+  it cannot hold the RESIDUAL scale fixed, so arm B is effectively a materially
+  less-regularised model than the incumbent, not merely a better-estimated one.
+  Why that matters here is written in the project's own record, not invented:
+    M1 E1  internal 35.98 -> external 172.70  (least regularised, worst ever)
+    M2 E3  internal 39.26 -> external 83.94   (random-init ViT, best in-domain)
+  An arm whose internal score improves by becoming less regularised is the exact
+  signature that preceded this project's two worst results. Arm B is nonetheless
+  submitted, because the pre-registered design says the board decides and this
+  ruler's ranking is not evidence. The pattern is stated, not hidden, and the
+  final-submission rule in plan.md 6b is what governs.
+
+5. THE PREDICTIONS ARE SUBSTANTIVELY DIFFERENT (mean EMD over 10 test soils)
+------------------------------------------------------------------------------
+  B_vs_C_mean_emd              18.8806
+  B_vs_incumbent_mean_emd      23.0346
+  C_vs_incumbent_mean_emd      9.4342
+  All exceed the ~5 EMD the public board can resolve, so these are not cosmetic
+  variations: whichever score comes back, it will be measuring a real difference.
+  Deployed alphas: B 0.1, C 1.0. Pinned CDF-bound cells: B 5.56%, C 12.22%.
+  Saturation is the project's extrapolation warning (M1 E1 pinned 59.1%).
+
+6. THE EXTERNAL RESULT -- G2
+------------------------------------------------------------------------------
+  arm B  Submission_Model10_E1_B.csv   public   82.87051   (+27.06460 vs incumbent)
+  arm C  Submission_Model10_E1_C.csv   public   60.58798   (+4.78207 vs incumbent)
+  arm A  incumbent control (M8 E2-A)   public   55.80591   NOT resubmitted;
+         the metric is deterministic, so an identical file returns an
+         identical score (M8 E3 plan 7).
+
+  VERDICT: H10 REFUTED. Image-granularity fitting is HARMFUL on this
+  dataset. The branch that occurred is the one plan.md 6 pre-declared as
+  the errors-in-variables outcome: B is worse by 27.06 EMD, far beyond the
+  5 EMD threshold, and plan.md 8 named that exact risk before the run.
+
+  THE INVERSION, AND ITS SIZE
+    internal best-to-worst:  B(36.83) < C(40.83) < A(43.45)
+    external best-to-worst:  A(55.81) < C(60.59) < B(82.87)
+    Spearman rho = -1.00 again, and the swing is enormous: B's internal
+    gain of 6.63 EMD corresponds to an external LOSS of 27.06 EMD -- a
+    33.7 EMD move in the wrong direction. This is the project's third
+    perfect anti-rank (M8 E2 was -1.00; M8 E3 was +0.50), and the largest
+    such swing yet measured.
+
+  WHY, mechanistically and consistent with section 4: arm B selected alpha
+  0.03-0.3 against A's 0.1-3.0. More rows did not buy better estimation,
+  it bought a weaker penalty fitted to noisier inputs, and the label
+  information was never there to begin with -- 127 images carry only 24
+  distinct curves (~8-10 effectively independent). The effective sample
+  size did not increase; only the noise and the freedom to fit it did.
+
+  FINAL SUBMISSION DECISION (plan.md 6b): the INCUMBENT IS RETAINED at
+  55.80591. B did not beat it by >= 5 public EMD; it lost by 27.06.
+  E4's recommendation (a), per-image expansion, is now measured and
+  REFUTED externally, not merely unresolved.
+
+  Pre-declared outcome branches, quoted from plan.md 6 (written before any score):
+    B beats 55.80591 by >= 5 EMD  -> H10 supported at resolved magnitude
+    B beats by 1-5 EMD            -> direction supported, magnitude unresolved
+    B within 5 EMD of 55.80591    -> no evidence of benefit at board resolution;
+                                     recommendation (a) NOT refuted, only unresolved
+    B worse by > 5 EMD            -> image-granularity fit harmful; the
+                                     errors-in-variables risk plan.md 8 predicted
+  FINAL SUBMISSION RULE (plan.md 6b): keep the incumbent 55.80591 unless B beats
+  it by at least 5 public EMD. The private score is never used to decide.
+
+7. WHAT THIS DID NOT ESTABLISH
+------------------------------------------------------------------------------
+  - Any Kaggle result. None exists for either arm yet; G2 is pending.
+  - An internal improvement: every bootstrap interval includes zero and the
+    largest gain is under the project's own best-of-N null.
+  - A clean fit-side isolation. plan.md 4 was amended: B vs C is fit side PLUS
+    projection placement, so a B-C gap has two possible causes, not one.
+  - Anything about the camera axis. There are 0 iPhone training images; every
+    internal number here measures interpolation among Android soils.
+
+8. FREEZE LIST
+------------------------------------------------------------------------------
+  Arms A/B/C, gates, tolerances, the alpha grid, the 1/n weighting, placebo seed
+  90001, bootstrap draws 20000 and the outcome tiers are exactly as plan.md froze them.
+  No Model 1-8 file was modified. No Model 9 path was touched. No image or tile
+  pixel file was opened. Nothing was uploaded and no zip was built. No commit.
+  Two bugs were found and fixed during the run, both in my own code and neither
+  touching a scientific constant: a tuple-unpacking call site (lofo_arm returns a
+  bare dict when return_alphas is False), and indexing a Path instead of the
+  loaded frame in the incumbent comparison. Both were caught by the run's own
+  output, and the second was then given a guard whose teeth were demonstrated
+  against a shuffled copy of the incumbent file.
+
+  An internal CV EMD is a measurement on 24 labelled soils. It is not a Kaggle
+  score. The two are never subtracted.
+==============================================================================

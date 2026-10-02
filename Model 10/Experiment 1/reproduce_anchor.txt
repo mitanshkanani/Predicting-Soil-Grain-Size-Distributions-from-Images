@@ -1,0 +1,105 @@
+==============================================================================
+MODEL 10 / EXPERIMENT 1 -- reproduce_anchor.txt
+Generated: 2026-10-02 | Task 1 only (G0b). G0a appended by Task 2.
+Runtime: Python 3.14.6 | numpy 2.5.2 | pandas 2.3.3 | scikit-learn 1.9.0
+Interpreter: C:\Python314\python.exe
+==============================================================================
+
+COPIED FROZEN COMPONENTS (plan.md 10 Task 1 -- byte-for-byte, proven by hash)
+  source folder: Model 8/Experiment 3/   dest folder: Model 10/Experiment 1/
+  ruler.py   src sha256 cafb00eab18ca9a097bc3139f9838d773364343c8af652c77ad0d3be78e17771
+  ruler.py   dst sha256 cafb00eab18ca9a097bc3139f9838d773364343c8af652c77ad0d3be78e17771  -> IDENTICAL: True
+  d50.py     src sha256 82e8dab4a0d005a6d9f01873d886163f2719ffd089c933682c8fd8fc23902f42
+  d50.py     dst sha256 82e8dab4a0d005a6d9f01873d886163f2719ffd089c933682c8fd8fc23902f42  -> IDENTICAL: True
+  transfer_eval.py is NOT copied: ruler.py imports it read-only from
+    Model 5/Model 5 Experiment 1/ exactly as Model 8 did (sha256 a610959867256715e1dd7950cda527296490f54a62d77eb2690d66a645a9bad5).
+  image_features.py reuses transfer_eval.image_features/soil_from_images rather
+    than retyping the aggregation, per the standing reuse rule.
+
+==============================================================================
+GATE G0b -- RAW CAPTURED OUTPUT OF python image_features.py (exit 0)
+==============================================================================
+frozen constants reused from transfer_eval (not retyped):
+  FEATURES        = 12 columns: e4, e8, e16, lum_sd, grad_mean, R, G, B, sat, lum_p10, lum_p50, lum_p90
+  TILE_PX         = 256
+  MIN_SOIL_FRAC   = 0.5
+
+provenance / row counts (measured):
+  config_hash                010f44c36c74
+  tile_csv                   Model 1\Model 1 Experiment 3\.cache\tile_features_256_010f44c36c74.csv
+  tile_csv_sha256            fb3b56a5fa9b7c0d660d50b5f13ad78ce85640a3d0a3aff0cb32c8743660c77c
+  tiles_total_256            1976
+  tiles_kept_after_filter    1946
+  images_total               162
+  images_train               127
+  images_test                35
+  soils_train                24
+  soils_test                 10
+  imgs_per_train_soil_min    3
+  imgs_per_train_soil_max    8
+  tiles_per_image_min        4
+
+GATE G0b -- rebuilt image rows collapsed to soil vs features_soil.csv:
+  rows compared        = 34 (expect 34: 24 train + 10 test)
+  columns compared     = 12 (the 12 frozen features)
+  tolerance            = 1e-10
+  MAX ABS DIFF         = 2.842e-14
+  per-feature max abs diff:
+    e4                 1.776e-15
+    e8                 1.776e-15
+    e16                2.220e-16
+    lum_sd             7.105e-15
+    grad_mean          3.553e-15
+    R                  0.000e+00
+    G                  0.000e+00
+    B                  2.842e-14
+    sat                9.714e-17
+    lum_p10            1.421e-14
+    lum_p50            0.000e+00
+    lum_p90            2.842e-14
+  G0b                  = PASS
+
+NOTE: no model was fitted in this run. No scaler, ridge, curve basis or alpha.
+==============================================================================
+==============================================================================
+NEGATIVE CONFIRMATIONS (Task 1 scope)
+  - No model fitted: no StandardScaler, no Ridge, no rank-3 curve basis, no alpha selection.
+  - No CV fold executed. No arm A/B/C scored. No prediction made.
+  - No submission CSV written. Nothing uploaded. No zip created. No git commit.
+  - No file under data/tiles, training_down or testing_down was opened.
+  - No Model 1-8 file modified (copies written only into Model 10/Experiment 1/).
+  - Files created this task: d50.py, ruler.py, image_features.py, reproduce_anchor.txt.
+==============================================================================
+
+==============================================================================
+GATE G0a -- Task 2: the two registered anchors (python build_m10e1.py gates)
+==============================================================================
+  source of truth: Model 8 E3 recipe -- nested = R.lofo_errors(X,Y,fams).mean()
+                   oracle = R.alpha_curve(X,Y,fams)[3.0]
+  tolerances: nested 1e-6, oracle 1e-9 (E3's own, not new)
+
+  FROM features_soil.csv (E3's own source):
+    nested 43.4532252018115628   anchor 43.4532252018115628   gap 0.000e+00
+    oracle 41.1475158656982032   anchor 41.1475158656982032   gap 0.000e+00
+  FROM the REBUILT image->soil matrix (the design arms B and C actually use):
+    nested 43.4532252018115628   gap 0.000e+00
+    oracle 41.1475158656982032   gap 0.000e+00
+  G0a = PASS
+
+==============================================================================
+GATE G1 -- Task 2: fold integrity
+==============================================================================
+  folds 16 (expect 16) | soils scored 24 (expect 24) | family leaks 0 (expect 0)
+  folds checked 16, incl. image-level check that a held-out family contributes
+  NO image row to any fit and no test soil enters any fitted quantity.
+  G1 = PASS
+
+  Runtime: 20.2 s, CPU, single local interpreter.
+
+  NEGATIVE CONFIRMATIONS (Task 2 scope)
+    - No arm A/B/C was scored. No placebo. No bootstrap. No prediction. No submission CSV.
+    - Arm A's generic-path equality proof (plan.md G-a-equiv) is deferred to Task 3, where
+      arm A is actually run; Task 2 ran no arms, so there was nothing to compare yet.
+    - No Model 1-8 file modified. Nothing uploaded, no zip, no git commit.
+    - Files created this task: build_m10e1.py, gates.json (and this append).
+==============================================================================

@@ -1,0 +1,23 @@
+==============================================================================
+MODEL 11 / EXPERIMENT 1 -- reproduce_anchor.txt
+Generated: 2026-10-02 | Task 1 (G0a only). No model fitted, no prediction made.
+==============================================================================
+
+ruler.py  src cafb00eab18ca9a097bc3139f9838d773364343c8af652c77ad0d3be78e17771
+          dst cafb00eab18ca9a097bc3139f9838d773364343c8af652c77ad0d3be78e17771  identical=True
+d50.py    src 82e8dab4a0d005a6d9f01873d886163f2719ffd089c933682c8fd8fc23902f42
+          dst 82e8dab4a0d005a6d9f01873d886163f2719ffd089c933682c8fd8fc23902f42  identical=True
+transfer_eval.py (read-only import) sha a610959867256715e1dd7950cda527296490f54a62d77eb2690d66a645a9bad5
+
+design: X (24, 12)  Y (24, 11)  families 16  soils 24
+nested 43.4532252018115628  anchor 43.4532252018115628  gap 0.000e+00
+oracle 41.1475158656982032  anchor 41.1475158656982032  gap 0.000e+00
+folds 16  scored 24  family_leaks 0
+G0a PASS
+
+NEGATIVE CONFIRMATIONS (Task 1 scope)
+  - No new model fitted. No Weibull fit. No VLM call. No external data read.
+  - No image or tile pixel file opened.
+  - No CV arm scored beyond the anchor reproduction itself.
+  - No prediction, no submission CSV, no upload, no zip, no git commit.
+  - No Model 1-10 file modified; Model 9 not read.

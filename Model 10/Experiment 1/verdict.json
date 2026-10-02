@@ -1,0 +1,142 @@
+{
+  "model": "Model 10",
+  "experiment": 1,
+  "date": "2026-10-02",
+  "hypothesis": "H10: fitting at image granularity changes external transfer vs the soil-level incumbent; effect decomposes into fit side and test side",
+  "status": "H10 REFUTED EXTERNALLY",
+  "gates": {
+    "G0a_anchors": true,
+    "G0b_rebuild": true,
+    "G1_fold_integrity": true,
+    "arm_A_equality_to_registered_ruler": true,
+    "placebo_worse_than_every_real_arm": true,
+    "G3_submission_contract": true,
+    "D1_determinism": true,
+    "G2_external": "RESOLVED -- B 82.87051, C 60.58798 vs incumbent 55.80591. Branch: B worse by > 5 EMD -> image-granularity fitting is HARMFUL; the errors-in-variables risk stated in plan.md 8 materialised."
+  },
+  "internal_cv_report_only": {
+    "A": 43.45322520181156,
+    "B": 36.82792690638123,
+    "C": 40.82654749240294
+  },
+  "internal_cv_note": "Report-only by plan.md 5. This ruler is known to anti-rank feature sets (M8 E2 Spearman -1.00) while ranking alpha correctly (+1.00). It is NOT evidence about Kaggle and is never subtracted from a Kaggle score.",
+  "bootstrap_family_cluster": {
+    "BA": {
+      "difference_emd": -6.625298295430334,
+      "mean_arm1": 36.82792690638123,
+      "mean_arm2": 43.45322520181156,
+      "ci_lo": -13.991437996192559,
+      "ci_hi": 0.37344054034826046,
+      "p_arm1_better_than_arm2": 0.9648,
+      "n_draws": 20000,
+      "n_clusters": 16,
+      "seed": 20260934
+    },
+    "CA": {
+      "difference_emd": -2.626677709408621,
+      "mean_arm1": 40.826547492402945,
+      "mean_arm2": 43.45322520181156,
+      "ci_lo": -6.754907319525071,
+      "ci_hi": 1.3182309425741547,
+      "p_arm1_better_than_arm2": 0.8693,
+      "n_draws": 20000,
+      "n_clusters": 16,
+      "seed": 20260934
+    },
+    "BC": {
+      "difference_emd": -3.998620586021713,
+      "mean_arm1": 36.82792690638123,
+      "mean_arm2": 40.826547492402945,
+      "ci_lo": -8.116362107384228,
+      "ci_hi": 0.8145382320506477,
+      "p_arm1_better_than_arm2": 0.94845,
+      "n_draws": 20000,
+      "n_clusters": 16,
+      "seed": 20260934
+    }
+  },
+  "placebo": {
+    "mean_emd": 97.04803155950928,
+    "seed": 90001
+  },
+  "deployed": {
+    "B": {
+      "deployed_alpha": 0.1,
+      "inner_lofo_curve": {
+        "0.03": 36.322101,
+        "0.1": 36.192639,
+        "0.3": 36.194572,
+        "1.0": 38.23371,
+        "3.0": 41.384081,
+        "10.0": 45.22233,
+        "30.0": 52.968937,
+        "100.0": 67.319841,
+        "300.0": 80.082433,
+        "1000.0": 88.286646,
+        "3000.0": 91.33276,
+        "10000.0": 92.505708,
+        "30000.0": 92.851001,
+        "100000.0": 92.972959,
+        "300000.0": 93.007911,
+        "1000000.0": 93.020155
+      },
+      "saturation": {
+        "pct_pinned_at_bounds": 5.555555555555555,
+        "n_cells": 90
+      },
+      "rows": 10
+    },
+    "C": {
+      "deployed_alpha": 1.0,
+      "inner_lofo_curve": {
+        "0.03": 49.431881,
+        "0.1": 44.323669,
+        "0.3": 41.052725,
+        "1.0": 39.259198,
+        "3.0": 39.553971,
+        "10.0": 44.474132,
+        "30.0": 52.02677,
+        "100.0": 65.327342,
+        "300.0": 78.426494,
+        "1000.0": 87.513318,
+        "3000.0": 91.034718,
+        "10000.0": 92.411841,
+        "30000.0": 92.819266,
+        "100000.0": 92.963391,
+        "300000.0": 93.004717,
+        "1000000.0": 93.019197
+      },
+      "saturation": {
+        "pct_pinned_at_bounds": 12.222222222222221,
+        "n_cells": 90
+      },
+      "rows": 10
+    }
+  },
+  "prediction_spread": {
+    "B_vs_C_mean_emd": 18.880595609760103,
+    "B_vs_incumbent_mean_emd": 23.034554380112567,
+    "C_vs_incumbent_mean_emd": 9.434222601499524,
+    "incumbent_file": "Model 8\\Experiment 2\\Submission_Model8_E2_E2A.csv"
+  },
+  "incumbent_external": 55.80591,
+  "external": {
+    "scores": {
+      "B": 82.87051,
+      "C": 60.58798
+    },
+    "vs_incumbent": {
+      "B": 27.0646,
+      "C": 4.78207
+    },
+    "branch_taken": "B worse by > 5 EMD -> image-granularity fitting is HARMFUL; the errors-in-variables risk stated in plan.md 8 materialised.",
+    "internal_vs_external_spearman": -1.0,
+    "source": "owner submissions on Kaggle, 2026-10-02 (screenshot of the submission list)"
+  },
+  "final_submission_rule_plan_6b": "Keep the incumbent 55.80591 unless B beats it by >= 5 public EMD. Private score is never used to decide.",
+  "final_submission_decision": "INCUMBENT RETAINED at 55.80591",
+  "submitted_files": [
+    "Submission_Model10_E1_B.csv",
+    "Submission_Model10_E1_C.csv"
+  ]
+}

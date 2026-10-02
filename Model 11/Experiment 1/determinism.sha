@@ -1,0 +1,4 @@
+MODEL 11 / E1 -- determinism (two cold interpreters, weibull_oracle.py)
+weibull_oracle.csv  d37ad805aa2f3c72d6091da81c30036162b9c135d8f3142aad0beac0d53af775
+p0_gate.json  f11d6ebcc8231ecd7e8ab2cd2d8882270da9fb63e3f3ee76207e660b5fc18555
+ALL IDENTICAL: True

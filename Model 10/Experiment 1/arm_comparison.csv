@@ -1,0 +1,4 @@
+arm,internal_mean_emd,n_soils,n_folds,alpha_min,alpha_median,alpha_max,external,role
+A,43.45322520181156,24,16,0.1,3.0,3.0,55.80591,"control (incumbent, score known, not resubmitted)"
+B,36.82792690638123,24,16,0.03,0.3,0.3,awaiting Kaggle,image-level fit; mean raw then project once
+C,40.82654749240294,24,16,0.3,1.0,3.0,awaiting Kaggle,soil-level fit; project each image then mean

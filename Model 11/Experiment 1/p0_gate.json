@@ -1,0 +1,37 @@
+{
+  "mean_emd": 7.328461963442824,
+  "gate": 9.75,
+  "pass": true,
+  "pca_oracle_floors_remeasured": {
+    "rank1_projected": 19.284197341652987,
+    "rank1_bare": 20.505048571883222,
+    "rank2_projected": 9.746231736615249,
+    "rank2_bare": 10.975867597647238,
+    "rank3_projected": 6.254266751322547,
+    "rank3_bare": 7.349181079464366,
+    "rank4_projected": 3.836961099236259,
+    "rank4_bare": 4.3548771871605725
+  },
+  "quoted_floors": {
+    "rank2": 9.75,
+    "rank3_projected": 6.25
+  },
+  "rank2_deviation_from_quoted": -0.003768263384751336,
+  "groups": {
+    "fine": {
+      "n": 10,
+      "mean": 7.034259972029696
+    },
+    "coarse": {
+      "n": 12,
+      "mean": 7.810518079868051
+    },
+    "mid": {
+      "n": 2,
+      "mean": 5.907135221957124
+    }
+  },
+  "worst_soil": "G190",
+  "worst_emd": 15.493407693451175,
+  "note": "ORACLE floor: given the true curve. Measures representation, not skill. No feature is read by this module."
+}

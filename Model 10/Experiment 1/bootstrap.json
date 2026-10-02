@@ -1,0 +1,42 @@
+{
+  "protocol": "family-cluster bootstrap on per-soil out-of-fold EMD, paired by soil",
+  "unit_resampled": "the 16 CV families",
+  "n_draws": 20000,
+  "seed": 20260934,
+  "differences": {
+    "BA": {
+      "difference_emd": -6.625298295430334,
+      "mean_arm1": 36.82792690638123,
+      "mean_arm2": 43.45322520181156,
+      "ci_lo": -13.991437996192559,
+      "ci_hi": 0.37344054034826046,
+      "p_arm1_better_than_arm2": 0.9648,
+      "n_draws": 20000,
+      "n_clusters": 16,
+      "seed": 20260934
+    },
+    "CA": {
+      "difference_emd": -2.626677709408621,
+      "mean_arm1": 40.826547492402945,
+      "mean_arm2": 43.45322520181156,
+      "ci_lo": -6.754907319525071,
+      "ci_hi": 1.3182309425741547,
+      "p_arm1_better_than_arm2": 0.8693,
+      "n_draws": 20000,
+      "n_clusters": 16,
+      "seed": 20260934
+    },
+    "BC": {
+      "difference_emd": -3.998620586021713,
+      "mean_arm1": 36.82792690638123,
+      "mean_arm2": 40.826547492402945,
+      "ci_lo": -8.116362107384228,
+      "ci_hi": 0.8145382320506477,
+      "p_arm1_better_than_arm2": 0.94845,
+      "n_draws": 20000,
+      "n_clusters": 16,
+      "seed": 20260934
+    }
+  },
+  "note": "Internal CV EMD is a measurement on 24 labelled soils. It is not a Kaggle score and is never used to select an arm (plan.md 5)."
+}

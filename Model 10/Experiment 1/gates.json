@@ -1,0 +1,65 @@
+{
+  "g0a": {
+    "nested_ref": 43.45322520181156,
+    "oracle_ref": 41.1475158656982,
+    "gap_nested_ref": 0.0,
+    "gap_oracle_ref": 0.0,
+    "nested_rebuilt": 43.45322520181156,
+    "oracle_rebuilt": 41.1475158656982,
+    "gap_nested_rebuilt": 0.0,
+    "gap_oracle_rebuilt": 0.0,
+    "pass": true
+  },
+  "g0b": {
+    "n_rows": 34,
+    "n_cols": 12,
+    "max_abs_diff": 2.842170943040401e-14,
+    "tolerance": 1e-10,
+    "per_feature_max_abs_diff": {
+      "e4": 1.7763568394002505e-15,
+      "e8": 1.7763568394002505e-15,
+      "e16": 2.220446049250313e-16,
+      "lum_sd": 7.105427357601002e-15,
+      "grad_mean": 3.552713678800501e-15,
+      "R": 0.0,
+      "G": 0.0,
+      "B": 2.842170943040401e-14,
+      "sat": 9.71445146547012e-17,
+      "lum_p10": 1.4210854715202004e-14,
+      "lum_p50": 0.0,
+      "lum_p90": 2.842170943040401e-14
+    },
+    "pass": true
+  },
+  "g1": {
+    "n_folds": 16,
+    "n_scored": 24,
+    "family_leaks": 0,
+    "folds_checked": 16,
+    "fold_sizes": {
+      "FAM1": 2,
+      "FAM10": 1,
+      "FAM11": 1,
+      "FAM12": 2,
+      "FAM13": 1,
+      "FAM14": 1,
+      "FAM15": 1,
+      "FAM16": 1,
+      "FAM2": 2,
+      "FAM3": 2,
+      "FAM4": 4,
+      "FAM5": 1,
+      "FAM6": 1,
+      "FAM7": 1,
+      "FAM8": 2,
+      "FAM9": 1
+    },
+    "pass": true
+  },
+  "arms_frozen": [
+    "A",
+    "B",
+    "C"
+  ],
+  "note": "Task 2 scored no arm. The arm-A equality proof runs in Task 3."
+}

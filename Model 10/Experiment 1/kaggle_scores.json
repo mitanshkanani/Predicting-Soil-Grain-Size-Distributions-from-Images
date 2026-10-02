@@ -1,0 +1,25 @@
+{
+  "source": "owner submissions on Kaggle, 2026-10-02 (screenshot of the submission list)",
+  "public_soils": 3,
+  "incumbent_control": {
+    "arm": "A",
+    "file": "Model 8/Experiment 2/Submission_Model8_E2_E2A.csv",
+    "score": 55.80591
+  },
+  "arms": {
+    "B": {
+      "score": 82.87051,
+      "vs_incumbent": 27.0646,
+      "internal": 36.827927
+    },
+    "C": {
+      "score": 60.58798,
+      "vs_incumbent": 4.78207,
+      "internal": 40.826547
+    }
+  },
+  "branch_taken_plan_6": "B worse by > 5 EMD -> image-granularity fitting is HARMFUL; the errors-in-variables risk stated in plan.md 8 materialised.",
+  "final_submission_rule_plan_6b": "KEEP THE INCUMBENT 55.80591. B did not beat it by >= 5 public EMD; it lost by 27.06.",
+  "internal_vs_external_spearman": -1.0,
+  "note": "Internal best arm scored externally worst. Third perfect anti-rank in this project (M8 E2 was also -1.00; M8 E3 was +0.50)."
+}

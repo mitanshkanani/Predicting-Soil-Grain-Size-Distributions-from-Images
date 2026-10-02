@@ -1,0 +1,24 @@
+{
+  "copies": {
+    "ruler.py": {
+      "src_sha256": "cafb00eab18ca9a097bc3139f9838d773364343c8af652c77ad0d3be78e17771",
+      "dst_sha256": "cafb00eab18ca9a097bc3139f9838d773364343c8af652c77ad0d3be78e17771",
+      "identical": true
+    },
+    "d50.py": {
+      "src_sha256": "82e8dab4a0d005a6d9f01873d886163f2719ffd089c933682c8fd8fc23902f42",
+      "dst_sha256": "82e8dab4a0d005a6d9f01873d886163f2719ffd089c933682c8fd8fc23902f42",
+      "identical": true
+    }
+  },
+  "nested": 43.45322520181156,
+  "oracle": 41.1475158656982,
+  "gap_nested": 0.0,
+  "gap_oracle": 0.0,
+  "fold_report": {
+    "family_leaks": 0,
+    "n_folds": 16,
+    "n_scored": 24
+  },
+  "pass": true
+}

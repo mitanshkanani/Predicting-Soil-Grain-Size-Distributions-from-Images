@@ -1,0 +1,12 @@
+{
+  "arm": "B",
+  "seed": 90001,
+  "permutation": "soil label curves permuted across the 24 soils (so across families); features, families and folds unchanged",
+  "placebo_mean_emd": 97.04803155950928,
+  "real_arm_means": {
+    "A": 43.45322520181156,
+    "B": 36.82792690638123,
+    "C": 40.82654749240294
+  },
+  "pass": true
+}
